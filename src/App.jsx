@@ -1,0 +1,1180 @@
+import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { supabase } from "./supabaseClient";
+
+/* =========================================================================
+   PORRA MUNDIAL 2026 · v2
+   - Banderas como imágenes (insignias circulares, estilo emoji)
+   - Iconografía propia en SVG (balón, bota, trofeo, banderines, patrón)
+   - Perfiles con contraseña (acceso futuro para editar)
+   - Bloqueo automático 24 h antes del partido inaugural
+   - Panel de organizador: resultados + editar pronósticos de cualquiera
+   - Sondeo anónimo: % de 1·X·2 por partido, campeón y goleador
+   ========================================================================= */
+
+/* ----------------------------- DATOS OFICIALES ---------------------------- */
+const TEAMS = {
+  MEX:{name:"México",flag:"mx"}, RSA:{name:"Sudáfrica",flag:"za"}, KOR:{name:"Corea del Sur",flag:"kr"}, CZE:{name:"República Checa",flag:"cz"},
+  CAN:{name:"Canadá",flag:"ca"}, SUI:{name:"Suiza",flag:"ch"}, QAT:{name:"Catar",flag:"qa"}, BIH:{name:"Bosnia y Herzeg.",flag:"ba"},
+  BRA:{name:"Brasil",flag:"br"}, MAR:{name:"Marruecos",flag:"ma"}, SCO:{name:"Escocia",flag:"gb-sct"}, HAI:{name:"Haití",flag:"ht"},
+  USA:{name:"Estados Unidos",flag:"us"}, AUS:{name:"Australia",flag:"au"}, PAR:{name:"Paraguay",flag:"py"}, TUR:{name:"Turquía",flag:"tr"},
+  GER:{name:"Alemania",flag:"de"}, ECU:{name:"Ecuador",flag:"ec"}, CIV:{name:"Costa de Marfil",flag:"ci"}, CUW:{name:"Curazao",flag:"cw"},
+  NED:{name:"Países Bajos",flag:"nl"}, JPN:{name:"Japón",flag:"jp"}, TUN:{name:"Túnez",flag:"tn"}, SWE:{name:"Suecia",flag:"se"},
+  BEL:{name:"Bélgica",flag:"be"}, IRN:{name:"Irán",flag:"ir"}, EGY:{name:"Egipto",flag:"eg"}, NZL:{name:"Nueva Zelanda",flag:"nz"},
+  ESP:{name:"España",flag:"es"}, URU:{name:"Uruguay",flag:"uy"}, KSA:{name:"Arabia Saudí",flag:"sa"}, CPV:{name:"Cabo Verde",flag:"cv"},
+  FRA:{name:"Francia",flag:"fr"}, SEN:{name:"Senegal",flag:"sn"}, NOR:{name:"Noruega",flag:"no"}, IRQ:{name:"Irak",flag:"iq"},
+  ARG:{name:"Argentina",flag:"ar"}, AUT:{name:"Austria",flag:"at"}, ALG:{name:"Argelia",flag:"dz"}, JOR:{name:"Jordania",flag:"jo"},
+  POR:{name:"Portugal",flag:"pt"}, COL:{name:"Colombia",flag:"co"}, UZB:{name:"Uzbekistán",flag:"uz"}, COD:{name:"RD del Congo",flag:"cd"},
+  ENG:{name:"Inglaterra",flag:"gb-eng"}, CRO:{name:"Croacia",flag:"hr"}, PAN:{name:"Panamá",flag:"pa"}, GHA:{name:"Ghana",flag:"gh"},
+};
+
+const GROUPS = {
+  A:["MEX","RSA","KOR","CZE"], B:["CAN","SUI","QAT","BIH"], C:["BRA","MAR","SCO","HAI"],
+  D:["USA","AUS","PAR","TUR"], E:["GER","ECU","CIV","CUW"], F:["NED","JPN","TUN","SWE"],
+  G:["BEL","IRN","EGY","NZL"], H:["ESP","URU","KSA","CPV"], I:["FRA","SEN","NOR","IRQ"],
+  J:["ARG","AUT","ALG","JOR"], K:["POR","COL","UZB","COD"], L:["ENG","CRO","PAN","GHA"],
+};
+
+const FIXTURE_TEMPLATE = [[0,1],[2,3],[0,2],[3,1],[3,0],[1,2]];
+const GROUP_MATCHES = Object.entries(GROUPS).flatMap(([g,t]) =>
+  FIXTURE_TEMPLATE.map(([a,b],i)=>({ id:`${g}${i}`, group:g, matchday:Math.floor(i/2)+1, home:t[a], away:t[b] }))
+);
+// Selecciones ordenadas alfabéticamente por nombre (para el selector de campeón)
+const TEAMS_ALPHA = Object.keys(TEAMS).sort((a,b)=>TEAMS[a].name.localeCompare(TEAMS[b].name,"es"));
+
+// Candidatos a Bota de Oro ordenados por cuotas de casas de apuestas (FOX/NBC/RotoWire, may-2026).
+// Solo jugadores de selecciones clasificadas. El tercer valor es la cuota americana de referencia.
+const SCORERS = [
+  ["Kylian Mbappé","FRA","+600"],["Harry Kane","ENG","+700"],["Lionel Messi","ARG","+1200"],
+  ["Erling Haaland","NOR","+1400"],["Lamine Yamal","ESP","+1800"],["Mikel Oyarzabal","ESP","+1800"],
+  ["Cristiano Ronaldo","POR","+2000"],["Vinícius Júnior","BRA","+2200"],["Lautaro Martínez","ARG","+2500"],
+  ["Ousmane Dembélé","FRA","+2800"],["Romelu Lukaku","BEL","+3000"],["Raphinha","BRA","+3000"],
+  ["Julián Álvarez","ARG","+3500"],["Richarlison","BRA","+3500"],["Álvaro Morata","ESP","+3500"],
+  ["Cody Gakpo","NED","+4000"],["Ferran Torres","ESP","+4000"],["Bukayo Saka","ENG","+4000"],
+  ["Memphis Depay","NED","+4000"],["Jude Bellingham","ENG","+5000"],["Florian Wirtz","GER","+5000"],
+  ["Bruno Fernandes","POR","+5000"],["Mohamed Salah","EGY","+6600"],["Darwin Núñez","URU","+6600"],
+  ["Son Heung-min","KOR","+8000"],["Christian Pulisic","USA","+8000"],["Rodrygo","BRA","+8000"],
+];
+
+/* ----------------------------- PUNTUACIÓN -------------------------------- */
+const SCORING = {
+  group: 1,
+  knockout: {
+    r32:{sign:2,exact:1,label:"Dieciseisavos",matches:16}, r16:{sign:4,exact:2,label:"Octavos",matches:8},
+    qf:{sign:6,exact:3,label:"Cuartos",matches:4}, sf:{sign:8,exact:4,label:"Semifinales",matches:2},
+    third:{sign:6,exact:3,label:"3.er puesto",matches:1}, final:{sign:12,exact:6,label:"Final",matches:1},
+  },
+  champion: 20, scorer: 15,
+};
+const MAX_GROUP = GROUP_MATCHES.length * SCORING.group;
+const MAX_KO = Object.values(SCORING.knockout).reduce((s,r)=>s+r.matches*(r.sign+r.exact),0);
+const MAX_SPECIAL = SCORING.champion + SCORING.scorer;
+const MAX_TOTAL = MAX_GROUP + MAX_KO + MAX_SPECIAL;
+
+/* ----------------------------- FECHAS / BLOQUEO -------------------------- */
+// Inaugural: 11 jun 2026, 13:00 CDMX (UTC-6) = 19:00 UTC. Bloqueo 24 h antes.
+const KICKOFF = Date.UTC(2026, 5, 11, 19, 0, 0);
+const LOCK_TIME = KICKOFF - 24 * 3600 * 1000; // 10 jun 19:00 UTC
+const ADMIN_PIN = "2605"; // PIN del organizador
+
+/* ----------------------------- AVATARES ---------------------------------- */
+const COLORS = ["#0B1F8F","#E8402E","#FF7A1A","#13A05B","#2FA0E0","#7A3FB5","#C6A700","#0F8A8A"];
+
+/* ----------------------------- STORAGE (Supabase) ------------------------ */
+const KEY = {
+  me:"porra26:me", profiles:"porra26:profiles", results:"porra26:results",
+  config:"porra26:config", picks:(id)=>`porra26:picks:${id}`,
+};
+
+// "me" (el perfil con el que has entrado en ESTE navegador) es local del dispositivo.
+// El resto (perfiles, picks, resultados, config) es COMPARTIDO y vive en Supabase.
+const LOCAL_KEYS = new Set([KEY.me]);
+
+async function sget(k, sh) {
+  if (LOCAL_KEYS.has(k)) {
+    try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch { return null; }
+  }
+  try {
+    const { data, error } = await supabase.from("kv").select("value").eq("key", k).maybeSingle();
+    if (error) { console.error(error); return null; }
+    return data ? data.value : null;   // value es JSONB → ya viene parseado
+  } catch (e) { console.error(e); return null; }
+}
+async function sset(k, v, sh) {
+  if (LOCAL_KEYS.has(k)) {
+    try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; }
+  }
+  try {
+    const { error } = await supabase.from("kv").upsert({ key: k, value: v }, { onConflict: "key" });
+    if (error) { console.error(error); return false; }
+    return true;
+  } catch (e) { console.error(e); return false; }
+}
+async function sdel(k) {
+  if (LOCAL_KEYS.has(k)) { try { localStorage.removeItem(k); } catch {} return; }
+  try { await supabase.from("kv").delete().eq("key", k); } catch (e) { console.error(e); }
+}
+
+async function hashPw(pw){
+  const d=new TextEncoder().encode("porra26§"+pw);
+  const b=await crypto.subtle.digest("SHA-256",d);
+  return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("");
+}
+
+
+/* ----------------------------- ICONOS SVG -------------------------------- */
+const Ball = ({s=22}) => (
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+    <circle cx="12" cy="12" r="9.2"/>
+    <path d="M12 6.2l3.4 2.5-1.3 4H9.9l-1.3-4z" fill="currentColor" stroke="none"/>
+    <path d="M12 6.2V3.2M15.4 8.7l2.8-1M14.1 12.7l1.8 2.4M9.9 12.7l-1.8 2.4M8.6 8.7l-2.8-1"/>
+  </svg>
+);
+const Boot = ({s=22}) => (
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round">
+    <path d="M4 7c0-.8.6-1.4 1.4-1.4H8c.6 0 1 .4 1.1 1l.5 4.1c.1.6.5 1 1.1 1.1l6.2.9c1.6.2 2.9 1.6 2.9 3.2v.7c0 .8-.6 1.4-1.4 1.4H5.4C4.6 19 4 18.4 4 17.6z"/>
+    <path d="M4 16.4h16.3M7 19v1.5M11 19v1.5M15 19v1.5"/>
+  </svg>
+);
+const Trophy = ({s=22}) => (
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round">
+    <path d="M7 4h10v4a5 5 0 0 1-10 0z"/>
+    <path d="M7 5H4.5v1.5A2.5 2.5 0 0 0 7 9M17 5h2.5v1.5A2.5 2.5 0 0 1 17 9"/>
+    <path d="M12 13v3M9 20h6M9.5 20l.5-2.2c.1-.5.5-.8 1-.8h2c.5 0 .9.3 1 .8l.5 2.2"/>
+  </svg>
+);
+const Poll = ({s=22}) => (
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+    <path d="M6 19V11M12 19V5M18 19v-6"/>
+  </svg>
+);
+const ShieldIcon = ({s=22}) => (
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round">
+    <path d="M12 3l7 2.5v5.5c0 4.4-3 7.6-7 9-4-1.4-7-4.6-7-9V5.5z"/><path d="M9.5 12l1.8 1.8L15 9.8"/>
+  </svg>
+);
+const BookIcon = ({s=22}) => (
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round">
+    <path d="M5 4.5h10a2 2 0 0 1 2 2V20a1.5 1.5 0 0 0-1.5-1.5H5z"/><path d="M5 4.5v14M9 9h5M9 12h5"/>
+  </svg>
+);
+// Banderines decorativos
+const Bunting = () => (
+  <svg viewBox="0 0 600 34" preserveAspectRatio="none" style={{ width:"100%", height:30, display:"block" }} aria-hidden>
+    <path d="M0 4 Q300 18 600 4" fill="none" stroke="rgba(255,255,255,.45)" strokeWidth="1.5"/>
+    {Array.from({length:14}).map((_,i)=>{
+      const x = 14 + i*42, dip = Math.sin((x/600)*Math.PI)*12;
+      const cols = ["#E8402E","#FF7A1A","#C6F23A","#13A05B","#2FA0E0","#0B1F8F"];
+      return <polygon key={i} points={`${x},${5+dip} ${x+26},${5+dip} ${x+13},${24+dip}`} fill={cols[i%cols.length]} opacity="0.92"/>;
+    })}
+  </svg>
+);
+
+// Emblema ORIGINAL de la porra — inspirado en la estética 2026 (arcos concéntricos
+// multicolor + tipografía rotunda), sin reproducir el emblema/trofeo oficiales de la FIFA.
+const Crest = ({ s=96 }) => (
+  <svg width={s} height={s} viewBox="0 0 120 120" aria-hidden>
+    <defs>
+      <clipPath id="crestClip"><path d="M60 4 L108 18 V58 C108 88 87 108 60 116 C33 108 12 88 12 58 V18 Z"/></clipPath>
+    </defs>
+    <g clipPath="url(#crestClip)">
+      {/* fondo de arcos concéntricos al estilo 2026 */}
+      <rect x="0" y="0" width="120" height="120" fill="#0B1F8F"/>
+      {[
+        {r:60,c:"#E8402E"},{r:52,c:"#FF7A1A"},{r:44,c:"#C6F23A"},
+        {r:36,c:"#13A05B"},{r:28,c:"#2FA0E0"},{r:20,c:"#0B1F8F"},
+      ].map((a,i)=>(<circle key={i} cx="60" cy="62" r={a.r} fill={a.c}/>))}
+      <circle cx="60" cy="62" r="14" fill="#FBF8F1"/>
+      {/* balón estilizado en el centro */}
+      <g transform="translate(60 62)">
+        <path d="M0 -8 L7.6 -2.6 L4.7 6.4 L-4.7 6.4 L-7.6 -2.6 Z" fill="#0B1F8F"/>
+      </g>
+    </g>
+    {/* marco del escudo */}
+    <path d="M60 4 L108 18 V58 C108 88 87 108 60 116 C33 108 12 88 12 58 V18 Z" fill="none" stroke="#0B1F8F" strokeWidth="4"/>
+    <path d="M60 4 L108 18 V58 C108 88 87 108 60 116 C33 108 12 88 12 58 V18 Z" fill="none" stroke="#FBF8F1" strokeWidth="1.5"/>
+  </svg>
+);
+
+
+
+/* ----------------------------- BANDERA ----------------------------------- */
+function Flag({ code, size=28 }) {
+  const t = TEAMS[code];
+  const [err, setErr] = useState(false);
+  if (!t) return null;
+  return (
+    <span className="flag" style={{ width:size, height:size }} title={t.name}>
+      {err
+        ? <span className="flag-fb" style={{ fontSize: size*0.34 }}>{code}</span>
+        : <img src={`https://flagcdn.com/w160/${t.flag}.png`} alt={t.name} onError={()=>setErr(true)} loading="lazy" />}
+    </span>
+  );
+}
+
+/* ----------------------------- CUENTA ATRÁS ------------------------------ */
+function useNow(intervalMs = 30000) {
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => { const id = setInterval(() => setNow(Date.now()), intervalMs); return () => clearInterval(id); }, [intervalMs]);
+  return now;
+}
+function fmtCountdown(ms) {
+  if (ms <= 0) return "0";
+  const d = Math.floor(ms/86400000), h = Math.floor(ms%86400000/3600000), m = Math.floor(ms%3600000/60000);
+  return `${d}d ${h}h ${m}m`;
+}
+
+/* ----------------------------- ESTILOS ----------------------------------- */
+function Styles() {
+  return (
+    <style>{`
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Archivo+Black&family=Space+Grotesk:wght@500;600;700&display=swap');
+.porra *{box-sizing:border-box}
+.porra{
+  /* Paleta inspirada en la identidad multicolor del Mundial 2026 */
+  --cobalt:#0B1F8F;--cobalt-d:#081569;--red:#E8402E;--orange:#FF7A1A;
+  --lime:#C6F23A;--green:#13A05B;--sky:#2FA0E0;--gold:#F2B705;
+  --paper:#F2F4FB;--paper2:#FFFFFF;--card:#FFFFFF;--ink:#10142E;--ink2:#5B5F76;
+  --line:#DEE2F2;--line2:#EBEEF8;
+  /* aliases usados por componentes existentes */
+  --clay:var(--cobalt);--clay-d:var(--cobalt-d);--clay-soft:#E6EBFF;--blue:var(--sky);
+  font-family:'Archivo',system-ui,sans-serif;color:var(--ink);
+  min-height:100vh;line-height:1.5;-webkit-font-smoothing:antialiased;position:relative;
+  background-color:var(--paper);
+  background-image:
+    radial-gradient(circle at 8% -5%, rgba(232,64,46,.10), transparent 32%),
+    radial-gradient(circle at 95% 4%, rgba(47,160,224,.12), transparent 34%),
+    radial-gradient(circle at 50% 120%, rgba(19,160,91,.10), transparent 40%);
+}
+.porra h1,.porra h2,.porra h3,.porra .serif{font-family:'Space Grotesk','Archivo',sans-serif;letter-spacing:-.01em}
+.porra button{font-family:inherit;cursor:pointer}
+.wrap{max-width:880px;margin:0 auto;padding:0 18px 90px}
+
+/* flag badge */
+.flag{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;overflow:hidden;flex:none;
+  background:#fff;box-shadow:0 1px 3px rgba(16,20,46,.18), inset 0 0 0 1.5px rgba(255,255,255,.9), 0 0 0 1px var(--line)}
+.flag img{width:100%;height:100%;object-fit:cover}
+.flag-fb{font-weight:800;color:var(--ink2);letter-spacing:-.02em;font-family:'Archivo'}
+
+/* topbar */
+.topbar{position:sticky;top:0;z-index:30;background:rgba(242,244,251,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.topbar-in{max-width:880px;margin:0 auto;padding:13px 18px;display:flex;align-items:center;gap:14px}
+.brand{display:flex;align-items:center;gap:11px}
+.brand .cup{color:var(--clay)}
+.brand h1{font-size:19px;font-weight:600;margin:0;letter-spacing:-.01em}
+.brand small{color:var(--ink2);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:700}
+.me-chip{margin-left:auto;display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px 6px 5px 12px;font-weight:600;font-size:13.5px}
+.me-chip button{border:none;background:none;color:var(--ink2);font-size:12px;padding:4px 8px;border-radius:999px}
+.me-chip button:hover{background:var(--clay-soft);color:var(--clay-d)}
+.av{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:15px;color:#fff;flex:none}
+.tabs{display:flex;gap:2px;max-width:880px;margin:0 auto;padding:6px 12px 0;overflow-x:auto;position:relative}
+.tabs::after{content:"";position:absolute;left:12px;right:12px;bottom:0;height:3px;border-radius:3px;
+  background:linear-gradient(90deg,var(--red),var(--orange),var(--lime),var(--green),var(--sky));opacity:.35}
+.tab{border:none;background:none;padding:9px 13px;border-radius:10px 10px 0 0;font-weight:600;font-size:14px;color:var(--ink2);white-space:nowrap;display:flex;align-items:center;gap:7px;position:relative;z-index:1}
+.tab svg{opacity:.7}
+.tab.on{color:var(--clay-d);background:var(--paper2);box-shadow:inset 0 -3px 0 0 var(--cobalt)}
+.tab.on svg{opacity:1}
+.tab:hover:not(.on){color:var(--ink)}
+
+/* generic */
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px}
+.section-h{margin:24px 0 4px}
+.section-h .ttl{display:flex;align-items:center;gap:10px}
+.section-h .ttl .ic{color:var(--clay);background:var(--clay-soft);border-radius:10px;width:36px;height:36px;display:grid;place-items:center;flex:none}
+.section-h h2{font-size:23px;margin:0;font-weight:600;letter-spacing:-.015em}
+.section-h p{margin:5px 0 0;color:var(--ink2);font-size:14px}
+
+.hero{margin-top:16px;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:var(--cobalt);color:#fff;position:relative}
+.hero::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(circle at 88% 120%, rgba(232,64,46,.55), transparent 38%),
+    radial-gradient(circle at 12% 130%, rgba(198,242,58,.4), transparent 40%);}
+.hero-body{padding:8px 22px 20px;position:relative;z-index:1}
+.hero h2{font-size:25px;margin:8px 0 2px;font-weight:700;letter-spacing:-.02em;color:#fff}
+.hero p{margin:0;color:rgba(255,255,255,.78);font-size:14px}
+.countdown{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);border-radius:13px;padding:11px 15px;backdrop-filter:blur(4px)}
+.countdown .big{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;color:var(--lime);font-variant-numeric:tabular-nums}
+.countdown>div div:first-child{color:rgba(255,255,255,.7)!important}
+
+.banner{margin-top:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--clay-soft);border:1px solid #C9D4FF;border-radius:14px;padding:12px 16px;font-size:14px}
+.banner b{color:var(--clay-d)}
+.banner.flat{background:var(--paper2);border-color:var(--line)}
+.banner.locked{background:#F1E9DC;border-color:var(--line)}
+
+.prog-track{height:9px;background:var(--line2);border-radius:99px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--clay),#E0876A);border-radius:99px;transition:width .4s ease}
+
+.gnav{display:flex;flex-wrap:wrap;gap:7px;margin:16px 0 4px}
+.gbtn{width:42px;height:42px;border-radius:11px;border:1px solid var(--line);background:var(--card);font-weight:700;font-size:15px;color:var(--ink);position:relative}
+.gbtn.on{background:var(--clay);border-color:var(--clay);color:#fff}
+.gbtn .dot{position:absolute;top:-3px;right:-3px;width:13px;height:13px;border-radius:50%;background:var(--green);border:2px solid var(--paper)}
+.gbtn.on .dot{border-color:var(--clay)}
+
+.glabel{display:flex;align-items:center;gap:10px;margin:20px 2px 12px}
+.glabel .badge{background:var(--ink);color:var(--paper);width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-weight:700;font-family:'Space Grotesk',sans-serif}
+.glabel h3{margin:0;font-size:19px;font-weight:600}
+.glabel .sp{margin-left:auto;color:var(--ink2);font-size:13px}
+
+.gteams{display:flex;gap:8px;flex-wrap:wrap;margin:0 2px 14px}
+.gteam{display:flex;align-items:center;gap:7px;background:var(--paper2);border:1px solid var(--line2);border-radius:10px;padding:5px 11px 5px 6px;font-size:13px;font-weight:600}
+
+.match{padding:13px 14px;border-bottom:1px solid var(--line2)}
+.match:last-child{border-bottom:none}
+.match-md{font-size:11px;color:var(--ink2);font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:9px;display:flex;align-items:center;gap:6px}
+.duel{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px}
+.side{display:flex;align-items:center;gap:10px;min-width:0}
+.side.away{flex-direction:row-reverse;text-align:right}
+.side .nm{font-weight:600;font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.picks{display:flex;gap:6px}
+.pick{width:46px;height:40px;border-radius:11px;border:1.5px solid var(--line);background:var(--paper2);font-weight:700;font-size:15px;color:var(--ink2);transition:transform .08s,background .15s}
+.pick:hover:not(:disabled){border-color:var(--clay);color:var(--clay-d)}
+.pick.sel{background:var(--clay);border-color:var(--clay);color:#fff;box-shadow:0 3px 10px rgba(196,90,59,.32)}
+.pick:active:not(:disabled){transform:scale(.94)}
+.pick.win{box-shadow:inset 0 0 0 2px var(--green)}
+.pick:disabled{opacity:.6;cursor:default}
+.result-tag{text-align:center;font-size:11.5px;color:var(--ink2);margin-top:8px}
+.result-tag b.ok{color:var(--green)} .result-tag b.no{color:var(--clay-d)}
+
+/* poll bars */
+.poll{display:grid;grid-template-columns:28px 1fr 46px;align-items:center;gap:9px;margin-top:7px}
+.poll .lab{font-weight:700;text-align:center;color:var(--ink2)}
+.poll .bar{height:22px;background:var(--line2);border-radius:7px;overflow:hidden}
+.poll .fill{height:100%;border-radius:7px;transition:width .5s}
+.poll .pc{text-align:right;font-weight:700;font-size:13px;font-variant-numeric:tabular-nums}
+.poll-n{text-align:center;font-size:11.5px;color:var(--ink2);margin-top:6px}
+
+.team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.team-opt{display:flex;align-items:center;gap:9px;padding:9px 11px;border:1.5px solid var(--line);border-radius:12px;background:var(--card);font-weight:600;font-size:13.5px;text-align:left}
+.team-opt:hover:not(:disabled){border-color:var(--clay)}
+.team-opt.sel{border-color:var(--clay);background:var(--clay-soft);color:var(--clay-d)}
+.team-opt:disabled{cursor:default}
+select,input.txt{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:12px;background:var(--card);font-family:inherit;font-size:14.5px;color:var(--ink)}
+select:focus,input.txt:focus{outline:none;border-color:var(--clay)}
+
+.lb-row{display:flex;align-items:center;gap:13px;padding:13px 16px;border-bottom:1px solid var(--line2)}
+.lb-row:last-child{border-bottom:none}
+.lb-row.me{background:var(--clay-soft)}
+.rank{width:30px;text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:19px;color:var(--ink2)}
+.lb-name{font-weight:600;font-size:15px}
+.lb-sub{font-size:12px;color:var(--ink2)}
+.lb-pts{margin-left:auto;text-align:right}
+.lb-pts b{font-family:'Space Grotesk',sans-serif;font-size:21px;font-weight:600}
+.lb-pts span{display:block;font-size:11px;color:var(--ink2)}
+
+.rtable{width:100%;border-collapse:collapse;font-size:14px}
+.rtable th,.rtable td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line2)}
+.rtable th{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink2)}
+.rtable td.n{text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
+.rtable tr.tot td{border-top:2px solid var(--line);font-weight:700}
+.pill{display:inline-block;background:var(--clay-soft);color:var(--clay-d);font-weight:700;border-radius:8px;padding:2px 8px;font-size:13px}
+
+.btn{border:none;background:var(--clay);color:#fff;font-weight:600;padding:12px 20px;border-radius:12px;font-size:15px}
+.btn:hover{background:var(--clay-d)} .btn.ghost{background:var(--card);color:var(--ink);border:1.5px solid var(--line)}
+.btn.ghost:hover{border-color:var(--clay);color:var(--clay-d)} .btn:disabled{opacity:.5;cursor:default}
+.seg{display:flex;gap:4px;background:var(--paper2);border:1px solid var(--line);border-radius:12px;padding:4px;margin-top:14px}
+.seg button{flex:1;border:none;background:none;padding:9px;border-radius:9px;font-weight:600;font-size:13.5px;color:var(--ink2)}
+.seg button.on{background:var(--card);color:var(--clay-d);box-shadow:0 1px 3px rgba(0,0,0,.07)}
+
+.onb{max-width:460px;margin:5vh auto 0;padding:0 18px}
+.onb .card{padding:26px 24px}
+.av-pick{display:flex;flex-wrap:wrap;gap:8px}
+.av-preview{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;font-size:24px;color:#fff;flex:none;box-shadow:0 2px 6px rgba(16,20,46,.18)}
+.av-opt{width:42px;height:42px;border-radius:11px;border:1.5px solid var(--line);background:var(--paper2);font-size:20px;display:grid;place-items:center}
+.av-opt.sel{border-color:var(--clay);background:var(--clay-soft)}
+.col-pick{display:flex;gap:8px}
+.col-opt{width:30px;height:30px;border-radius:50%;border:2px solid transparent}
+.col-opt.sel{border-color:var(--ink)}
+.label{font-weight:600;font-size:13px;margin:18px 0 7px;display:block}
+.choose-row{display:flex;align-items:center;gap:11px;width:100%;padding:13px 14px;border:1.5px solid var(--line);border-radius:13px;background:var(--card);text-align:left;font-weight:600}
+.choose-row:hover{border-color:var(--clay)}
+.note{font-size:12.5px;color:var(--ink2)}
+.empty{text-align:center;padding:40px 20px;color:var(--ink2)}
+.loadwrap{display:grid;place-items:center;height:70vh;color:var(--ink2)}
+.lock-badge{display:inline-flex;align-items:center;gap:6px;background:var(--line2);color:var(--ink2);font-size:12px;font-weight:700;padding:4px 10px;border-radius:99px}
+.err{color:var(--clay-d);font-size:13px;font-weight:600;margin-top:8px}
+
+/* ===================== OPTIMIZACIÓN MÓVIL ===================== */
+/* Barra de navegación inferior fija (solo móvil) */
+.bottomnav{display:none}
+@media(max-width:680px){
+  .porra{ min-height:100dvh; }
+  .wrap{ padding:0 14px calc(78px + env(safe-area-inset-bottom)); }
+
+  /* Evitar zoom automático de iOS al enfocar inputs: fuente >=16px */
+  select, input.txt, .me-chip{ font-size:16px; }
+
+  /* Cabecera más compacta */
+  .topbar-in{ padding:11px 14px; gap:10px; }
+  .brand h1{ font-size:16px; }
+  .brand small{ font-size:9.5px; }
+  .me-chip{ padding:5px 6px 5px 10px; font-size:13px; max-width:46vw; overflow:hidden; }
+  .me-chip > :not(.av):not(button){ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+  /* Ocultar las pestañas superiores: usamos la barra inferior */
+  .tabs{ display:none; }
+
+  /* Barra inferior tipo app */
+  .bottomnav{
+    display:flex; position:fixed; left:0; right:0; bottom:0; z-index:40;
+    background:rgba(255,255,255,.96); backdrop-filter:blur(12px);
+    border-top:1px solid var(--line);
+    padding:6px 6px calc(6px + env(safe-area-inset-bottom));
+    justify-content:space-around;
+  }
+  .bottomnav button{
+    border:none; background:none; flex:1; display:flex; flex-direction:column;
+    align-items:center; gap:3px; padding:6px 2px; color:var(--ink2);
+    font-size:10.5px; font-weight:600; border-radius:12px; min-height:52px;
+  }
+  .bottomnav button.on{ color:var(--cobalt); }
+  .bottomnav button.on .bn-ic{ background:var(--clay-soft); }
+  .bn-ic{ width:38px; height:30px; border-radius:10px; display:grid; place-items:center; transition:background .15s; }
+
+  /* Toques más grandes: botones de pronóstico cómodos para el pulgar */
+  .duel{ grid-template-columns:1fr; gap:9px; justify-items:stretch; }
+  .side{ justify-content:flex-start; gap:11px; }
+  .side .nm{ font-size:15px; }
+  .duel .side:first-child{ order:1; }
+  .duel .side.away{ order:2; flex-direction:row; text-align:left; }
+  .duel .picks{ order:3; justify-content:space-between; gap:8px; margin-top:4px; }
+  .pick{ flex:1; height:50px; font-size:18px; }
+
+  /* En el sondeo, el cruce local–vs–visitante se mantiene en fila */
+  .duel-poll{ grid-template-columns:1fr auto 1fr; gap:8px; }
+  .duel-poll .side{ order:0; }
+  .duel-poll .side.away{ order:0; flex-direction:row-reverse; text-align:right; }
+  .duel-poll .nm{ font-size:13px; }
+
+  /* Insignias de grupo más tocables */
+  .gbtn{ width:46px; height:46px; font-size:16px; }
+
+  /* Selector de campeón: dos columnas claras */
+  .team-grid{ grid-template-columns:1fr 1fr; gap:8px; }
+  .team-opt{ padding:11px 10px; }
+
+  /* Encabezados de sección un poco menores */
+  .section-h h2{ font-size:21px; }
+  .hero h2{ font-size:22px; }
+
+  /* Botones de acción a lo ancho y cómodos */
+  .btn{ padding:13px 18px; }
+
+  /* Segmented control del organizador: permite scroll si no cabe */
+  .seg{ overflow-x:auto; }
+  .seg button{ white-space:nowrap; min-height:42px; }
+
+  /* Filas de clasificación/sondeo con más aire */
+  .lb-row{ padding:14px 14px; }
+}
+
+/* Pantallas muy estrechas */
+@media(max-width:380px){
+  .bottomnav button{ font-size:9.5px; }
+  .bn-ic{ width:34px; }
+  .team-grid{ grid-template-columns:1fr; }
+}
+`}</style>
+  );
+}
+
+/* =============================== ONBOARDING ============================== */
+function Onboarding({ profiles, onCreate, onLogin, onAdmin }) {
+  const [mode, setMode] = useState("choose"); // choose | create | login
+  const [name, setName] = useState("");
+  const [av, setAv] = useState("⚽");
+  const [col, setCol] = useState(COLORS[0]);
+  const [pw, setPw] = useState("");
+  const [pw2, setPw2] = useState("");
+  const [err, setErr] = useState("");
+  const [loginId, setLoginId] = useState("");
+  const [loginPw, setLoginPw] = useState("");
+
+  const Header = (
+    <>
+      <div className="hero" style={{ marginTop: 0 }}>
+        <Bunting />
+        <div className="hero-body" style={{ textAlign: "center" }}>
+          <Crest s={92} />
+          <h2 style={{ fontSize: 28, marginTop: 4 }}>Porra del Mundial 2026</h2>
+          <p>Estados Unidos · México · Canadá</p>
+        </div>
+      </div>
+    </>
+  );
+
+  if (mode === "choose") {
+    return (
+      <div className="onb">
+        {Header}
+        <div className="card" style={{ marginTop: 16, display: "grid", gap: 10 }}>
+          <button className="choose-row" onClick={() => setMode("create")}>
+            <span className="av" style={{ background: "var(--clay)" }}>＋</span>
+            <span>Crear un perfil nuevo<br /><span className="note">Únete a la porra con tu nombre y contraseña</span></span>
+          </button>
+          <button className="choose-row" onClick={() => setMode("login")} disabled={profiles.length === 0}>
+            <span className="av" style={{ background: "var(--blue)" }}>↩</span>
+            <span>Acceder a mi perfil<br /><span className="note">{profiles.length ? "Vuelve a entrar para editar tu selección" : "Aún no hay perfiles creados"}</span></span>
+          </button>
+          <button className="choose-row" onClick={() => setMode("admin")} style={{ borderStyle: "dashed" }}>
+            <span className="av" style={{ background: "var(--ink)" }}>🛡️</span>
+            <span>Entrar como organizador<br /><span className="note">Gestiona resultados, cuentas y selecciones (requiere PIN)</span></span>
+          </button>
+        </div>
+        <p className="note" style={{ textAlign: "center", marginTop: 14 }}>Comparte este enlace con tu peña: todos compiten en la misma clasificación.</p>
+      </div>
+    );
+  }
+
+  if (mode === "admin") {
+    return (
+      <div className="onb">
+        {Header}
+        <div className="card" style={{ marginTop: 16 }}>
+          <label className="label" style={{ marginTop: 0 }}>PIN del organizador</label>
+          <input className="txt" type="password" inputMode="numeric" value={loginPw} onChange={(e) => setLoginPw(e.target.value)} placeholder="••••"
+            onKeyDown={(e) => { if (e.key === "Enter") { if (loginPw === ADMIN_PIN) { setErr(""); onAdmin(); } else setErr("PIN incorrecto."); } }} />
+          {err && <div className="err">{err}</div>}
+          <button className="btn" style={{ width: "100%", marginTop: 16 }} disabled={loginPw.length < 3}
+            onClick={() => { if (loginPw === ADMIN_PIN) { setErr(""); onAdmin(); } else setErr("PIN incorrecto."); }}>
+            Entrar al panel</button>
+          <button className="btn ghost" style={{ width: "100%", marginTop: 8 }} onClick={() => { setErr(""); setLoginPw(""); setMode("choose"); }}>Volver</button>
+        </div>
+      </div>
+    );
+  }
+
+  if (mode === "create") {
+    return (
+      <div className="onb">
+        {Header}
+        <div className="card" style={{ marginTop: 16 }}>
+          <label className="label" style={{ marginTop: 0 }}>Tu nombre</label>
+          <input className="txt" value={name} maxLength={20} onChange={(e) => setName(e.target.value)} placeholder="Cómo apareces en la clasificación" />
+          <label className="label">Tu emoji de avatar</label>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div className="av-preview" style={{ background: col }}>{av || "🙂"}</div>
+            <input
+              className="txt" value={av} maxLength={4} style={{ flex: 1 }}
+              onChange={(e) => setAv([...e.target.value].slice(0, 1).join(""))}
+              placeholder="Pega o escribe un emoji (ej. 🦁, ⚽, 🔥)"
+            />
+          </div>
+          <p className="note" style={{ marginTop: 6 }}>Usa el teclado de emojis de tu dispositivo y elige el que quieras.</p>
+          <label className="label">Color</label>
+          <div className="col-pick">{COLORS.map((c) => <button key={c} className={`col-opt ${col === c ? "sel" : ""}`} style={{ background: c }} onClick={() => setCol(c)} />)}</div>
+          <label className="label">Contraseña</label>
+          <input className="txt" type="password" value={pw} onChange={(e) => setPw(e.target.value)} placeholder="Para volver a entrar en el futuro" />
+          <input className="txt" type="password" style={{ marginTop: 8 }} value={pw2} onChange={(e) => setPw2(e.target.value)} placeholder="Repite la contraseña" />
+          {err && <div className="err">{err}</div>}
+          <button className="btn" style={{ width: "100%", marginTop: 20 }}
+            onClick={async () => {
+              if (!name.trim()) return setErr("Pon un nombre.");
+              if (profiles.some((p) => p.name.toLowerCase() === name.trim().toLowerCase())) return setErr("Ya existe un perfil con ese nombre.");
+              if (pw.length < 4) return setErr("La contraseña debe tener al menos 4 caracteres.");
+              if (pw !== pw2) return setErr("Las contraseñas no coinciden.");
+              setErr(""); await onCreate({ name: name.trim(), avatar: av || "🙂", color: col, pwHash: await hashPw(pw) });
+            }}>Crear perfil y entrar</button>
+          <button className="btn ghost" style={{ width: "100%", marginTop: 8 }} onClick={() => { setErr(""); setMode("choose"); }}>Volver</button>
+        </div>
+      </div>
+    );
+  }
+
+  // login
+  return (
+    <div className="onb">
+      {Header}
+      <div className="card" style={{ marginTop: 16 }}>
+        <label className="label" style={{ marginTop: 0 }}>Elige tu perfil</label>
+        <select value={loginId} onChange={(e) => setLoginId(e.target.value)}>
+          <option value="" disabled>Selecciona…</option>
+          {profiles.map((p) => <option key={p.id} value={p.id}>{p.avatar} {p.name}</option>)}
+        </select>
+        <label className="label">Contraseña</label>
+        <input className="txt" type="password" value={loginPw} onChange={(e) => setLoginPw(e.target.value)} placeholder="Tu contraseña" />
+        {err && <div className="err">{err}</div>}
+        <button className="btn" style={{ width: "100%", marginTop: 20 }} disabled={!loginId || !loginPw}
+          onClick={async () => {
+            const prof = profiles.find((p) => p.id === loginId);
+            if (!prof) return;
+            const ok = prof.pwHash ? (await hashPw(loginPw)) === prof.pwHash : true;
+            if (!ok) return setErr("Contraseña incorrecta.");
+            setErr(""); onLogin(prof);
+          }}>Entrar</button>
+        <button className="btn ghost" style={{ width: "100%", marginTop: 8 }} onClick={() => { setErr(""); setMode("choose"); }}>Volver</button>
+      </div>
+    </div>
+  );
+}
+
+/* ============================== HERO + COUNTDOWN ========================= */
+function HeroCountdown({ now, timeLocked }) {
+  const toLock = LOCK_TIME - now, toKick = KICKOFF - now;
+  return (
+    <div className="hero">
+      <Bunting />
+      <div className="hero-body" style={{ display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
+        <Crest s={72} />
+        <div style={{ flex: 1, minWidth: 220 }}>
+        <h2>El Mundial está al caer</h2>
+        <p>11 de junio – 19 de julio · 48 selecciones · 12 grupos</p>
+        <div className="countdown">
+          {timeLocked ? (
+            <>
+              <span style={{ color: "var(--clay)", display: "inline-flex" }}><Ball s={22} /></span>
+              <div><div style={{ fontSize: 12.5, color: "var(--ink2)", fontWeight: 600 }}>Los pronósticos están cerrados</div>
+                <div className="big">{toKick > 0 ? `Saque inicial en ${fmtCountdown(toKick)}` : "¡El torneo ha comenzado!"}</div></div>
+            </>
+          ) : (
+            <>
+              <span style={{ color: "var(--clay)", display: "inline-flex" }}>🔒</span>
+              <div><div style={{ fontSize: 12.5, color: "var(--ink2)", fontWeight: 600 }}>Tiempo para cerrar y editar tu porra</div>
+                <div className="big">{fmtCountdown(toLock)}</div></div>
+            </>
+          )}
+        </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============================== FASE DE GRUPOS =========================== */
+function GroupsView({ picks, setPick, results, locked, now, timeLocked }) {
+  const [g, setG] = useState("A");
+  const groupMatches = GROUP_MATCHES.filter((m) => m.group === g);
+  const done = GROUP_MATCHES.filter((m) => picks.groups?.[m.id]).length;
+  const groupDone = (gl) => GROUP_MATCHES.filter((m) => m.group === gl && picks.groups?.[m.id]).length === 6;
+  return (
+    <div>
+      <HeroCountdown now={now} timeLocked={timeLocked} />
+      <div className="section-h"><div className="ttl"><span className="ic"><Ball /></span><h2>Fase de grupos</h2></div>
+        <p>Marca <b>1</b> (gana el local), <b>X</b> (empate) o <b>2</b> (gana el visitante) en cada partido.</p></div>
+
+      {locked && <div className="banner locked">🔒 <b>Pronósticos cerrados.</b> Ya no se pueden modificar las selecciones.</div>}
+
+      <div className="card" style={{ padding: "15px 16px", marginTop: 14 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5, fontWeight: 600, marginBottom: 8 }}>
+          <span>Tu progreso</span><span>{done} / {GROUP_MATCHES.length} partidos</span></div>
+        <div className="prog-track"><div className="prog-fill" style={{ width: `${(done / GROUP_MATCHES.length) * 100}%` }} /></div>
+      </div>
+
+      <div className="gnav">{Object.keys(GROUPS).map((gl) => (
+        <button key={gl} className={`gbtn ${g === gl ? "on" : ""}`} onClick={() => setG(gl)}>{gl}{groupDone(gl) && <span className="dot" />}</button>))}
+      </div>
+
+      <div className="glabel"><span className="badge">{g}</span><h3>Grupo {g}</h3></div>
+      <div className="gteams">{GROUPS[g].map((c) => <div className="gteam" key={c}><Flag code={c} size={24} /> {TEAMS[c].name}</div>)}</div>
+
+      <div className="card">
+        {groupMatches.map((m) => {
+          const sel = picks.groups?.[m.id], res = results?.groups?.[m.id];
+          return (
+            <div className="match" key={m.id}>
+              <div className="match-md"><Ball s={13} /> Jornada {m.matchday}</div>
+              <div className="duel">
+                <div className="side"><Flag code={m.home} /><span className="nm">{TEAMS[m.home].name}</span></div>
+                <div className="picks">{["1", "X", "2"].map((o) => (
+                  <button key={o} className={`pick ${sel === o ? "sel" : ""} ${res === o ? "win" : ""}`} disabled={locked} onClick={() => setPick(m.id, o)}>{o}</button>))}
+                </div>
+                <div className="side away"><Flag code={m.away} /><span className="nm">{TEAMS[m.away].name}</span></div>
+              </div>
+              {res && <div className="result-tag">Resultado oficial: <b>{res}</b> · {sel ? (sel === res ? <b className="ok">+{SCORING.group} pts</b> : <b className="no">0 pts</b>) : "sin pronóstico"}</div>}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* =============================== APUESTAS =============================== */
+function SpecialsView({ picks, setChampion, setScorer, results, locked }) {
+  const allTeams = TEAMS_ALPHA;
+  const isOther = picks.scorer !== undefined && picks.scorer !== "" && !SCORERS.some(([n]) => n === picks.scorer);
+  return (
+    <div>
+      <div className="section-h"><div className="ttl"><span className="ic"><Trophy /></span><h2>Apuestas especiales</h2></div>
+        <p>Las que más deciden al final: <b>{SCORING.champion} pts</b> el campeón y <b>{SCORING.scorer} pts</b> el goleador.</p></div>
+
+      {locked && <div className="banner locked">🔒 <b>Apuestas cerradas.</b></div>}
+
+      <div className="glabel"><span className="badge"><Trophy s={18} /></span><h3>Campeón del Mundial</h3>
+        {results?.champion && <span className="sp">Oficial: <b>{TEAMS[results.champion]?.name}</b></span>}</div>
+      <div className="team-grid">{allTeams.map((c) => (
+        <button key={c} className={`team-opt ${picks.champion === c ? "sel" : ""}`} disabled={locked} onClick={() => setChampion(c)}><Flag code={c} size={24} /> {TEAMS[c].name}</button>))}
+      </div>
+
+      <div className="glabel" style={{ marginTop: 28 }}><span className="badge"><Boot s={17} /></span><h3>Máximo goleador</h3>
+        <span className="sp">orden por cuotas de apuestas</span></div>
+      <div className="card" style={{ padding: 16 }}>
+        <select value={isOther ? "__other" : (picks.scorer || "")} disabled={locked}
+          onChange={(e) => setScorer(e.target.value === "__other" ? " " : e.target.value)}>
+          <option value="" disabled>Elige un jugador…</option>
+          {SCORERS.map(([n, t]) => <option key={n} value={n}>{n} · {TEAMS[t].name}</option>)}
+          <option value="__other">Otro (escribir nombre)…</option>
+        </select>
+        <p className="note" style={{ marginTop: 10 }}>Lista ordenada de mayor a menor favorito según las cuotas actuales de las casas de apuestas (mayo 2026): cuanto más arriba, más favorito.</p>
+        {isOther && <input className="txt" style={{ marginTop: 10 }} placeholder="Nombre del goleador" value={picks.scorer.trimStart()} disabled={locked} onChange={(e) => setScorer(e.target.value)} />}
+        {results?.scorer && <p className="note" style={{ marginTop: 12 }}>Bota de Oro oficial: <b>{results.scorer}</b></p>}
+      </div>
+    </div>
+  );
+}
+
+/* =============================== SONDEO ================================= */
+function pct(n, total) { return total ? Math.round((n / total) * 100) : 0; }
+function PollView({ allPicks, loading, onRefresh }) {
+  const [g, setG] = useState("A");
+  const voters = Object.values(allPicks);
+  const groupMatches = GROUP_MATCHES.filter((m) => m.group === g);
+
+  const champTally = useMemo(() => {
+    const t = {}; let tot = 0;
+    voters.forEach((p) => { if (p?.champion) { t[p.champion] = (t[p.champion] || 0) + 1; tot++; } });
+    return { rows: Object.entries(t).sort((a, b) => b[1] - a[1]).slice(0, 8), tot };
+  }, [allPicks]);
+  const scorerTally = useMemo(() => {
+    const t = {}; let tot = 0;
+    voters.forEach((p) => { const s = p?.scorer?.trim(); if (s) { t[s] = (t[s] || 0) + 1; tot++; } });
+    return { rows: Object.entries(t).sort((a, b) => b[1] - a[1]).slice(0, 8), tot };
+  }, [allPicks]);
+
+  const COL = { "1": "var(--blue)", "X": "var(--ink2)", "2": "var(--green)" };
+
+  return (
+    <div>
+      <div className="section-h" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+        <div><div className="ttl"><span className="ic"><Poll /></span><h2>Sondeo de la peña</h2></div>
+          <p>Qué ha votado todo el mundo, de forma anónima.</p></div>
+        <button className="btn ghost" style={{ padding: "8px 14px", fontSize: 13 }} onClick={onRefresh} disabled={loading}>{loading ? "…" : "↻"}</button>
+      </div>
+
+      <div className="banner flat">👥 {voters.length} participante{voters.length === 1 ? "" : "s"} en la porra.</div>
+
+      <div className="gnav">{Object.keys(GROUPS).map((gl) => <button key={gl} className={`gbtn ${g === gl ? "on" : ""}`} onClick={() => setG(gl)}>{gl}</button>)}</div>
+      <div className="glabel"><span className="badge">{g}</span><h3>Grupo {g}</h3></div>
+
+      <div className="card">
+        {groupMatches.map((m) => {
+          let c = { "1": 0, "X": 0, "2": 0 }, tot = 0;
+          voters.forEach((p) => { const v = p?.groups?.[m.id]; if (v) { c[v]++; tot++; } });
+          return (
+            <div className="match" key={m.id}>
+              <div className="duel duel-poll">
+                <div className="side"><Flag code={m.home} size={24} /><span className="nm">{TEAMS[m.home].name}</span></div>
+                <span className="note" style={{ fontWeight: 700 }}>vs</span>
+                <div className="side away"><Flag code={m.away} size={24} /><span className="nm">{TEAMS[m.away].name}</span></div>
+              </div>
+              {["1", "X", "2"].map((o) => (
+                <div className="poll" key={o}>
+                  <span className="lab">{o}</span>
+                  <div className="bar"><div className="fill" style={{ width: `${pct(c[o], tot)}%`, background: COL[o] }} /></div>
+                  <span className="pc">{pct(c[o], tot)}%</span>
+                </div>
+              ))}
+              <div className="poll-n">{tot} voto{tot === 1 ? "" : "s"}</div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="glabel" style={{ marginTop: 26 }}><span className="badge"><Trophy s={18} /></span><h3>Favoritos al título</h3></div>
+      <div className="card" style={{ padding: "14px 16px" }}>
+        {champTally.rows.length === 0 ? <div className="empty" style={{ padding: 18 }}>Nadie ha votado aún.</div> :
+          champTally.rows.map(([code, n]) => (
+            <div className="poll" key={code} style={{ gridTemplateColumns: "150px 1fr 46px" }}>
+              <span style={{ display: "flex", alignItems: "center", gap: 7, fontWeight: 600, fontSize: 13 }}><Flag code={code} size={22} /> {TEAMS[code]?.name}</span>
+              <div className="bar"><div className="fill" style={{ width: `${pct(n, champTally.tot)}%`, background: "var(--clay)" }} /></div>
+              <span className="pc">{pct(n, champTally.tot)}%</span>
+            </div>
+          ))}
+      </div>
+
+      <div className="glabel" style={{ marginTop: 22 }}><span className="badge"><Boot s={17} /></span><h3>Favoritos a la Bota de Oro</h3></div>
+      <div className="card" style={{ padding: "14px 16px" }}>
+        {scorerTally.rows.length === 0 ? <div className="empty" style={{ padding: 18 }}>Nadie ha votado aún.</div> :
+          scorerTally.rows.map(([name, n]) => (
+            <div className="poll" key={name} style={{ gridTemplateColumns: "150px 1fr 46px" }}>
+              <span style={{ fontWeight: 600, fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{name}</span>
+              <div className="bar"><div className="fill" style={{ width: `${pct(n, scorerTally.tot)}%`, background: "var(--gold)" }} /></div>
+              <span className="pc">{pct(n, scorerTally.tot)}%</span>
+            </div>
+          ))}
+      </div>
+    </div>
+  );
+}
+
+/* ============================= CLASIFICACIÓN ============================ */
+function computeScore(picks, results) {
+  if (!picks || !results) return { total: 0, group: 0, special: 0, scored: 0 };
+  let group = 0, scored = 0, special = 0;
+  for (const m of GROUP_MATCHES) { const r = results.groups?.[m.id]; if (!r) continue; scored++; if (picks.groups?.[m.id] === r) group += SCORING.group; }
+  if (results.champion && picks.champion === results.champion) special += SCORING.champion;
+  if (results.scorer && picks.scorer && picks.scorer.trim().toLowerCase() === results.scorer.trim().toLowerCase()) special += SCORING.scorer;
+  return { total: group + special, group, special, scored };
+}
+function Leaderboard({ profiles, allPicks, results, meId, onRefresh, loading }) {
+  const rows = profiles.map((p) => {
+    const sc = computeScore(allPicks[p.id], results);
+    const made = allPicks[p.id] ? GROUP_MATCHES.filter((m) => allPicks[p.id].groups?.[m.id]).length : 0;
+    return { ...p, ...sc, made };
+  }).sort((a, b) => b.total - a.total || b.made - a.made);
+  const scoredMatches = GROUP_MATCHES.filter((m) => results?.groups?.[m.id]).length;
+  const remaining = (GROUP_MATCHES.length - scoredMatches) * SCORING.group + MAX_KO + (results?.champion ? 0 : SCORING.champion) + (results?.scorer ? 0 : SCORING.scorer);
+  return (
+    <div>
+      <div className="section-h" style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+        <div><div className="ttl"><span className="ic"><Trophy /></span><h2>Clasificación</h2></div>
+          <p>{profiles.length} participante{profiles.length === 1 ? "" : "s"} · puntos en vivo</p></div>
+        <button className="btn ghost" style={{ padding: "8px 14px", fontSize: 13 }} onClick={onRefresh} disabled={loading}>{loading ? "Actualizando…" : "↻ Actualizar"}</button>
+      </div>
+      <div className="banner">🔥 Quedan <b>{remaining} puntos</b> en juego de {MAX_TOTAL} totales —<span>&nbsp;hay remontada posible hasta la final.</span></div>
+      <div className="card" style={{ marginTop: 14 }}>
+        {rows.length === 0 ? <div className="empty">Aún no hay participantes.</div> :
+          rows.map((r, i) => (
+            <div className={`lb-row ${r.id === meId ? "me" : ""}`} key={r.id}>
+              <div className="rank">{i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1}</div>
+              <div className="av" style={{ background: r.color }}>{r.avatar}</div>
+              <div style={{ minWidth: 0 }}>
+                <div className="lb-name">{r.name}{r.id === meId ? " · tú" : ""}</div>
+                <div className="lb-sub">{r.made}/{GROUP_MATCHES.length} pronósticos{r.scored > 0 ? ` · ${r.group} en grupos` : ""}{r.special > 0 ? ` · ${r.special} especiales` : ""}</div>
+              </div>
+              <div className="lb-pts"><b>{r.total}</b><span>puntos</span></div>
+            </div>
+          ))}
+      </div>
+      <p className="note" style={{ marginTop: 12 }}>Los puntos aparecen a medida que el organizador introduce los resultados oficiales.</p>
+    </div>
+  );
+}
+
+/* ================================ REGLAS ================================ */
+function Rules() {
+  const ko = SCORING.knockout;
+  return (
+    <div>
+      <div className="section-h"><div className="ttl"><span className="ic"><BookIcon /></span><h2>Reglas y reparto de puntos</h2></div>
+        <p>Empezar fuerte da ventaja, pero nunca sentencia: las rondas finales pesan mucho más.</p></div>
+      <div className="card" style={{ padding: "6px 16px 14px", marginTop: 14 }}>
+        <table className="rtable">
+          <thead><tr><th>Fase</th><th style={{ textAlign: "center" }}>1·X·2</th><th style={{ textAlign: "center" }}>Bonus exacto</th><th style={{ textAlign: "center" }}>Total fase</th></tr></thead>
+          <tbody>
+            <tr><td>Fase de grupos · 72 partidos</td><td className="n">{SCORING.group}</td><td className="n">—</td><td className="n">{MAX_GROUP}</td></tr>
+            {["r32", "r16", "qf", "sf", "third", "final"].map((k) => (
+              <tr key={k}><td>{ko[k].label} · {ko[k].matches} {ko[k].matches === 1 ? "partido" : "partidos"}</td>
+                <td className="n">{ko[k].sign}</td><td className="n">+{ko[k].exact}</td><td className="n">{ko[k].matches * (ko[k].sign + ko[k].exact)}</td></tr>))}
+            <tr><td>🏆 Campeón del torneo</td><td className="n">—</td><td className="n">—</td><td className="n">{SCORING.champion}</td></tr>
+            <tr><td>⚽ Máximo goleador</td><td className="n">—</td><td className="n">—</td><td className="n">{SCORING.scorer}</td></tr>
+            <tr className="tot"><td>Total del torneo</td><td className="n">—</td><td className="n">—</td><td className="n">{MAX_TOTAL}</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div className="card" style={{ padding: 18, marginTop: 16 }}>
+        <h3 style={{ margin: "0 0 8px", fontSize: 17 }}>Cómo funciona</h3>
+        <ul style={{ margin: 0, paddingLeft: 20, fontSize: 14.5 }}>
+          <li><b>Fase de grupos:</b> solo aciertas 1·X·2 ({SCORING.group} pt por partido).</li>
+          <li><b>Eliminatorias:</b> puntos por acertar el signo + un bonus por clavar el resultado exacto. El bonus nunca supera el <b>50%</b> de lo que da el signo, así que acertar el ganador siempre vale más que el marcador.</li>
+          <li>Cada ronda escala: la final vale más que las semis, estas más que cuartos, y así sucesivamente.</li>
+          <li>La fase de grupos solo vale el <span className="pill">{Math.round((MAX_GROUP / MAX_TOTAL) * 100)}%</span> del total; el <span className="pill">{Math.round(((MAX_TOTAL - MAX_GROUP) / MAX_TOTAL) * 100)}%</span> restante se decide después, así que siempre hay margen para remontar.</li>
+          <li>La selección se <b>bloquea automáticamente 24 h antes del partido inaugural</b>. Después solo el organizador puede tocarla en una urgencia.</li>
+        </ul>
+        <div className="lock-badge" style={{ marginTop: 12 }}>🔒 La porra de eliminatorias se abrirá al cerrar la fase de grupos</div>
+      </div>
+    </div>
+  );
+}
+
+/* ====================== EDITOR DE PRONÓSTICOS (admin) ==================== */
+function PicksEditor({ value, onChange }) {
+  const [g, setG] = useState("A");
+  const matches = GROUP_MATCHES.filter((m) => m.group === g);
+  const isOther = value.scorer !== undefined && value.scorer !== "" && !SCORERS.some(([n]) => n === value.scorer);
+  const setP = (id, o) => onChange({ ...value, groups: { ...value.groups, [id]: value.groups?.[id] === o ? undefined : o } });
+  return (
+    <div>
+      <div className="gnav">{Object.keys(GROUPS).map((gl) => <button key={gl} className={`gbtn ${g === gl ? "on" : ""}`} onClick={() => setG(gl)}>{gl}</button>)}</div>
+      <div className="card" style={{ marginTop: 8 }}>
+        {matches.map((m) => (
+          <div className="match" key={m.id}>
+            <div className="duel">
+              <div className="side"><Flag code={m.home} size={24} /><span className="nm">{TEAMS[m.home].name}</span></div>
+              <div className="picks">{["1", "X", "2"].map((o) => <button key={o} className={`pick ${value.groups?.[m.id] === o ? "sel" : ""}`} onClick={() => setP(m.id, o)}>{o}</button>)}</div>
+              <div className="side away"><Flag code={m.away} size={24} /><span className="nm">{TEAMS[m.away].name}</span></div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="card" style={{ padding: 16, marginTop: 14 }}>
+        <label className="label" style={{ marginTop: 0 }}>🏆 Campeón</label>
+        <select value={value.champion || ""} onChange={(e) => onChange({ ...value, champion: e.target.value })}>
+          <option value="">Sin elegir</option>{TEAMS_ALPHA.map((c) => <option key={c} value={c}>{TEAMS[c].name}</option>)}
+        </select>
+        <label className="label">⚽ Máximo goleador</label>
+        <select value={isOther ? "__other" : (value.scorer || "")} onChange={(e) => onChange({ ...value, scorer: e.target.value === "__other" ? " " : e.target.value })}>
+          <option value="">Sin elegir</option>{SCORERS.map(([n, t]) => <option key={n} value={n}>{n} · {TEAMS[t].name}</option>)}
+          <option value="__other">Otro…</option>
+        </select>
+        {isOther && <input className="txt" style={{ marginTop: 10 }} value={value.scorer.trimStart()} onChange={(e) => onChange({ ...value, scorer: e.target.value })} placeholder="Nombre del goleador" />}
+      </div>
+    </div>
+  );
+}
+
+/* ============================== ORGANIZADOR ============================= */
+function AdminView({ config, setConfig, results, saveResults, locked, setLocked, timeLocked, profiles, allPicks, savePicksFor, resetPassword, deleteProfile, onRefresh }) {
+  const [sub, setSub] = useState("results"); // results | players | accounts | settings
+  const [draft, setDraft] = useState(results || { groups: {}, champion: "", scorer: "" });
+  const [savedR, setSavedR] = useState(false);
+  // edición de jugador
+  const [targetId, setTargetId] = useState("");
+  const [pDraft, setPDraft] = useState(null);
+  const [savedP, setSavedP] = useState(false);
+  // gestión de cuentas
+  const [pwMsg, setPwMsg] = useState("");
+
+  useEffect(() => { setDraft(results || { groups: {}, champion: "", scorer: "" }); }, [results]);
+  useEffect(() => { setPDraft(targetId && allPicks[targetId] ? JSON.parse(JSON.stringify(allPicks[targetId])) : (targetId ? { groups: {}, champion: "", scorer: "" } : null)); }, [targetId, allPicks]);
+
+  return (
+    <div>
+      <div className="section-h"><div className="ttl"><span className="ic"><ShieldIcon /></span><h2>Panel del organizador</h2></div></div>
+      <div className="seg">
+        <button className={sub === "results" ? "on" : ""} onClick={() => setSub("results")}>Resultados</button>
+        <button className={sub === "players" ? "on" : ""} onClick={() => { setSub("players"); onRefresh(); }}>Editar jugador</button>
+        <button className={sub === "accounts" ? "on" : ""} onClick={() => { setSub("accounts"); onRefresh(); }}>Cuentas</button>
+        <button className={sub === "settings" ? "on" : ""} onClick={() => setSub("settings")}>Ajustes</button>
+      </div>
+
+      {sub === "results" && (
+        <div style={{ marginTop: 12 }}>
+          <p className="note" style={{ marginBottom: 8 }}>Introduce el resultado oficial (1·X·2) de cada partido y las apuestas. Se aplica a la clasificación de todos.</p>
+          <PicksEditor value={draft} onChange={setDraft} />
+          <button className="btn" style={{ marginTop: 16 }} onClick={async () => { await saveResults(draft); setSavedR(true); setTimeout(() => setSavedR(false), 2000); }}>
+            {savedR ? "✓ Guardado" : "Guardar resultados oficiales"}</button>
+        </div>
+      )}
+
+      {sub === "players" && (
+        <div style={{ marginTop: 12 }}>
+          <div className="banner flat">🛟 <b>Modo urgencia:</b> edita la selección de cualquier participante (no afectado por el bloqueo horario).</div>
+          <label className="label">Participante</label>
+          <select value={targetId} onChange={(e) => setTargetId(e.target.value)}>
+            <option value="" disabled>Elige un jugador…</option>
+            {profiles.map((p) => <option key={p.id} value={p.id}>{p.avatar} {p.name}</option>)}
+          </select>
+          {pDraft && (
+            <div style={{ marginTop: 6 }}>
+              <PicksEditor value={pDraft} onChange={setPDraft} />
+              <button className="btn" style={{ marginTop: 16 }} onClick={async () => { await savePicksFor(targetId, pDraft); setSavedP(true); setTimeout(() => setSavedP(false), 2000); }}>
+                {savedP ? "✓ Guardado" : `Guardar selección de ${profiles.find((p) => p.id === targetId)?.name || ""}`}</button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {sub === "accounts" && (
+        <div style={{ marginTop: 12 }}>
+          <div className="banner flat">🔐 <b>Gestión de cuentas:</b> restablece contraseñas o elimina perfiles.</div>
+          {profiles.length === 0 ? <div className="empty">Aún no hay perfiles.</div> : (
+            <div className="card" style={{ marginTop: 4 }}>
+              {profiles.map((p) => (
+                <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderBottom: "1px solid var(--line2)" }}>
+                  <div className="av" style={{ background: p.color }}>{p.avatar}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className="lb-name">{p.name}</div>
+                    <div className="lb-sub">{(allPicks[p.id] ? GROUP_MATCHES.filter((m) => allPicks[p.id].groups?.[m.id]).length : 0)}/{GROUP_MATCHES.length} pronósticos</div>
+                  </div>
+                  <button className="btn ghost" style={{ padding: "7px 11px", fontSize: 12.5 }}
+                    onClick={async () => {
+                      const np = prompt(`Nueva contraseña para ${p.name} (mín. 4 caracteres):`);
+                      if (np == null) return;
+                      if (np.length < 4) { alert("Demasiado corta."); return; }
+                      await resetPassword(p.id, np);
+                      setPwMsg(`Contraseña de ${p.name} restablecida.`); setTimeout(() => setPwMsg(""), 2500);
+                    }}>Restablecer clave</button>
+                  <button className="btn ghost" style={{ padding: "7px 11px", fontSize: 12.5, borderColor: "#E3B4A6", color: "var(--clay-d)" }}
+                    onClick={async () => {
+                      if (!confirm(`¿Eliminar el perfil de ${p.name}? Se borrarán también sus pronósticos. Esta acción no se puede deshacer.`)) return;
+                      await deleteProfile(p.id);
+                      if (targetId === p.id) setTargetId("");
+                      setPwMsg(`Perfil de ${p.name} eliminado.`); setTimeout(() => setPwMsg(""), 2500);
+                    }}>Borrar</button>
+                </div>
+              ))}
+            </div>
+          )}
+          {pwMsg && <div className="banner" style={{ marginTop: 12 }}>✓ {pwMsg}</div>}
+        </div>
+      )}
+
+      {sub === "settings" && (
+        <div style={{ marginTop: 12 }}>
+          <div className="banner flat" style={{ marginTop: 0 }}>
+            <b>Bloqueo automático:</b> {timeLocked ? "activo (ya pasó la hora de cierre)." : "se activará 24 h antes del inaugural."}
+          </div>
+          <div className="banner flat">
+            <b>Cierre manual:</b> {locked && !timeLocked ? "forzado a cerrado." : "abierto."}
+            <button className="btn ghost" style={{ marginLeft: "auto", padding: "7px 12px", fontSize: 13 }} onClick={() => setLocked(!config?.locked)} disabled={timeLocked}>
+              {config?.locked ? "Reabrir pronósticos" : "Cerrar pronósticos ahora"}</button>
+          </div>
+          <p className="note">El cierre manual permite adelantar el bloqueo. Una vez pasada la hora automática, los pronósticos quedan cerrados para todos salvo desde "Editar jugador".</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ================================= APP ================================== */
+const TABS = [
+  ["groups", "Grupos", Ball],
+  ["specials", "Apuestas", Trophy],
+  ["poll", "Sondeo", Poll],
+  ["leaderboard", "Clasificación", Trophy],
+  ["rules", "Reglas", BookIcon],
+];
+
+export default function App() {
+  const now = useNow();
+  const [booting, setBooting] = useState(true);
+  const [me, setMe] = useState(null);
+  const [tab, setTab] = useState("groups");
+  const [picks, setPicks] = useState({ groups: {}, champion: "", scorer: undefined });
+  const [results, setResults] = useState({ groups: {} });
+  const [config, setConfigState] = useState({});
+  const [profiles, setProfiles] = useState([]);
+  const [allPicks, setAllPicks] = useState({});
+  const [busy, setBusy] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  const timeLocked = now >= LOCK_TIME;
+  const locked = timeLocked || !!config?.locked;
+
+  useEffect(() => {
+    (async () => {
+      const [m, res, cfg, profs] = await Promise.all([
+        sget(KEY.me, false), sget(KEY.results, true), sget(KEY.config, true), sget(KEY.profiles, true),
+      ]);
+      if (res) setResults(res);
+      if (cfg) setConfigState(cfg);
+      if (profs) setProfiles(profs);
+      if (m) { setMe(m); const mine = await sget(KEY.picks(m.id), true); if (mine) setPicks(mine); }
+      setBooting(false);
+    })();
+  }, []);
+
+  const loadAll = useCallback(async () => {
+    setBusy(true);
+    const profs = (await sget(KEY.profiles, true)) || [];
+    setProfiles(profs);
+    const entries = await Promise.all(profs.map(async (p) => [p.id, await sget(KEY.picks(p.id), true)]));
+    setAllPicks(Object.fromEntries(entries));
+    const res = await sget(KEY.results, true); if (res) setResults(res);
+    setBusy(false);
+  }, []);
+  useEffect(() => { if (tab === "leaderboard" || tab === "poll") loadAll(); }, [tab, loadAll]);
+
+  async function createProfile(data) {
+    const profile = { id: (crypto.randomUUID?.() || String(Date.now()) + Math.random()), ...data };
+    await sset(KEY.me, profile, false);
+    const profs = (await sget(KEY.profiles, true)) || [];
+    if (!profs.some((p) => p.id === profile.id)) await sset(KEY.profiles, [...profs, profile], true);
+    await sset(KEY.picks(profile.id), { groups: {}, champion: "", scorer: undefined }, true);
+    setProfiles((cur) => cur.some((p) => p.id === profile.id) ? cur : [...cur, profile]);
+    setPicks({ groups: {}, champion: "", scorer: undefined });
+    setMe(profile);
+  }
+  async function loginProfile(prof) {
+    await sset(KEY.me, prof, false);
+    const mine = await sget(KEY.picks(prof.id), true);
+    setPicks(mine || { groups: {}, champion: "", scorer: undefined });
+    setMe(prof);
+  }
+
+  const persistPicks = useCallback((next) => { setPicks(next); if (me) sset(KEY.picks(me.id), next, true); }, [me]);
+  const setPick = (id, o) => persistPicks({ ...picks, groups: { ...picks.groups, [id]: picks.groups?.[id] === o ? undefined : o } });
+  const setChampion = (c) => persistPicks({ ...picks, champion: picks.champion === c ? "" : c });
+  const setScorer = (s) => persistPicks({ ...picks, scorer: s });
+
+  const setConfig = async (c) => { setConfigState(c); await sset(KEY.config, c, true); };
+  const setLocked = (v) => setConfig({ ...config, locked: v });
+  const saveResults = async (r) => { setResults(r); await sset(KEY.results, r, true); };
+  const savePicksFor = async (id, p) => { await sset(KEY.picks(id), p, true); setAllPicks((cur) => ({ ...cur, [id]: p })); if (me && id === me.id) setPicks(p); };
+
+  const resetPassword = async (id, newPw) => {
+    const hash = await hashPw(newPw);
+    const profs = (await sget(KEY.profiles, true)) || [];
+    const next = profs.map((p) => p.id === id ? { ...p, pwHash: hash } : p);
+    await sset(KEY.profiles, next, true);
+    setProfiles(next);
+    if (me && me.id === id) { const upd = next.find((p) => p.id === id); setMe(upd); await sset(KEY.me, upd, false); }
+  };
+  const deleteProfile = async (id) => {
+    const profs = (await sget(KEY.profiles, true)) || [];
+    const next = profs.filter((p) => p.id !== id);
+    await sset(KEY.profiles, next, true);
+    await sdel(KEY.picks(id));
+    setProfiles(next);
+    setAllPicks((cur) => { const c = { ...cur }; delete c[id]; return c; });
+    if (me && me.id === id) { await sdel(KEY.me); setMe(null); setTab("groups"); }
+  };
+
+  if (booting) return (<div className="porra"><Styles /><div className="loadwrap">Cargando la porra…</div></div>);
+
+  // Vista de ORGANIZADOR (acceso independiente desde la pantalla inicial)
+  if (isAdmin) {
+    return (
+      <div className="porra">
+        <Styles />
+        <div className="topbar">
+          <div className="topbar-in">
+            <div className="brand"><span className="cup" style={{ display: "inline-flex" }}><Crest s={34} /></span>
+              <div><h1>Panel del organizador</h1><small>Porra Mundial 2026</small></div></div>
+            <div className="me-chip">
+              <div className="av" style={{ background: "var(--ink)", width: 24, height: 24, fontSize: 13 }}>🛡️</div>Organizador
+              <button onClick={() => { setIsAdmin(false); setTab("groups"); }}>salir</button>
+            </div>
+          </div>
+        </div>
+        <div className="wrap">
+          <AdminView config={config} setConfig={setConfig} results={results} saveResults={saveResults} locked={locked} setLocked={setLocked} timeLocked={timeLocked} profiles={profiles} allPicks={allPicks} savePicksFor={savePicksFor} resetPassword={resetPassword} deleteProfile={deleteProfile} onRefresh={loadAll} />
+        </div>
+      </div>
+    );
+  }
+
+  if (!me) return (<div className="porra"><Styles /><Onboarding profiles={profiles} onCreate={createProfile} onLogin={loginProfile} onAdmin={() => { setIsAdmin(true); loadAll(); }} /></div>);
+
+  return (
+    <div className="porra">
+      <Styles />
+      <div className="topbar">
+        <div className="topbar-in">
+          <div className="brand"><span className="cup" style={{ display: "inline-flex" }}><Crest s={34} /></span>
+            <div><h1>Porra Mundial 2026</h1><small>EE. UU. · México · Canadá</small></div></div>
+          <div className="me-chip">
+            <div className="av" style={{ background: me.color, width: 24, height: 24, fontSize: 13 }}>{me.avatar}</div>{me.name}
+            <button onClick={async () => { if (confirm("¿Salir de tu perfil? Podrás volver a entrar con tu contraseña.")) { await sdel(KEY.me); setMe(null); setTab("groups"); } }}>salir</button>
+          </div>
+        </div>
+        <div className="tabs">{TABS.map(([id, label, Icon]) => (
+          <button key={id} className={`tab ${tab === id ? "on" : ""}`} onClick={() => setTab(id)}><Icon s={16} />{label}</button>))}
+        </div>
+      </div>
+      <div className="wrap">
+        {tab === "groups" && <GroupsView picks={picks} setPick={setPick} results={results} locked={locked} now={now} timeLocked={timeLocked} />}
+        {tab === "specials" && <SpecialsView picks={picks} setChampion={setChampion} setScorer={setScorer} results={results} locked={locked} />}
+        {tab === "poll" && <PollView allPicks={allPicks} loading={busy} onRefresh={loadAll} />}
+        {tab === "leaderboard" && <Leaderboard profiles={profiles} allPicks={allPicks} results={results} meId={me.id} onRefresh={loadAll} loading={busy} />}
+        {tab === "rules" && <Rules />}
+      </div>
+      <nav className="bottomnav">
+        {TABS.map(([id, label, Icon]) => (
+          <button key={id} className={tab === id ? "on" : ""} onClick={() => { setTab(id); window.scrollTo({ top: 0 }); }}>
+            <span className="bn-ic"><Icon s={20} /></span>{label}
+          </button>
+        ))}
+      </nav>
+    </div>
+  );
+}
