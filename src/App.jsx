@@ -91,10 +91,45 @@ const GROUPS = {
   J:["ARG","AUT","ALG","JOR"], K:["POR","COL","UZB","COD"], L:["ENG","CRO","PAN","GHA"],
 };
 
-const FIXTURE_TEMPLATE = [[0,1],[2,3],[0,2],[3,1],[3,0],[1,2]];
-const GROUP_MATCHES = Object.entries(GROUPS).flatMap(([g,t]) =>
-  FIXTURE_TEMPLATE.map(([a,b],i)=>({ id:`${g}${i}`, group:g, matchday:Math.floor(i/2)+1, home:t[a], away:t[b] }))
-);
+// Fixture OFICIAL del Mundial 2026 (calendario FIFA). Local primero. IDs estables.
+const GROUP_MATCHES = [
+  { id:"A0", group:"A", matchday:1, home:"MEX", away:"RSA" }, { id:"A1", group:"A", matchday:1, home:"KOR", away:"CZE" },
+  { id:"A2", group:"A", matchday:2, home:"CZE", away:"RSA" }, { id:"A3", group:"A", matchday:2, home:"MEX", away:"KOR" },
+  { id:"A4", group:"A", matchday:3, home:"CZE", away:"MEX" }, { id:"A5", group:"A", matchday:3, home:"RSA", away:"KOR" },
+  { id:"B0", group:"B", matchday:1, home:"CAN", away:"BIH" }, { id:"B1", group:"B", matchday:1, home:"QAT", away:"SUI" },
+  { id:"B2", group:"B", matchday:2, home:"SUI", away:"BIH" }, { id:"B3", group:"B", matchday:2, home:"CAN", away:"QAT" },
+  { id:"B4", group:"B", matchday:3, home:"SUI", away:"CAN" }, { id:"B5", group:"B", matchday:3, home:"BIH", away:"QAT" },
+  { id:"C0", group:"C", matchday:1, home:"BRA", away:"MAR" }, { id:"C1", group:"C", matchday:1, home:"HAI", away:"SCO" },
+  { id:"C2", group:"C", matchday:2, home:"SCO", away:"MAR" }, { id:"C3", group:"C", matchday:2, home:"BRA", away:"HAI" },
+  { id:"C4", group:"C", matchday:3, home:"SCO", away:"BRA" }, { id:"C5", group:"C", matchday:3, home:"MAR", away:"HAI" },
+  { id:"D0", group:"D", matchday:1, home:"USA", away:"PAR" }, { id:"D1", group:"D", matchday:1, home:"AUS", away:"TUR" },
+  { id:"D2", group:"D", matchday:2, home:"USA", away:"AUS" }, { id:"D3", group:"D", matchday:2, home:"TUR", away:"PAR" },
+  { id:"D4", group:"D", matchday:3, home:"TUR", away:"USA" }, { id:"D5", group:"D", matchday:3, home:"PAR", away:"AUS" },
+  { id:"E0", group:"E", matchday:1, home:"GER", away:"CUW" }, { id:"E1", group:"E", matchday:1, home:"CIV", away:"ECU" },
+  { id:"E2", group:"E", matchday:2, home:"GER", away:"CIV" }, { id:"E3", group:"E", matchday:2, home:"ECU", away:"CUW" },
+  { id:"E4", group:"E", matchday:3, home:"CUW", away:"CIV" }, { id:"E5", group:"E", matchday:3, home:"ECU", away:"GER" },
+  { id:"F0", group:"F", matchday:1, home:"NED", away:"JPN" }, { id:"F1", group:"F", matchday:1, home:"SWE", away:"TUN" },
+  { id:"F2", group:"F", matchday:2, home:"NED", away:"SWE" }, { id:"F3", group:"F", matchday:2, home:"TUN", away:"JPN" },
+  { id:"F4", group:"F", matchday:3, home:"JPN", away:"SWE" }, { id:"F5", group:"F", matchday:3, home:"TUN", away:"NED" },
+  { id:"G0", group:"G", matchday:1, home:"BEL", away:"EGY" }, { id:"G1", group:"G", matchday:1, home:"IRN", away:"NZL" },
+  { id:"G2", group:"G", matchday:2, home:"BEL", away:"IRN" }, { id:"G3", group:"G", matchday:2, home:"NZL", away:"EGY" },
+  { id:"G4", group:"G", matchday:3, home:"EGY", away:"IRN" }, { id:"G5", group:"G", matchday:3, home:"NZL", away:"BEL" },
+  { id:"H0", group:"H", matchday:1, home:"ESP", away:"CPV" }, { id:"H1", group:"H", matchday:1, home:"KSA", away:"URU" },
+  { id:"H2", group:"H", matchday:2, home:"ESP", away:"KSA" }, { id:"H3", group:"H", matchday:2, home:"URU", away:"CPV" },
+  { id:"H4", group:"H", matchday:3, home:"CPV", away:"KSA" }, { id:"H5", group:"H", matchday:3, home:"URU", away:"ESP" },
+  { id:"I0", group:"I", matchday:1, home:"FRA", away:"SEN" }, { id:"I1", group:"I", matchday:1, home:"IRQ", away:"NOR" },
+  { id:"I2", group:"I", matchday:2, home:"FRA", away:"IRQ" }, { id:"I3", group:"I", matchday:2, home:"NOR", away:"SEN" },
+  { id:"I4", group:"I", matchday:3, home:"NOR", away:"FRA" }, { id:"I5", group:"I", matchday:3, home:"SEN", away:"IRQ" },
+  { id:"J0", group:"J", matchday:1, home:"ARG", away:"ALG" }, { id:"J1", group:"J", matchday:1, home:"AUT", away:"JOR" },
+  { id:"J2", group:"J", matchday:2, home:"ARG", away:"AUT" }, { id:"J3", group:"J", matchday:2, home:"JOR", away:"ALG" },
+  { id:"J4", group:"J", matchday:3, home:"ALG", away:"AUT" }, { id:"J5", group:"J", matchday:3, home:"JOR", away:"ARG" },
+  { id:"K0", group:"K", matchday:1, home:"POR", away:"COD" }, { id:"K1", group:"K", matchday:1, home:"UZB", away:"COL" },
+  { id:"K2", group:"K", matchday:2, home:"POR", away:"UZB" }, { id:"K3", group:"K", matchday:2, home:"COL", away:"COD" },
+  { id:"K4", group:"K", matchday:3, home:"COL", away:"POR" }, { id:"K5", group:"K", matchday:3, home:"COD", away:"UZB" },
+  { id:"L0", group:"L", matchday:1, home:"ENG", away:"CRO" }, { id:"L1", group:"L", matchday:1, home:"GHA", away:"PAN" },
+  { id:"L2", group:"L", matchday:2, home:"ENG", away:"GHA" }, { id:"L3", group:"L", matchday:2, home:"PAN", away:"CRO" },
+  { id:"L4", group:"L", matchday:3, home:"PAN", away:"ENG" }, { id:"L5", group:"L", matchday:3, home:"CRO", away:"GHA" },
+];
 // Selecciones ordenadas alfabéticamente por nombre (para el selector de campeón)
 const TEAMS_ALPHA = Object.keys(TEAMS).sort((a,b)=>TEAMS[a].name.localeCompare(TEAMS[b].name,"es"));
 
@@ -829,7 +864,8 @@ function SpecialsView({ picks, setChampion, setScorer, results, locked }) {
         <button key={c} className={`team-opt ${picks.champion === c ? "sel" : ""}`} disabled={locked} onClick={() => setChampion(c)}><Flag code={c} size={24} /> {TEAMS[c].name}</button>))}
       </div>
 
-      <div className="glabel" style={{ marginTop: 28 }}><span className="badge"><Boot s={17} /></span><h3>Máximo goleador</h3></div>
+      <div className="glabel" style={{ marginTop: 28 }}><span className="badge"><Boot s={17} /></span><h3>Máximo goleador</h3>
+        <span className="sp">orden por cuotas de apuestas</span></div>
       <div className="card" style={{ padding: 16 }}>
         <select value={isOther ? "__other" : (picks.scorer || "")} disabled={locked}
           onChange={(e) => setScorer(e.target.value === "__other" ? " " : e.target.value)}>
@@ -837,6 +873,7 @@ function SpecialsView({ picks, setChampion, setScorer, results, locked }) {
           {SCORERS.map(([n, t]) => <option key={n} value={n}>{n} · {TEAMS[t].name}</option>)}
           <option value="__other">Otro (escribir nombre)…</option>
         </select>
+        <p className="note" style={{ marginTop: 10 }}>Lista ordenada de mayor a menor favorito según las cuotas actuales de las casas de apuestas (mayo 2026): cuanto más arriba, más favorito.</p>
         {isOther && <input className="txt" style={{ marginTop: 10 }} placeholder="Nombre del goleador" value={picks.scorer.trimStart()} disabled={locked} onChange={(e) => setScorer(e.target.value)} />}
         {results?.scorer && <p className="note" style={{ marginTop: 12 }}>Bota de Oro oficial: <b>{results.scorer}</b></p>}
       </div>
