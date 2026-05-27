@@ -829,7 +829,7 @@ function SpecialsView({ picks, setChampion, setScorer, results, locked }) {
         <button key={c} className={`team-opt ${picks.champion === c ? "sel" : ""}`} disabled={locked} onClick={() => setChampion(c)}><Flag code={c} size={24} /> {TEAMS[c].name}</button>))}
       </div>
 
-      <div className="glabel" style={{ marginTop: 28 }}><span className="badge"><Boot s={17} /></span><h3>Máximo goleador</h3>
+      <div className="glabel" style={{ marginTop: 28 }}><span className="badge"><Boot s={17} /></span><h3>Máximo goleador</h3></div>
       <div className="card" style={{ padding: 16 }}>
         <select value={isOther ? "__other" : (picks.scorer || "")} disabled={locked}
           onChange={(e) => setScorer(e.target.value === "__other" ? " " : e.target.value)}>
