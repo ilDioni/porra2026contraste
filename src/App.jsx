@@ -21,12 +21,12 @@ import { supabase } from "./supabaseClient";
    ========================================================================= */
 const IMAGES = {
   // Logo que aparece en el header (arriba a la izquierda) y en la pantalla de inicio.
-  LOGO_URL: https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/2026_FIFA_World_Cup_emblem.svg/1920px-2026_FIFA_World_Cup_emblem.svg.png,
+  LOGO_URL: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/2026_FIFA_World_Cup_emblem.svg/1920px-2026_FIFA_World_Cup_emblem.svg.png",
   // Imagen de fondo del bloque "El Mundial está al caer" (la cabecera grande).
   // Pon una URL pública (.jpg/.png/.webp). Se le aplica una capa oscura automática
   // para que el texto blanco de encima se siga leyendo. Si lo dejas en null, se usa
   // el fondo cobalto con destellos de color original.
-  HERO_BG_URL: https://i.ytimg.com/vi/HmpzUm5j4OE/hq720.jpg,
+  HERO_BG_URL: "https://i.ytimg.com/vi/HmpzUm5j4OE/hq720.jpg",
   // Iconos de las pestañas / secciones. Cámbialos por URLs si quieres imágenes propias.
   ICON_BALL_URL: null,    // icono "Grupos"
   ICON_TROPHY_URL: null,  // icono "Apuestas" y "Clasificación" (trofeo / campeón)
@@ -42,30 +42,30 @@ const IMAGES = {
    (La imagen se recorta en círculo, así que van bien logos cuadrados o circulares.) */
 const FLAG_OVERRIDES = {
   // — Selecciones cuyo escudo suele ser más icónico que la bandera —
-  ESP: https://logodownload.org/wp-content/uploads/2022/08/spain-national-football-team-logo-1.png,  // España (RFEF)
-  BRA: https://logodownload.org/wp-content/uploads/2022/12/brazil-national-football-team-logo-1.png,  // Brasil (CBF)
-  ENG: https://logodownload.org/wp-content/uploads/2022/07/england-national-team-logo-1.png,  // Inglaterra (Three Lions)
-  GER: https://logodownload.org/wp-content/uploads/2018/06/germany-national-football-team-logo.png,  // Alemania (DFB)
-  ARG: https://logodownload.org/wp-content/uploads/2016/11/argentina-national-football-team-logo-5.png,  // Argentina (AFA)
-  FRA: https://logodownload.org/wp-content/uploads/2022/07/france-national-football-team-logo.png,  // Francia (FFF)
-  POR: https://logodownload.org/wp-content/uploads/2021/10/fpf-selecao-de-portugal-logo.png,  // Portugal (FPF)
-  NED: https://logodownload.org/wp-content/uploads/2022/07/holanda-netherlands-football-team-logo.png,  // Países Bajos (KNVB)
-  SUI: https://logodownload.org/wp-content/uploads/2022/11/switzerland-national-football-team-logo.png,  // (no clasificada, pero por si acaso)
-  URU: https://logodownload.org/wp-content/uploads/2021/09/auf-seleccion-de-futbol-de-uruguay-logo-1.png,  // Uruguay (AUF)
-  MEX: https://logodownload.org/wp-content/uploads/2021/10/fmf-seleccion-de-mexico-logo-5.png,  // México (FMF)
-  USA: https://logodownload.org/wp-content/uploads/2021/10/united-states-national-soccer-team-logo.png,  // Estados Unidos (USSF)
-  BEL: https://logodownload.org/wp-content/uploads/2022/09/belgian-national-team-logo-1.png,
-  JPN: https://logodownload.org/wp-content/uploads/2022/08/japan-national-football-team-logo.png,
-  GHA: https://logodownload.org/wp-content/uploads/2022/12/ghana-national-football-team-logo.png,
-  CAN: https://logodownload.org/wp-content/uploads/2021/10/canada-soccer-team-logo.png,
-  KOR: https://logodownload.org/wp-content/uploads/2022/12/south-korea-national-football-team-logo-7.png,
-  QAT: https://logodownload.org/wp-content/uploads/2022/07/qfa-qatar-football-logo.png,
-  SEN: https://logodownload.org/wp-content/uploads/2022/07/fsf-senegal-national-football-team-logo.png,
-  COL: https://logodownload.org/wp-content/uploads/2021/09/fcf-seleccion-de-f%C3%BAtbol-de-colombia-logo.png,
-  TUN: https://logodownload.org/wp-content/uploads/2022/08/tunisia-national-football-team-logo.png,
-  CRO: https://logodownload.org/wp-content/uploads/2022/11/croatia-national-football-team-logo.png,
-  AUS: https://logodownload.org/wp-content/uploads/2022/08/australia-national-football-team-logo.png,
-  PAR: https://logodownload.org/wp-content/uploads/2021/09/apf-seleccion-de-futbol-de-paraguay-logo.png,
+  ESP: "https://logodownload.org/wp-content/uploads/2022/08/spain-national-football-team-logo-1.png",  // España (RFEF)
+  BRA: "https://logodownload.org/wp-content/uploads/2022/12/brazil-national-football-team-logo-1.png",  // Brasil (CBF)
+  ENG: "https://logodownload.org/wp-content/uploads/2022/07/england-national-team-logo-1.png",  // Inglaterra (Three Lions)
+  GER: "https://logodownload.org/wp-content/uploads/2018/06/germany-national-football-team-logo.png",  // Alemania (DFB)
+  ARG: "https://logodownload.org/wp-content/uploads/2016/11/argentina-national-football-team-logo-5.png",  // Argentina (AFA)
+  FRA: "https://logodownload.org/wp-content/uploads/2022/07/france-national-football-team-logo.png",  // Francia (FFF)
+  POR: "https://logodownload.org/wp-content/uploads/2021/10/fpf-selecao-de-portugal-logo.png",  // Portugal (FPF)
+  NED: "https://logodownload.org/wp-content/uploads/2022/07/holanda-netherlands-football-team-logo.png",  // Países Bajos (KNVB)
+  SUI: "https://logodownload.org/wp-content/uploads/2022/11/switzerland-national-football-team-logo.png",  // (no clasificada, pero por si acaso)
+  URU: "https://logodownload.org/wp-content/uploads/2021/09/auf-seleccion-de-futbol-de-uruguay-logo-1.png",  // Uruguay (AUF)
+  MEX: "https://logodownload.org/wp-content/uploads/2021/10/fmf-seleccion-de-mexico-logo-5.png",  // México (FMF)
+  USA: "https://logodownload.org/wp-content/uploads/2021/10/united-states-national-soccer-team-logo.png",  // Estados Unidos (USSF)
+  BEL: "https://logodownload.org/wp-content/uploads/2022/09/belgian-national-team-logo-1.png",
+  JPN: "https://logodownload.org/wp-content/uploads/2022/08/japan-national-football-team-logo.png",
+  GHA: "https://logodownload.org/wp-content/uploads/2022/12/ghana-national-football-team-logo.png",
+  CAN: "https://logodownload.org/wp-content/uploads/2021/10/canada-soccer-team-logo.png",
+  KOR: "https://logodownload.org/wp-content/uploads/2022/12/south-korea-national-football-team-logo-7.png",
+  QAT: "https://logodownload.org/wp-content/uploads/2022/07/qfa-qatar-football-logo.png",
+  SEN: "https://logodownload.org/wp-content/uploads/2022/07/fsf-senegal-national-football-team-logo.png",
+  COL: "https://logodownload.org/wp-content/uploads/2021/09/fcf-seleccion-de-f%C3%BAtbol-de-colombia-logo.png",
+  TUN: "https://logodownload.org/wp-content/uploads/2022/08/tunisia-national-football-team-logo.png",
+  CRO: "https://logodownload.org/wp-content/uploads/2022/11/croatia-national-football-team-logo.png",
+  AUS: "https://logodownload.org/wp-content/uploads/2022/08/australia-national-football-team-logo.png",
+  PAR: "https://logodownload.org/wp-content/uploads/2021/09/apf-seleccion-de-futbol-de-paraguay-logo.png",
 
   // Añade cualquier otra con su código de 3 letras, p. ej.:  BEL: "https://...",
 };
