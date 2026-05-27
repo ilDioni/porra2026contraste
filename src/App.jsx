@@ -28,10 +28,11 @@ const IMAGES = {
   // el fondo cobalto con destellos de color original.
   HERO_BG_URL: "https://i.ytimg.com/vi/HmpzUm5j4OE/hq720.jpg",
   // Iconos de las pestañas / secciones. Cámbialos por URLs si quieres imágenes propias.
-  ICON_BALL_URL: null,    // icono "Grupos"
+  ICON_BALL_URL: "https://toppng.com/uploads/preview/file-soccer-ball-vector-11563256409x5p7owgegy.png",    // icono "Grupos"
   ICON_TROPHY_URL: null,  // icono "Apuestas" y "Clasificación" (trofeo / campeón)
   ICON_BOOT_URL: null,    // icono del máximo goleador (bota)
   ICON_POLL_URL: null,    // icono "Sondeo"
+  ICON_RANK_URL: "https://images.vexels.com/media/users/3/139474/isolated/preview/bf2e60baabd4d83cb1053e4fb720f156-ganador-del-campeonato-de-medalla-de-trofeo.png",    // icono "Clasificación" (medalla)
   ICON_RULES_URL: null,   // icono "Reglas"
 };
 
@@ -42,30 +43,26 @@ const IMAGES = {
    (La imagen se recorta en círculo, así que van bien logos cuadrados o circulares.) */
 const FLAG_OVERRIDES = {
   // — Selecciones cuyo escudo suele ser más icónico que la bandera —
-  ESP: "https://logodownload.org/wp-content/uploads/2022/08/spain-national-football-team-logo-1.png",  // España (RFEF)
-  BRA: "https://logodownload.org/wp-content/uploads/2022/12/brazil-national-football-team-logo-1.png",  // Brasil (CBF)
+  ESP: "https://upload.wikimedia.org/wikipedia/commons/4/44/Logo_RFEF_Espa%C3%B1a.png",  // España (RFEF)
+  BRA: "https://upload.wikimedia.org/wikipedia/commons/b/b9/Confedera%C3%A7%C3%A3o_Brasileira_de_Futebol_logo_%28variant%29.png",  // Brasil (CBF)
   ENG: "https://logodownload.org/wp-content/uploads/2022/07/england-national-team-logo-1.png",  // Inglaterra (Three Lions)
-  GER: "https://logodownload.org/wp-content/uploads/2018/06/germany-national-football-team-logo.png",  // Alemania (DFB)
-  ARG: "https://logodownload.org/wp-content/uploads/2016/11/argentina-national-football-team-logo-5.png",  // Argentina (AFA)
-  FRA: "https://logodownload.org/wp-content/uploads/2022/07/france-national-football-team-logo.png",  // Francia (FFF)
+  GER: "https://images.vexels.com/media/users/3/152460/isolated/preview/825e80bac186d247dd9332f1440d20df-logotipo-del-equipo-de-futbol-de-alemania.png?w=360",  // Alemania (DFB)
+  ARG: "https://images.seeklogo.com/logo-png/0/1/afa-logo-png_seeklogo-4069.png",  // Argentina (AFA)
+  FRA: "https://upload.wikimedia.org/wikipedia/it/2/2d/Logo_FFF_%282018%29.png",  // Francia (FFF)
   POR: "https://logodownload.org/wp-content/uploads/2021/10/fpf-selecao-de-portugal-logo.png",  // Portugal (FPF)
   NED: "https://logodownload.org/wp-content/uploads/2022/07/holanda-netherlands-football-team-logo.png",  // Países Bajos (KNVB)
-  SUI: "https://logodownload.org/wp-content/uploads/2022/11/switzerland-national-football-team-logo.png",  // (no clasificada, pero por si acaso)
-  URU: "https://logodownload.org/wp-content/uploads/2021/09/auf-seleccion-de-futbol-de-uruguay-logo-1.png",  // Uruguay (AUF)
   MEX: "https://logodownload.org/wp-content/uploads/2021/10/fmf-seleccion-de-mexico-logo-5.png",  // México (FMF)
-  USA: "https://logodownload.org/wp-content/uploads/2021/10/united-states-national-soccer-team-logo.png",  // Estados Unidos (USSF)
   BEL: "https://logodownload.org/wp-content/uploads/2022/09/belgian-national-team-logo-1.png",
   JPN: "https://logodownload.org/wp-content/uploads/2022/08/japan-national-football-team-logo.png",
   GHA: "https://logodownload.org/wp-content/uploads/2022/12/ghana-national-football-team-logo.png",
   CAN: "https://logodownload.org/wp-content/uploads/2021/10/canada-soccer-team-logo.png",
   KOR: "https://logodownload.org/wp-content/uploads/2022/12/south-korea-national-football-team-logo-7.png",
-  QAT: "https://logodownload.org/wp-content/uploads/2022/07/qfa-qatar-football-logo.png",
   SEN: "https://logodownload.org/wp-content/uploads/2022/07/fsf-senegal-national-football-team-logo.png",
   COL: "https://logodownload.org/wp-content/uploads/2021/09/fcf-seleccion-de-f%C3%BAtbol-de-colombia-logo.png",
   TUN: "https://logodownload.org/wp-content/uploads/2022/08/tunisia-national-football-team-logo.png",
   CRO: "https://logodownload.org/wp-content/uploads/2022/11/croatia-national-football-team-logo.png",
-  AUS: "https://logodownload.org/wp-content/uploads/2022/08/australia-national-football-team-logo.png",
   PAR: "https://logodownload.org/wp-content/uploads/2021/09/apf-seleccion-de-futbol-de-paraguay-logo.png",
+  JOR: "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.worldatlas.com%2Fupload%2F92%2Fe2%2Fed%2Fjo-flag.jpg",
 
   // Añade cualquier otra con su código de 3 letras, p. ej.:  BEL: "https://...",
 };
@@ -187,7 +184,13 @@ async function hashPw(pw){
 
 /* ----------------------------- ICONOS SVG -------------------------------- */
 /* ► Cada icono usa su URL de IMAGES si está definida; si no, dibuja el SVG. */
-const iconImg = (url, s) => <img src={url} alt="" width={s} height={s} style={{ objectFit: "contain" }} />;
+const iconImg = (val, s) => {
+  // Si el valor parece una URL/ruta de imagen, lo pinta como <img>; si no, como emoji/texto.
+  const isUrl = typeof val === "string" && (/^https?:\/\//.test(val) || /\.(png|jpe?g|svg|webp|gif)$/i.test(val) || val.startsWith("/"));
+  return isUrl
+    ? <img src={val} alt="" width={s} height={s} style={{ objectFit: "contain" }} />
+    : <span style={{ fontSize: s * 0.95, lineHeight: 1 }}>{val}</span>;
+};
 const Ball = ({s=22}) => IMAGES.ICON_BALL_URL ? iconImg(IMAGES.ICON_BALL_URL, s) : (
   <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
     <circle cx="12" cy="12" r="9.2"/>
@@ -206,6 +209,13 @@ const Trophy = ({s=22}) => IMAGES.ICON_TROPHY_URL ? iconImg(IMAGES.ICON_TROPHY_U
     <path d="M7 4h10v4a5 5 0 0 1-10 0z"/>
     <path d="M7 5H4.5v1.5A2.5 2.5 0 0 0 7 9M17 5h2.5v1.5A2.5 2.5 0 0 1 17 9"/>
     <path d="M12 13v3M9 20h6M9.5 20l.5-2.2c.1-.5.5-.8 1-.8h2c.5 0 .9.3 1 .8l.5 2.2"/>
+  </svg>
+);
+const Rank = ({s=22}) => IMAGES.ICON_RANK_URL ? iconImg(IMAGES.ICON_RANK_URL, s) : (
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round">
+    <path d="M8 3l2.2 4.5M16 3l-2.2 4.5"/>
+    <circle cx="12" cy="15" r="6"/>
+    <path d="M12 12.3l.9 1.9 2 .3-1.5 1.4.4 2-1.8-1-1.8 1 .4-2-1.5-1.4 2-.3z" fill="currentColor" stroke="none"/>
   </svg>
 );
 const Poll = ({s=22}) => IMAGES.ICON_POLL_URL ? iconImg(IMAGES.ICON_POLL_URL, s) : (
@@ -1211,7 +1221,7 @@ const TABS = [
   ["groups", "Grupos", Ball],
   ["specials", "Apuestas", Trophy],
   ["poll", "Sondeo", Poll],
-  ["leaderboard", "Clasificación", Trophy],
+  ["leaderboard", "Clasificación", Rank],
   ["profile", "Perfil", UserIcon],
   ["rules", "Reglas", BookIcon],
 ];
