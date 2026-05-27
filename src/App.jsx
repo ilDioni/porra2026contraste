@@ -28,11 +28,11 @@ const IMAGES = {
   // el fondo cobalto con destellos de color original.
   HERO_BG_URL: "https://i.ytimg.com/vi/HmpzUm5j4OE/hq720.jpg",
   // Iconos de las pestañas / secciones. Cámbialos por URLs si quieres imágenes propias.
-  ICON_BALL_URL: "https://toppng.com/uploads/preview/file-soccer-ball-vector-11563256409x5p7owgegy.png",    // icono "Grupos"
+  ICON_BALL_URL: null,    // icono "Grupos"
   ICON_TROPHY_URL: null,  // icono "Apuestas" y "Clasificación" (trofeo / campeón)
   ICON_BOOT_URL: null,    // icono del máximo goleador (bota)
   ICON_POLL_URL: null,    // icono "Sondeo"
-  ICON_RANK_URL: "https://images.vexels.com/media/users/3/139474/isolated/preview/bf2e60baabd4d83cb1053e4fb720f156-ganador-del-campeonato-de-medalla-de-trofeo.png",    // icono "Clasificación" (medalla)
+  ICON_RANK_URL: null,    // icono "Clasificación" (medalla)
   ICON_RULES_URL: null,   // icono "Reglas"
 };
 
@@ -187,15 +187,31 @@ async function hashPw(pw){
 const iconImg = (val, s) => {
   // Si el valor parece una URL/ruta de imagen, lo pinta como <img>; si no, como emoji/texto.
   const isUrl = typeof val === "string" && (/^https?:\/\//.test(val) || /\.(png|jpe?g|svg|webp|gif)$/i.test(val) || val.startsWith("/"));
-  return isUrl
-    ? <img src={val} alt="" width={s} height={s} style={{ objectFit: "contain" }} />
-    : <span style={{ fontSize: s * 0.95, lineHeight: 1 }}>{val}</span>;
+  if (isUrl) {
+    // Si IMAGES.ICONS_MONO está activado, se desatura la imagen para que combine
+    // con el gris de los demás iconos. Funciona mejor con siluetas/iconos planos.
+    const filter = IMAGES.ICONS_MONO ? "grayscale(1) opacity(.65)" : undefined;
+    return <img src={val} alt="" width={s} height={s} style={{ objectFit: "contain", filter }} />;
+  }
+  // Emoji/texto: también puede atenuarse a gris con ICONS_MONO.
+  const style = { fontSize: s * 0.95, lineHeight: 1 };
+  if (IMAGES.ICONS_MONO) style.filter = "grayscale(1) opacity(.65)";
+  return <span style={style}>{val}</span>;
 };
 const Ball = ({s=22}) => IMAGES.ICON_BALL_URL ? iconImg(IMAGES.ICON_BALL_URL, s) : (
-  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-    <circle cx="12" cy="12" r="9.2"/>
-    <path d="M12 6.2l3.4 2.5-1.3 4H9.9l-1.3-4z" fill="currentColor" stroke="none"/>
-    <path d="M12 6.2V3.2M15.4 8.7l2.8-1M14.1 12.7l1.8 2.4M9.9 12.7l-1.8 2.4M8.6 8.7l-2.8-1"/>
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" strokeLinecap="round">
+    {/* contorno del balón */}
+    <circle cx="12" cy="12" r="9.3"/>
+    {/* pentágono central negro (como el emoji ⚽) */}
+    <path d="M12 7.4 L15.6 10 L14.2 14.3 L9.8 14.3 L8.4 10 Z" fill="currentColor" stroke="currentColor"/>
+    {/* costuras: de cada vértice del pentágono hacia el borde */}
+    <path d="M12 7.4 V3.1"/>
+    <path d="M15.6 10 L19.4 8.1"/>
+    <path d="M14.2 14.3 L16.9 18.6"/>
+    <path d="M9.8 14.3 L7.1 18.6"/>
+    <path d="M8.4 10 L4.6 8.1"/>
+    {/* pequeños pentágonos parciales del borde (insinuados con trazos cortos) */}
+    <path d="M3.4 12.2 Q5.4 12.9 6.2 14.8 M20.6 12.2 Q18.6 12.9 17.8 14.8 M9 3.6 Q10.4 5 12 5 Q13.6 5 15 3.6 M7.6 20.4 Q9.6 19.4 10.6 17.6 M16.4 20.4 Q14.4 19.4 13.4 17.6"/>
   </svg>
 );
 const Boot = ({s=22}) => IMAGES.ICON_BOOT_URL ? iconImg(IMAGES.ICON_BOOT_URL, s) : (
@@ -212,10 +228,16 @@ const Trophy = ({s=22}) => IMAGES.ICON_TROPHY_URL ? iconImg(IMAGES.ICON_TROPHY_U
   </svg>
 );
 const Rank = ({s=22}) => IMAGES.ICON_RANK_URL ? iconImg(IMAGES.ICON_RANK_URL, s) : (
-  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round">
-    <path d="M8 3l2.2 4.5M16 3l-2.2 4.5"/>
-    <circle cx="12" cy="15" r="6"/>
-    <path d="M12 12.3l.9 1.9 2 .3-1.5 1.4.4 2-1.8-1-1.8 1 .4-2-1.5-1.4 2-.3z" fill="currentColor" stroke="none"/>
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" strokeLinecap="round">
+    {/* cinta en V que sostiene la medalla */}
+    <path d="M8.5 3 L12 9.5 M15.5 3 L12 9.5"/>
+    <path d="M6.7 3 H10.3 M13.7 3 H17.3"/>
+    {/* disco de la medalla */}
+    <circle cx="12" cy="15" r="5.8"/>
+    {/* borde interior insinuado */}
+    <circle cx="12" cy="15" r="3.9"/>
+    {/* estrella central */}
+    <path d="M12 12.4 l.72 1.5 1.63.22 -1.2 1.13 .3 1.62 -1.45-.8 -1.45.8 .3-1.62 -1.2-1.13 1.63-.22 Z" fill="currentColor" stroke="none"/>
   </svg>
 );
 const Poll = ({s=22}) => IMAGES.ICON_POLL_URL ? iconImg(IMAGES.ICON_POLL_URL, s) : (
@@ -808,7 +830,6 @@ function SpecialsView({ picks, setChampion, setScorer, results, locked }) {
       </div>
 
       <div className="glabel" style={{ marginTop: 28 }}><span className="badge"><Boot s={17} /></span><h3>Máximo goleador</h3>
-        <span className="sp">orden por cuotas de apuestas</span></div>
       <div className="card" style={{ padding: 16 }}>
         <select value={isOther ? "__other" : (picks.scorer || "")} disabled={locked}
           onChange={(e) => setScorer(e.target.value === "__other" ? " " : e.target.value)}>
@@ -816,7 +837,6 @@ function SpecialsView({ picks, setChampion, setScorer, results, locked }) {
           {SCORERS.map(([n, t]) => <option key={n} value={n}>{n} · {TEAMS[t].name}</option>)}
           <option value="__other">Otro (escribir nombre)…</option>
         </select>
-        <p className="note" style={{ marginTop: 10 }}>Lista ordenada de mayor a menor favorito según las cuotas actuales de las casas de apuestas (mayo 2026): cuanto más arriba, más favorito.</p>
         {isOther && <input className="txt" style={{ marginTop: 10 }} placeholder="Nombre del goleador" value={picks.scorer.trimStart()} disabled={locked} onChange={(e) => setScorer(e.target.value)} />}
         {results?.scorer && <p className="note" style={{ marginTop: 12 }}>Bota de Oro oficial: <b>{results.scorer}</b></p>}
       </div>
@@ -928,7 +948,7 @@ function Leaderboard({ profiles, allPicks, results, meId, onRefresh, loading }) 
   return (
     <div>
       <div className="section-h" style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
-        <div><div className="ttl"><span className="ic"><Trophy /></span><h2>Clasificación</h2></div>
+        <div><div className="ttl"><span className="ic"><Rank /></span><h2>Clasificación</h2></div>
           <p>{profiles.length} participante{profiles.length === 1 ? "" : "s"} · puntos en vivo</p></div>
         <button className="btn ghost" style={{ padding: "8px 14px", fontSize: 13 }} onClick={onRefresh} disabled={loading}>{loading ? "Actualizando…" : "↻ Actualizar"}</button>
       </div>
