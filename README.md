@@ -75,12 +75,34 @@ Deja esos dos valores a mano; los usarás en la PARTE 3.
 ## Cómo se usa
 
 - Cada compañero abre la URL, pulsa **Crear un perfil nuevo**, elige nombre, un emoji
-  de avatar, color y contraseña. A partir de ahí entra con **Acceder a mi perfil**.
+  de avatar (cualquiera de su teclado), color y contraseña. A partir de ahí entra con
+  **Acceder a mi perfil**.
+- Desde la pestaña **Perfil** puede cambiar su emoji, nombre, color (incluidos blanco
+  y negro) y su contraseña cuando quiera.
 - Las selecciones se pueden editar hasta **24 h antes del primer partido** (10 jun, 19:00 UTC);
   luego quedan bloqueadas automáticamente.
+- Está optimizada para **móvil**: navegación inferior tipo app y botones grandes para el pulgar.
 - Tú, como organizador, entras desde **Entrar como organizador** con el PIN **2605** para:
-  meter resultados oficiales, editar la selección de alguien en una urgencia,
-  restablecer contraseñas y borrar perfiles.
+  ir marcando resultados oficiales (se **autoguardan** y recalculan la clasificación en vivo),
+  editar la selección de alguien en una urgencia, restablecer contraseñas y borrar perfiles.
+
+## Personalizar el logo y los iconos
+
+Abre `src/App.jsx` y busca el bloque **`const IMAGES`** (al principio del archivo).
+Cambia `LOGO_URL: null` por la URL pública de tu imagen, p. ej.
+`LOGO_URL: "https://i.imgur.com/tuLogo.png"`. Lo mismo para los iconos de cada sección.
+
+- **Imagen de fondo de la cabecera**: pon una URL en `HERO_BG_URL` y se usará como fondo
+  del bloque "El Mundial está al caer", con una capa oscura automática para que el texto
+  blanco se siga leyendo.
+- **Escudos de federación en vez de banderas**: en el bloque **`FLAG_OVERRIDES`** (justo
+  debajo) tienes ya preparadas las selecciones cuyo escudo es más conocido que su bandera
+  (España, Brasil, Inglaterra, Alemania, Argentina, Francia…). Cambia el `null` de cada una
+  por la URL de la imagen que quieras usar, p. ej. `ESP: "https://misitio.com/escudo.png"`.
+  La imagen se recorta en círculo, así que van bien logos cuadrados o circulares.
+
+> Nota legal: los escudos oficiales de las federaciones son marcas registradas. La app no
+> los incluye; eres tú quien decide qué imágenes usar en tu copia mediante estas URLs.
 
 ---
 
