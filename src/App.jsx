@@ -11,6 +11,66 @@ import { supabase } from "./supabaseClient";
    - Sondeo anónimo: % de 1·X·2 por partido, campeón y goleador
    ========================================================================= */
 
+/* =========================================================================
+   ★★★  PERSONALIZAR IMÁGENES (LOGO E ICONOS)  ★★★
+   Para cambiar el logo del header o cualquier icono por una imagen propia,
+   pon aquí la URL (debe ser pública, terminada en .png/.jpg/.svg/.webp).
+   Si dejas el valor en null, se usa el dibujo SVG original que ya trae la app.
+   --------------------------------------------------------------------------
+   Ejemplo:  LOGO_URL: "https://i.imgur.com/tuLogo.png"
+   ========================================================================= */
+const IMAGES = {
+  // Logo que aparece en el header (arriba a la izquierda) y en la pantalla de inicio.
+  LOGO_URL: https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/2026_FIFA_World_Cup_emblem.svg/1920px-2026_FIFA_World_Cup_emblem.svg.png,
+  // Imagen de fondo del bloque "El Mundial está al caer" (la cabecera grande).
+  // Pon una URL pública (.jpg/.png/.webp). Se le aplica una capa oscura automática
+  // para que el texto blanco de encima se siga leyendo. Si lo dejas en null, se usa
+  // el fondo cobalto con destellos de color original.
+  HERO_BG_URL: https://i.ytimg.com/vi/HmpzUm5j4OE/hq720.jpg,
+  // Iconos de las pestañas / secciones. Cámbialos por URLs si quieres imágenes propias.
+  ICON_BALL_URL: null,    // icono "Grupos"
+  ICON_TROPHY_URL: null,  // icono "Apuestas" y "Clasificación" (trofeo / campeón)
+  ICON_BOOT_URL: null,    // icono del máximo goleador (bota)
+  ICON_POLL_URL: null,    // icono "Sondeo"
+  ICON_RULES_URL: null,   // icono "Reglas"
+};
+
+/* Para cambiar la BANDERA/ESCUDO de una selección por una imagen propia, pon su URL.
+   Útil para selecciones cuyo escudo de federación es más conocido que su bandera.
+   Lo que dejes en null seguirá usando la bandera automática de flagcdn.com.
+   Ejemplo:  ESP: "https://misitio.com/escudo-rfef.png"
+   (La imagen se recorta en círculo, así que van bien logos cuadrados o circulares.) */
+const FLAG_OVERRIDES = {
+  // — Selecciones cuyo escudo suele ser más icónico que la bandera —
+  ESP: https://logodownload.org/wp-content/uploads/2022/08/spain-national-football-team-logo-1.png,  // España (RFEF)
+  BRA: https://logodownload.org/wp-content/uploads/2022/12/brazil-national-football-team-logo-1.png,  // Brasil (CBF)
+  ENG: https://logodownload.org/wp-content/uploads/2022/07/england-national-team-logo-1.png,  // Inglaterra (Three Lions)
+  GER: https://logodownload.org/wp-content/uploads/2018/06/germany-national-football-team-logo.png,  // Alemania (DFB)
+  ARG: https://logodownload.org/wp-content/uploads/2016/11/argentina-national-football-team-logo-5.png,  // Argentina (AFA)
+  FRA: https://logodownload.org/wp-content/uploads/2022/07/france-national-football-team-logo.png,  // Francia (FFF)
+  POR: https://logodownload.org/wp-content/uploads/2021/10/fpf-selecao-de-portugal-logo.png,  // Portugal (FPF)
+  NED: https://logodownload.org/wp-content/uploads/2022/07/holanda-netherlands-football-team-logo.png,  // Países Bajos (KNVB)
+  SUI: https://logodownload.org/wp-content/uploads/2022/11/switzerland-national-football-team-logo.png,  // (no clasificada, pero por si acaso)
+  URU: https://logodownload.org/wp-content/uploads/2021/09/auf-seleccion-de-futbol-de-uruguay-logo-1.png,  // Uruguay (AUF)
+  MEX: https://logodownload.org/wp-content/uploads/2021/10/fmf-seleccion-de-mexico-logo-5.png,  // México (FMF)
+  USA: https://logodownload.org/wp-content/uploads/2021/10/united-states-national-soccer-team-logo.png,  // Estados Unidos (USSF)
+  BEL: https://logodownload.org/wp-content/uploads/2022/09/belgian-national-team-logo-1.png,
+  JPN: https://logodownload.org/wp-content/uploads/2022/08/japan-national-football-team-logo.png,
+  GHA: https://logodownload.org/wp-content/uploads/2022/12/ghana-national-football-team-logo.png,
+  CAN: https://logodownload.org/wp-content/uploads/2021/10/canada-soccer-team-logo.png,
+  KOR: https://logodownload.org/wp-content/uploads/2022/12/south-korea-national-football-team-logo-7.png,
+  QAT: https://logodownload.org/wp-content/uploads/2022/07/qfa-qatar-football-logo.png,
+  SEN: https://logodownload.org/wp-content/uploads/2022/07/fsf-senegal-national-football-team-logo.png,
+  COL: https://logodownload.org/wp-content/uploads/2021/09/fcf-seleccion-de-f%C3%BAtbol-de-colombia-logo.png,
+  TUN: https://logodownload.org/wp-content/uploads/2022/08/tunisia-national-football-team-logo.png,
+  CRO: https://logodownload.org/wp-content/uploads/2022/11/croatia-national-football-team-logo.png,
+  AUS: https://logodownload.org/wp-content/uploads/2022/08/australia-national-football-team-logo.png,
+  PAR: https://logodownload.org/wp-content/uploads/2021/09/apf-seleccion-de-futbol-de-paraguay-logo.png,
+
+  // Añade cualquier otra con su código de 3 letras, p. ej.:  BEL: "https://...",
+};
+
+
 /* ----------------------------- DATOS OFICIALES ---------------------------- */
 const TEAMS = {
   MEX:{name:"México",flag:"mx"}, RSA:{name:"Sudáfrica",flag:"za"}, KOR:{name:"Corea del Sur",flag:"kr"}, CZE:{name:"República Checa",flag:"cz"},
@@ -77,32 +137,38 @@ const LOCK_TIME = KICKOFF - 24 * 3600 * 1000; // 10 jun 19:00 UTC
 const ADMIN_PIN = "2605"; // PIN del organizador
 
 /* ----------------------------- AVATARES ---------------------------------- */
-const COLORS = ["#0B1F8F","#E8402E","#FF7A1A","#13A05B","#2FA0E0","#7A3FB5","#C6A700","#0F8A8A"];
+const COLORS = ["#0B1F8F","#E8402E","#FF7A1A","#13A05B","#2FA0E0","#7A3FB5","#C6A700","#0F8A8A","#111111","#FFFFFF"];
 
-/* ----------------------------- STORAGE (Supabase) ------------------------ */
+// Devuelve estilo de avatar con texto legible según lo claro/oscuro del fondo.
+function avatarStyle(bg, extra = {}) {
+  const hex = (bg || "#0B1F8F").replace("#", "");
+  const r = parseInt(hex.substr(0,2),16), g = parseInt(hex.substr(2,2),16), b = parseInt(hex.substr(4,2),16);
+  const lum = (0.299*r + 0.587*g + 0.114*b) / 255; // luminancia 0..1
+  const light = lum > 0.7;
+  return {
+    background: bg,
+    color: light ? "#10142E" : "#fff",
+    boxShadow: light ? "inset 0 0 0 1px rgba(16,20,46,.18)" : "none",
+    ...extra,
+  };
+}
+
+/* ----------------------------- STORAGE ----------------------------------- */
 const KEY = {
   me:"porra26:me", profiles:"porra26:profiles", results:"porra26:results",
   config:"porra26:config", picks:(id)=>`porra26:picks:${id}`,
 };
-
-// "me" (el perfil con el que has entrado en ESTE navegador) es local del dispositivo.
-// El resto (perfiles, picks, resultados, config) es COMPARTIDO y vive en Supabase.
 const LOCAL_KEYS = new Set([KEY.me]);
-
 async function sget(k, sh) {
-  if (LOCAL_KEYS.has(k)) {
-    try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch { return null; }
-  }
+  if (LOCAL_KEYS.has(k)) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch { return null; } }
   try {
     const { data, error } = await supabase.from("kv").select("value").eq("key", k).maybeSingle();
     if (error) { console.error(error); return null; }
-    return data ? data.value : null;   // value es JSONB → ya viene parseado
+    return data ? data.value : null;
   } catch (e) { console.error(e); return null; }
 }
 async function sset(k, v, sh) {
-  if (LOCAL_KEYS.has(k)) {
-    try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; }
-  }
+  if (LOCAL_KEYS.has(k)) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } }
   try {
     const { error } = await supabase.from("kv").upsert({ key: k, value: v }, { onConflict: "key" });
     if (error) { console.error(error); return false; }
@@ -113,36 +179,36 @@ async function sdel(k) {
   if (LOCAL_KEYS.has(k)) { try { localStorage.removeItem(k); } catch {} return; }
   try { await supabase.from("kv").delete().eq("key", k); } catch (e) { console.error(e); }
 }
-
 async function hashPw(pw){
   const d=new TextEncoder().encode("porra26§"+pw);
   const b=await crypto.subtle.digest("SHA-256",d);
   return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("");
 }
 
-
 /* ----------------------------- ICONOS SVG -------------------------------- */
-const Ball = ({s=22}) => (
+/* ► Cada icono usa su URL de IMAGES si está definida; si no, dibuja el SVG. */
+const iconImg = (url, s) => <img src={url} alt="" width={s} height={s} style={{ objectFit: "contain" }} />;
+const Ball = ({s=22}) => IMAGES.ICON_BALL_URL ? iconImg(IMAGES.ICON_BALL_URL, s) : (
   <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
     <circle cx="12" cy="12" r="9.2"/>
     <path d="M12 6.2l3.4 2.5-1.3 4H9.9l-1.3-4z" fill="currentColor" stroke="none"/>
     <path d="M12 6.2V3.2M15.4 8.7l2.8-1M14.1 12.7l1.8 2.4M9.9 12.7l-1.8 2.4M8.6 8.7l-2.8-1"/>
   </svg>
 );
-const Boot = ({s=22}) => (
+const Boot = ({s=22}) => IMAGES.ICON_BOOT_URL ? iconImg(IMAGES.ICON_BOOT_URL, s) : (
   <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round">
     <path d="M4 7c0-.8.6-1.4 1.4-1.4H8c.6 0 1 .4 1.1 1l.5 4.1c.1.6.5 1 1.1 1.1l6.2.9c1.6.2 2.9 1.6 2.9 3.2v.7c0 .8-.6 1.4-1.4 1.4H5.4C4.6 19 4 18.4 4 17.6z"/>
     <path d="M4 16.4h16.3M7 19v1.5M11 19v1.5M15 19v1.5"/>
   </svg>
 );
-const Trophy = ({s=22}) => (
+const Trophy = ({s=22}) => IMAGES.ICON_TROPHY_URL ? iconImg(IMAGES.ICON_TROPHY_URL, s) : (
   <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round">
     <path d="M7 4h10v4a5 5 0 0 1-10 0z"/>
     <path d="M7 5H4.5v1.5A2.5 2.5 0 0 0 7 9M17 5h2.5v1.5A2.5 2.5 0 0 1 17 9"/>
     <path d="M12 13v3M9 20h6M9.5 20l.5-2.2c.1-.5.5-.8 1-.8h2c.5 0 .9.3 1 .8l.5 2.2"/>
   </svg>
 );
-const Poll = ({s=22}) => (
+const Poll = ({s=22}) => IMAGES.ICON_POLL_URL ? iconImg(IMAGES.ICON_POLL_URL, s) : (
   <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
     <path d="M6 19V11M12 19V5M18 19v-6"/>
   </svg>
@@ -152,7 +218,7 @@ const ShieldIcon = ({s=22}) => (
     <path d="M12 3l7 2.5v5.5c0 4.4-3 7.6-7 9-4-1.4-7-4.6-7-9V5.5z"/><path d="M9.5 12l1.8 1.8L15 9.8"/>
   </svg>
 );
-const BookIcon = ({s=22}) => (
+const BookIcon = ({s=22}) => IMAGES.ICON_RULES_URL ? iconImg(IMAGES.ICON_RULES_URL, s) : (
   <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round">
     <path d="M5 4.5h10a2 2 0 0 1 2 2V20a1.5 1.5 0 0 0-1.5-1.5H5z"/><path d="M5 4.5v14M9 9h5M9 12h5"/>
   </svg>
@@ -171,7 +237,12 @@ const Bunting = () => (
 
 // Emblema ORIGINAL de la porra — inspirado en la estética 2026 (arcos concéntricos
 // multicolor + tipografía rotunda), sin reproducir el emblema/trofeo oficiales de la FIFA.
-const Crest = ({ s=96 }) => (
+// ► Para usar tu propio logo, pon una URL en IMAGES.LOGO_URL (arriba del archivo).
+const Crest = ({ s=96 }) => {
+  if (IMAGES.LOGO_URL) {
+    return <img src={IMAGES.LOGO_URL} alt="Logo" width={s} height={s} style={{ objectFit: "contain", borderRadius: 8 }} />;
+  }
+  return (
   <svg width={s} height={s} viewBox="0 0 120 120" aria-hidden>
     <defs>
       <clipPath id="crestClip"><path d="M60 4 L108 18 V58 C108 88 87 108 60 116 C33 108 12 88 12 58 V18 Z"/></clipPath>
@@ -193,20 +264,24 @@ const Crest = ({ s=96 }) => (
     <path d="M60 4 L108 18 V58 C108 88 87 108 60 116 C33 108 12 88 12 58 V18 Z" fill="none" stroke="#0B1F8F" strokeWidth="4"/>
     <path d="M60 4 L108 18 V58 C108 88 87 108 60 116 C33 108 12 88 12 58 V18 Z" fill="none" stroke="#FBF8F1" strokeWidth="1.5"/>
   </svg>
-);
+  );
+};
 
 
 
 /* ----------------------------- BANDERA ----------------------------------- */
+/* ► Para usar un escudo/bandera propios de una selección, añade su URL en
+   FLAG_OVERRIDES (arriba del archivo). Si no, usa la bandera de flagcdn.com. */
 function Flag({ code, size=28 }) {
   const t = TEAMS[code];
   const [err, setErr] = useState(false);
   if (!t) return null;
+  const src = FLAG_OVERRIDES[code] || `https://flagcdn.com/w160/${t.flag}.png`;
   return (
     <span className="flag" style={{ width:size, height:size }} title={t.name}>
       {err
         ? <span className="flag-fb" style={{ fontSize: size*0.34 }}>{code}</span>
-        : <img src={`https://flagcdn.com/w160/${t.flag}.png`} alt={t.name} onError={()=>setErr(true)} loading="lazy" />}
+        : <img src={src} alt={t.name} onError={()=>setErr(true)} loading="lazy" />}
     </span>
   );
 }
@@ -288,6 +363,10 @@ function Styles() {
   background:
     radial-gradient(circle at 88% 120%, rgba(232,64,46,.55), transparent 38%),
     radial-gradient(circle at 12% 130%, rgba(198,242,58,.4), transparent 40%);}
+/* Cuando el hero usa una imagen de fondo (IMAGES.HERO_BG_URL): capa oscura para legibilidad */
+.hero.has-bg::after{
+  background:linear-gradient(180deg, rgba(8,18,70,.45) 0%, rgba(8,18,70,.78) 100%);}
+.hero.has-bg .bunting{position:relative;z-index:1}
 .hero-body{padding:8px 22px 20px;position:relative;z-index:1}
 .hero h2{font-size:25px;margin:8px 0 2px;font-weight:700;letter-spacing:-.02em;color:#fff}
 .hero p{margin:0;color:rgba(255,255,255,.78);font-size:14px}
@@ -327,7 +406,8 @@ function Styles() {
 .picks{display:flex;gap:6px}
 .pick{width:46px;height:40px;border-radius:11px;border:1.5px solid var(--line);background:var(--paper2);font-weight:700;font-size:15px;color:var(--ink2);transition:transform .08s,background .15s}
 .pick:hover:not(:disabled){border-color:var(--clay);color:var(--clay-d)}
-.pick.sel{background:var(--clay);border-color:var(--clay);color:#fff;box-shadow:0 3px 10px rgba(196,90,59,.32)}
+.pick.sel{background:var(--cobalt)!important;border-color:var(--cobalt);color:#fff!important;box-shadow:0 3px 10px rgba(11,31,143,.32)}
+.pick.sel:hover{color:#fff!important}
 .pick:active:not(:disabled){transform:scale(.94)}
 .pick.win{box-shadow:inset 0 0 0 2px var(--green)}
 .pick:disabled{opacity:.6;cursor:default}
@@ -422,21 +502,21 @@ select:focus,input.txt:focus{outline:none;border-color:var(--clay)}
   }
   .bottomnav button{
     border:none; background:none; flex:1; display:flex; flex-direction:column;
-    align-items:center; gap:3px; padding:6px 2px; color:var(--ink2);
-    font-size:10.5px; font-weight:600; border-radius:12px; min-height:52px;
+    align-items:center; gap:2px; padding:6px 1px; color:var(--ink2);
+    font-size:9.5px; font-weight:600; border-radius:12px; min-height:50px;
   }
   .bottomnav button.on{ color:var(--cobalt); }
   .bottomnav button.on .bn-ic{ background:var(--clay-soft); }
-  .bn-ic{ width:38px; height:30px; border-radius:10px; display:grid; place-items:center; transition:background .15s; }
+  .bn-ic{ width:34px; height:28px; border-radius:9px; display:grid; place-items:center; transition:background .15s; }
 
   /* Toques más grandes: botones de pronóstico cómodos para el pulgar */
-  .duel{ grid-template-columns:1fr; gap:9px; justify-items:stretch; }
-  .side{ justify-content:flex-start; gap:11px; }
-  .side .nm{ font-size:15px; }
-  .duel .side:first-child{ order:1; }
-  .duel .side.away{ order:2; flex-direction:row; text-align:left; }
-  .duel .picks{ order:3; justify-content:space-between; gap:8px; margin-top:4px; }
-  .pick{ flex:1; height:50px; font-size:18px; }
+  /* Partido: equipo a la izquierda, botones en el centro, equipo a la derecha */
+  .duel{ grid-template-columns:1fr auto 1fr; gap:7px; align-items:center; }
+  .side{ justify-content:flex-start; gap:7px; min-width:0; }
+  .side.away{ flex-direction:row-reverse; text-align:right; }
+  .side .nm{ font-size:12.5px; line-height:1.2; }
+  .picks{ gap:5px; }
+  .pick{ width:40px; height:48px; font-size:17px; padding:0; }
 
   /* En el sondeo, el cruce local–vs–visitante se mantiene en fila */
   .duel-poll{ grid-template-columns:1fr auto 1fr; gap:8px; }
@@ -471,6 +551,17 @@ select:focus,input.txt:focus{outline:none;border-color:var(--clay)}
   .bottomnav button{ font-size:9.5px; }
   .bn-ic{ width:34px; }
   .team-grid{ grid-template-columns:1fr; }
+  .pick{ width:34px; height:46px; font-size:16px; }
+  .duel .side .nm{ font-size:11.5px; }
+  .duel{ gap:5px; }
+}
+@media(max-width:340px){
+  /* Plan B en pantallas diminutas: nombres encima, botones+banderas debajo */
+  .duel{ grid-template-columns:1fr; gap:8px; justify-items:stretch; }
+  .duel .side{ order:1; }
+  .duel .side.away{ order:2; flex-direction:row; text-align:left; }
+  .duel .picks{ order:3; justify-content:space-between; }
+  .pick{ flex:1; width:auto; }
 }
 `}</style>
   );
@@ -609,8 +700,10 @@ function Onboarding({ profiles, onCreate, onLogin, onAdmin }) {
 /* ============================== HERO + COUNTDOWN ========================= */
 function HeroCountdown({ now, timeLocked }) {
   const toLock = LOCK_TIME - now, toKick = KICKOFF - now;
+  const bg = IMAGES.HERO_BG_URL;
   return (
-    <div className="hero">
+    <div className={`hero ${bg ? "has-bg" : ""}`}
+      style={bg ? { backgroundImage: `url(${bg})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}>
       <Bunting />
       <div className="hero-body" style={{ display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
         <Crest s={72} />
@@ -835,7 +928,7 @@ function Leaderboard({ profiles, allPicks, results, meId, onRefresh, loading }) 
           rows.map((r, i) => (
             <div className={`lb-row ${r.id === meId ? "me" : ""}`} key={r.id}>
               <div className="rank">{i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1}</div>
-              <div className="av" style={{ background: r.color }}>{r.avatar}</div>
+              <div className="av" style={avatarStyle(r.color)}>{r.avatar}</div>
               <div style={{ minWidth: 0 }}>
                 <div className="lb-name">{r.name}{r.id === meId ? " · tú" : ""}</div>
                 <div className="lb-sub">{r.made}/{GROUP_MATCHES.length} pronósticos{r.scored > 0 ? ` · ${r.group} en grupos` : ""}{r.special > 0 ? ` · ${r.special} especiales` : ""}</div>
@@ -948,10 +1041,28 @@ function AdminView({ config, setConfig, results, saveResults, locked, setLocked,
 
       {sub === "results" && (
         <div style={{ marginTop: 12 }}>
-          <p className="note" style={{ marginBottom: 8 }}>Introduce el resultado oficial (1·X·2) de cada partido y las apuestas. Se aplica a la clasificación de todos.</p>
-          <PicksEditor value={draft} onChange={setDraft} />
-          <button className="btn" style={{ marginTop: 16 }} onClick={async () => { await saveResults(draft); setSavedR(true); setTimeout(() => setSavedR(false), 2000); }}>
-            {savedR ? "✓ Guardado" : "Guardar resultados oficiales"}</button>
+          <div className="banner flat" style={{ marginTop: 0 }}>⚡ <b>Autoguardado:</b> cada resultado que marques se aplica al instante a la clasificación de todos.</div>
+          <p className="note" style={{ margin: "10px 0 8px" }}>Marca el resultado oficial (1·X·2) de cada partido, el campeón y el goleador. Abajo verás cómo queda la clasificación en tiempo real.</p>
+          <PicksEditor value={draft} onChange={(d) => { setDraft(d); saveResults(d); }} />
+
+          <div className="glabel" style={{ marginTop: 22 }}><span className="badge"><Trophy s={18} /></span><h3>Clasificación en vivo</h3>
+            <span className="sp">{GROUP_MATCHES.filter((m) => draft.groups?.[m.id]).length}/{GROUP_MATCHES.length} resultados</span></div>
+          <div className="card">
+            {(() => {
+              const rows = profiles.map((p) => ({ ...p, ...computeScore(allPicks[p.id], draft) }))
+                .sort((a, b) => b.total - a.total);
+              if (rows.length === 0) return <div className="empty">Aún no hay participantes.</div>;
+              return rows.map((r, i) => (
+                <div className="lb-row" key={r.id}>
+                  <div className="rank">{i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1}</div>
+                  <div className="av" style={avatarStyle(r.color)}>{r.avatar}</div>
+                  <div style={{ minWidth: 0 }}><div className="lb-name">{r.name}</div>
+                    <div className="lb-sub">{r.group} grupos{r.special ? ` · ${r.special} especiales` : ""}</div></div>
+                  <div className="lb-pts"><b>{r.total}</b><span>puntos</span></div>
+                </div>
+              ));
+            })()}
+          </div>
         </div>
       )}
 
@@ -980,7 +1091,7 @@ function AdminView({ config, setConfig, results, saveResults, locked, setLocked,
             <div className="card" style={{ marginTop: 4 }}>
               {profiles.map((p) => (
                 <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderBottom: "1px solid var(--line2)" }}>
-                  <div className="av" style={{ background: p.color }}>{p.avatar}</div>
+                  <div className="av" style={avatarStyle(p.color)}>{p.avatar}</div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div className="lb-name">{p.name}</div>
                     <div className="lb-sub">{(allPicks[p.id] ? GROUP_MATCHES.filter((m) => allPicks[p.id].groups?.[m.id]).length : 0)}/{GROUP_MATCHES.length} pronósticos</div>
@@ -1025,12 +1136,83 @@ function AdminView({ config, setConfig, results, saveResults, locked, setLocked,
   );
 }
 
+/* ============================ EDITAR PERFIL ============================= */
+const UserIcon = ({ s = 22 }) => (
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+    <circle cx="12" cy="8" r="3.6" /><path d="M5 20c0-3.5 3.1-5.6 7-5.6s7 2.1 7 5.6" />
+  </svg>
+);
+
+function ProfileEditor({ me, profiles, onSave, onChangePassword }) {
+  const [name, setName] = useState(me.name);
+  const [av, setAv] = useState(me.avatar);
+  const [col, setCol] = useState(me.color);
+  const [msg, setMsg] = useState("");
+  const [err, setErr] = useState("");
+  const [pw, setPw] = useState("");
+  const [pw2, setPw2] = useState("");
+  const [pwMsg, setPwMsg] = useState("");
+
+  return (
+    <div>
+      <div className="section-h"><div className="ttl"><span className="ic"><UserIcon /></span><h2>Mi perfil</h2></div>
+        <p>Cambia tu emoji, tu nombre y tu color. Se actualiza en toda la porra.</p></div>
+
+      <div className="card" style={{ padding: 18, marginTop: 14 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 4 }}>
+          <div className="av-preview" style={avatarStyle(col)}>{av || "🙂"}</div>
+          <div style={{ flex: 1 }}>
+            <label className="label" style={{ marginTop: 0 }}>Emoji de avatar</label>
+            <input className="txt" value={av} maxLength={4}
+              onChange={(e) => setAv([...e.target.value].slice(0, 1).join(""))}
+              placeholder="Pega o escribe un emoji" />
+          </div>
+        </div>
+
+        <label className="label">Nombre</label>
+        <input className="txt" value={name} maxLength={20} onChange={(e) => setName(e.target.value)} placeholder="Tu nombre" />
+
+        <label className="label">Color de fondo</label>
+        <div className="col-pick">{COLORS.map((c) => (
+          <button key={c} className={`col-opt ${col === c ? "sel" : ""}`} style={{ background: c }} onClick={() => setCol(c)} />
+        ))}</div>
+
+        {err && <div className="err">{err}</div>}
+        {msg && <div className="banner" style={{ marginTop: 12 }}>✓ {msg}</div>}
+        <button className="btn" style={{ width: "100%", marginTop: 18 }}
+          onClick={async () => {
+            if (!name.trim()) return setErr("Pon un nombre.");
+            if (profiles.some((p) => p.id !== me.id && p.name.toLowerCase() === name.trim().toLowerCase()))
+              return setErr("Ya existe otro perfil con ese nombre.");
+            setErr(""); await onSave({ name: name.trim(), avatar: av || "🙂", color: col });
+            setMsg("Perfil actualizado."); setTimeout(() => setMsg(""), 2500);
+          }}>Guardar cambios</button>
+      </div>
+
+      <div className="card" style={{ padding: 18, marginTop: 16 }}>
+        <h3 style={{ margin: "0 0 8px", fontSize: 16 }}>Cambiar contraseña</h3>
+        <input className="txt" type="password" value={pw} onChange={(e) => setPw(e.target.value)} placeholder="Nueva contraseña" />
+        <input className="txt" type="password" style={{ marginTop: 8 }} value={pw2} onChange={(e) => setPw2(e.target.value)} placeholder="Repite la nueva contraseña" />
+        {pwMsg && <div className="banner" style={{ marginTop: 12 }}>✓ {pwMsg}</div>}
+        <button className="btn ghost" style={{ width: "100%", marginTop: 12 }}
+          onClick={async () => {
+            if (pw.length < 4) return alert("La contraseña debe tener al menos 4 caracteres.");
+            if (pw !== pw2) return alert("Las contraseñas no coinciden.");
+            await onChangePassword(pw); setPw(""); setPw2("");
+            setPwMsg("Contraseña cambiada."); setTimeout(() => setPwMsg(""), 2500);
+          }}>Actualizar contraseña</button>
+      </div>
+    </div>
+  );
+}
+
 /* ================================= APP ================================== */
 const TABS = [
   ["groups", "Grupos", Ball],
   ["specials", "Apuestas", Trophy],
   ["poll", "Sondeo", Poll],
   ["leaderboard", "Clasificación", Trophy],
+  ["profile", "Perfil", UserIcon],
   ["rules", "Reglas", BookIcon],
 ];
 
@@ -1101,6 +1283,20 @@ export default function App() {
   const saveResults = async (r) => { setResults(r); await sset(KEY.results, r, true); };
   const savePicksFor = async (id, p) => { await sset(KEY.picks(id), p, true); setAllPicks((cur) => ({ ...cur, [id]: p })); if (me && id === me.id) setPicks(p); };
 
+  // Editar MI propio perfil (emoji, nombre, color)
+  const updateMyProfile = async (changes) => {
+    const profs = (await sget(KEY.profiles, true)) || [];
+    const next = profs.map((p) => p.id === me.id ? { ...p, ...changes } : p);
+    await sset(KEY.profiles, next, true);
+    setProfiles(next);
+    const upd = next.find((p) => p.id === me.id);
+    setMe(upd); await sset(KEY.me, upd, false);
+  };
+  const changeMyPassword = async (newPw) => {
+    const hash = await hashPw(newPw);
+    await updateMyProfile({ pwHash: hash });
+  };
+
   const resetPassword = async (id, newPw) => {
     const hash = await hashPw(newPw);
     const profs = (await sget(KEY.profiles, true)) || [];
@@ -1153,7 +1349,7 @@ export default function App() {
           <div className="brand"><span className="cup" style={{ display: "inline-flex" }}><Crest s={34} /></span>
             <div><h1>Porra Mundial 2026</h1><small>EE. UU. · México · Canadá</small></div></div>
           <div className="me-chip">
-            <div className="av" style={{ background: me.color, width: 24, height: 24, fontSize: 13 }}>{me.avatar}</div>{me.name}
+            <div className="av" style={avatarStyle(me.color, { width: 24, height: 24, fontSize: 13 })}>{me.avatar}</div>{me.name}
             <button onClick={async () => { if (confirm("¿Salir de tu perfil? Podrás volver a entrar con tu contraseña.")) { await sdel(KEY.me); setMe(null); setTab("groups"); } }}>salir</button>
           </div>
         </div>
@@ -1166,6 +1362,7 @@ export default function App() {
         {tab === "specials" && <SpecialsView picks={picks} setChampion={setChampion} setScorer={setScorer} results={results} locked={locked} />}
         {tab === "poll" && <PollView allPicks={allPicks} loading={busy} onRefresh={loadAll} />}
         {tab === "leaderboard" && <Leaderboard profiles={profiles} allPicks={allPicks} results={results} meId={me.id} onRefresh={loadAll} loading={busy} />}
+        {tab === "profile" && <ProfileEditor me={me} profiles={profiles} onSave={updateMyProfile} onChangePassword={changeMyPassword} />}
         {tab === "rules" && <Rules />}
       </div>
       <nav className="bottomnav">
