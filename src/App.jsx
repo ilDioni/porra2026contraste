@@ -850,7 +850,7 @@ function GroupsView({ picks, setPick, results, locked, now, timeLocked }) {
 /* =============================== APUESTAS =============================== */
 function SpecialsView({ picks, setChampion, setScorer, results, locked }) {
   const allTeams = TEAMS_ALPHA;
-  const isOther = picks.scorer !== undefined && picks.scorer !== "" && !SCORERS.some(([n]) => n === picks.scorer);
+  const isOther = picks.scorer != null && picks.scorer !== "" && !SCORERS.some(([n]) => n === picks.scorer);
   return (
     <div>
       <div className="section-h"><div className="ttl"><span className="ic"><Trophy /></span><h2>Apuestas especiales</h2></div>
@@ -874,7 +874,7 @@ function SpecialsView({ picks, setChampion, setScorer, results, locked }) {
           <option value="__other">Otro (escribir nombre)…</option>
         </select>
         <p className="note" style={{ marginTop: 10 }}>Lista ordenada de mayor a menor favorito según las cuotas actuales de las casas de apuestas (mayo 2026): cuanto más arriba, más favorito.</p>
-        {isOther && <input className="txt" style={{ marginTop: 10 }} placeholder="Nombre del goleador" value={picks.scorer.trimStart()} disabled={locked} onChange={(e) => setScorer(e.target.value)} />}
+        {isOther && <input className="txt" style={{ marginTop: 10 }} placeholder="Nombre del goleador" value={picks.scorer?.trimStart?.() || ""} disabled={locked} onChange={(e) => setScorer(e.target.value)} />}
         {results?.scorer && <p className="note" style={{ marginTop: 12 }}>Bota de Oro oficial: <b>{results.scorer}</b></p>}
       </div>
     </div>
@@ -1049,7 +1049,7 @@ function Rules() {
 function PicksEditor({ value, onChange }) {
   const [g, setG] = useState("A");
   const matches = GROUP_MATCHES.filter((m) => m.group === g);
-  const isOther = value.scorer !== undefined && value.scorer !== "" && !SCORERS.some(([n]) => n === value.scorer);
+  const isOther = value.scorer != null && value.scorer !== "" && !SCORERS.some(([n]) => n === value.scorer);
   const setP = (id, o) => onChange({ ...value, groups: { ...value.groups, [id]: value.groups?.[id] === o ? undefined : o } });
   return (
     <div>
@@ -1075,7 +1075,7 @@ function PicksEditor({ value, onChange }) {
           <option value="">Sin elegir</option>{SCORERS.map(([n, t]) => <option key={n} value={n}>{n} · {TEAMS[t].name}</option>)}
           <option value="__other">Otro…</option>
         </select>
-        {isOther && <input className="txt" style={{ marginTop: 10 }} value={value.scorer.trimStart()} onChange={(e) => onChange({ ...value, scorer: e.target.value })} placeholder="Nombre del goleador" />}
+        {isOther && <input className="txt" style={{ marginTop: 10 }} value={value.scorer?.trimStart?.() || ""} onChange={(e) => onChange({ ...value, scorer: e.target.value })} placeholder="Nombre del goleador" />}
       </div>
     </div>
   );
