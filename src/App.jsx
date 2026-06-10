@@ -6,7 +6,7 @@ import { supabase } from "./supabaseClient";
    - Banderas como imágenes (insignias circulares, estilo emoji)
    - Iconografía propia en SVG (balón, bota, trofeo, banderines, patrón)
    - Perfiles con contraseña (acceso futuro para editar)
-   - Bloqueo automático 24 h antes del partido inaugural
+   - Bloqueo automático 1 h antes del partido inaugural
    - Panel de organizador: resultados + editar pronósticos de cualquiera
    - Sondeo anónimo: % de 1·X·2 por partido, campeón y goleador
    ========================================================================= */
@@ -163,9 +163,10 @@ const MAX_SPECIAL = SCORING.champion + SCORING.scorer;
 const MAX_TOTAL = MAX_GROUP + MAX_KO + MAX_SPECIAL;
 
 /* ----------------------------- FECHAS / BLOQUEO -------------------------- */
-// Inaugural: 11 jun 2026, 13:00 CDMX (UTC-6) = 19:00 UTC. Bloqueo 24 h antes.
+// Inaugural: 11 jun 2026, 13:00 CDMX (UTC-6) = 19:00 UTC. Bloqueo 1 h antes.
 const KICKOFF = Date.UTC(2026, 5, 11, 19, 0, 0);
-const LOCK_TIME = KICKOFF - 24 * 3600 * 1000; // 10 jun 19:00 UTC
+//const LOCK_TIME = KICKOFF - 24 * 3600 * 1000; // 10 jun 19:00 UTC
+const LOCK_TIME = KICKOFF - 1 * 3600 * 1000; // 11 jun 18:00 UTC
 const ADMIN_PIN = "2605"; // PIN del organizador
 
 /* ----------------------------- AVATARES ---------------------------------- */
@@ -864,8 +865,7 @@ function SpecialsView({ picks, setChampion, setScorer, results, locked }) {
         <button key={c} className={`team-opt ${picks.champion === c ? "sel" : ""}`} disabled={locked} onClick={() => setChampion(c)}><Flag code={c} size={24} /> {TEAMS[c].name}</button>))}
       </div>
 
-      <div className="glabel" style={{ marginTop: 28 }}><span className="badge"><Boot s={17} /></span><h3>Máximo goleador</h3>
-        <span className="sp">orden por cuotas de apuestas</span></div>
+      <div className="glabel" style={{ marginTop: 28 }}><span className="badge"><Boot s={17} /></span><h3>Máximo goleador</h3></div>
       <div className="card" style={{ padding: 16 }}>
         <select value={isOther ? "__other" : (picks.scorer || "")} disabled={locked}
           onChange={(e) => setScorer(e.target.value === "__other" ? " " : e.target.value)}>
@@ -873,7 +873,6 @@ function SpecialsView({ picks, setChampion, setScorer, results, locked }) {
           {SCORERS.map(([n, t]) => <option key={n} value={n}>{n} · {TEAMS[t].name}</option>)}
           <option value="__other">Otro (escribir nombre)…</option>
         </select>
-        <p className="note" style={{ marginTop: 10 }}>Lista ordenada de mayor a menor favorito según las cuotas actuales de las casas de apuestas (mayo 2026): cuanto más arriba, más favorito.</p>
         {isOther && <input className="txt" style={{ marginTop: 10 }} placeholder="Nombre del goleador" value={picks.scorer?.trimStart?.() || ""} disabled={locked} onChange={(e) => setScorer(e.target.value)} />}
         {results?.scorer && <p className="note" style={{ marginTop: 12 }}>Bota de Oro oficial: <b>{results.scorer}</b></p>}
       </div>
@@ -1037,7 +1036,7 @@ function Rules() {
           <li><b>Eliminatorias:</b> puntos por acertar el signo + un bonus por clavar el resultado exacto. El bonus nunca supera el <b>50%</b> de lo que da el signo, así que acertar el ganador siempre vale más que el marcador.</li>
           <li>Cada ronda escala: la final vale más que las semis, estas más que cuartos, y así sucesivamente.</li>
           <li>La fase de grupos solo vale el <span className="pill">{Math.round((MAX_GROUP / MAX_TOTAL) * 100)}%</span> del total; el <span className="pill">{Math.round(((MAX_TOTAL - MAX_GROUP) / MAX_TOTAL) * 100)}%</span> restante se decide después, así que siempre hay margen para remontar.</li>
-          <li>La selección se <b>bloquea automáticamente 24 h antes del partido inaugural</b>. Después solo el organizador puede tocarla en una urgencia.</li>
+          <li>La selección se <b>bloquea automáticamente 1 h antes del partido inaugural</b>. Después solo el organizador puede tocarla en una urgencia.</li>
         </ul>
         <div className="lock-badge" style={{ marginTop: 12 }}>🔒 La porra de eliminatorias se abrirá al cerrar la fase de grupos</div>
       </div>
@@ -1189,7 +1188,7 @@ function AdminView({ config, setConfig, results, saveResults, locked, setLocked,
       {sub === "settings" && (
         <div style={{ marginTop: 12 }}>
           <div className="banner flat" style={{ marginTop: 0 }}>
-            <b>Bloqueo automático:</b> {timeLocked ? "activo (ya pasó la hora de cierre)." : "se activará 24 h antes del inaugural."}
+            <b>Bloqueo automático:</b> {timeLocked ? "activo (ya pasó la hora de cierre)." : "se activará 1 h antes del inaugural."}
           </div>
           <div className="banner flat">
             <b>Cierre manual:</b> {locked && !timeLocked ? "forzado a cerrado." : "abierto."}

@@ -79,7 +79,7 @@ Deja esos dos valores a mano; los usarás en la PARTE 3.
   **Acceder a mi perfil**.
 - Desde la pestaña **Perfil** puede cambiar su emoji, nombre, color (incluidos blanco
   y negro) y su contraseña cuando quiera.
-- Las selecciones se pueden editar hasta **24 h antes del primer partido** (10 jun, 19:00 UTC);
+- Las selecciones se pueden editar hasta **1 h antes del primer partido** (11 jun, 20:00);
   luego quedan bloqueadas automáticamente.
 - Está optimizada para **móvil**: navegación inferior tipo app y botones grandes para el pulgar.
 - Tú, como organizador, entras desde **Entrar como organizador** con el PIN **2605** para:
