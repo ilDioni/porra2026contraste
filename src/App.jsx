@@ -481,13 +481,13 @@ const Crest = ({ s=96 }) => {
 /* ----------------------------- BANDERA ----------------------------------- */
 /* ► Para usar un escudo/bandera propios de una selección, añade su URL en
    FLAG_OVERRIDES (arriba del archivo). Si no, usa la bandera de flagcdn.com. */
-function Flag({ code, size=28 }) {
+function Flag({ code, size=28, contain=false }) {
   const t = TEAMS[code];
   const [err, setErr] = useState(false);
   if (!t) return null;
   const src = FLAG_OVERRIDES[code] || `https://flagcdn.com/w160/${t.flag}.png`;
   return (
-    <span className="flag" style={{ width:size, height:size }} title={t.name}>
+    <span className={`flag ${contain ? "flag-contain" : ""}`} style={{ width:size, height:size }} title={t.name}>
       {err
         ? <span className="flag-fb" style={{ fontSize: size*0.34 }}>{code}</span>
         : <img src={src} alt={t.name} onError={()=>setErr(true)} loading="lazy" />}
@@ -537,6 +537,7 @@ function Styles() {
 .flag{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;overflow:hidden;flex:none;
   background:#fff;box-shadow:0 1px 3px rgba(16,20,46,.18), inset 0 0 0 1.5px rgba(255,255,255,.9), 0 0 0 1px var(--line)}
 .flag img{width:100%;height:100%;object-fit:cover}
+.flag.flag-contain img{object-fit:contain;padding:2px}
 .flag-fb{font-weight:800;color:var(--ink2);letter-spacing:-.02em;font-family:'Archivo'}
 
 /* topbar */
@@ -579,14 +580,15 @@ function Styles() {
 .hero-body{padding:8px 22px 20px;position:relative;z-index:1}
 .hero h2{font-size:25px;margin:8px 0 2px;font-weight:700;letter-spacing:-.02em;color:#fff}
 .hero p{margin:0;color:rgba(255,255,255,.78);font-size:14px}
-.countdown{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);border-radius:13px;padding:11px 15px;backdrop-filter:blur(4px)}
+.countdown{display:flex;align-items:center;gap:12px;flex-wrap:nowrap;margin-top:14px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);border-radius:13px;padding:11px 15px;backdrop-filter:blur(4px);max-width:100%;overflow:hidden}
 .countdown .big{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;color:var(--lime);font-variant-numeric:tabular-nums}
 .countdown>div div:first-child{color:rgba(255,255,255,.7)!important}
-.next-match-list{display:grid;gap:6px;margin:4px 0 3px;min-width:0;width:100%;max-width:100%}
-.next-match-row{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:8px;min-width:0;width:100%;max-width:100%;font-weight:700;font-size:18px;line-height:1.15}
+.next-match-list{display:grid;gap:6px;margin:4px 0 3px;min-width:0;width:100%;max-width:520px}
+.next-match-row{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:9px;min-width:0;width:100%;max-width:520px;font-weight:700;font-size:18px;line-height:1.15}
 .next-team{display:flex;align-items:center;gap:7px;min-width:0;max-width:100%;overflow:hidden}
+.next-team.away{justify-content:flex-start;text-align:left}
 .next-team-name{display:block;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.next-vs{color:rgba(255,255,255,.65);white-space:nowrap;flex:none}
+.next-vs{color:rgba(255,255,255,.65);white-space:nowrap;flex:none;padding:0 2px}
 .next-kickoff{grid-column:1 / -1;color:rgba(255,255,255,.72);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 .banner{margin-top:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--clay-soft);border:1px solid #C9D4FF;border-radius:14px;padding:12px 16px;font-size:14px}
@@ -754,7 +756,9 @@ select:focus,input.txt:focus{outline:none;border-color:var(--clay)}
   .section-h h2{ font-size:21px; }
   .hero h2{ font-size:22px; }
   .countdown{ align-items:flex-start; }
-  .next-match-row{ font-size:16px; gap:6px; }
+  .countdown{ gap:10px; padding:11px 12px; }
+  .next-match-list{ max-width:100%; }
+  .next-match-row{ font-size:16px; gap:6px; max-width:100%; }
   .next-team{ gap:6px; }
 
   /* Botones de acción a lo ancho y cómodos */
@@ -949,14 +953,14 @@ function HeroCountdown({ now, timeLocked, results }) {
                   {matches.map(({ match, kickoffMs }) => (
                     <div key={match.id} className="next-match-row">
                       <span className="next-team" title={TEAMS[match.home].name}>
-                        <Flag code={match.home} size={21} />
+                        <Flag code={match.home} size={21} contain />
                         <span className="next-team-name">{TEAMS[match.home].name}</span>
                       </span>
 
                       <span className="next-vs">vs</span>
 
-                      <span className="next-team" title={TEAMS[match.away].name}>
-                        <Flag code={match.away} size={21} />
+                      <span className="next-team away" title={TEAMS[match.away].name}>
+                        <Flag code={match.away} size={21} contain />
                         <span className="next-team-name">{TEAMS[match.away].name}</span>
                       </span>
 
