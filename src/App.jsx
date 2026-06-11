@@ -481,13 +481,13 @@ const Crest = ({ s=96 }) => {
 /* ----------------------------- BANDERA ----------------------------------- */
 /* ► Para usar un escudo/bandera propios de una selección, añade su URL en
    FLAG_OVERRIDES (arriba del archivo). Si no, usa la bandera de flagcdn.com. */
-function Flag({ code, size=28, contain=false }) {
+function Flag({ code, size=28 }) {
   const t = TEAMS[code];
   const [err, setErr] = useState(false);
   if (!t) return null;
   const src = FLAG_OVERRIDES[code] || `https://flagcdn.com/w160/${t.flag}.png`;
   return (
-    <span className={`flag ${contain ? "flag-contain" : ""}`} style={{ width:size, height:size }} title={t.name}>
+    <span className="flag" style={{ width:size, height:size }} title={t.name}>
       {err
         ? <span className="flag-fb" style={{ fontSize: size*0.34 }}>{code}</span>
         : <img src={src} alt={t.name} onError={()=>setErr(true)} loading="lazy" />}
@@ -537,7 +537,6 @@ function Styles() {
 .flag{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;overflow:hidden;flex:none;
   background:#fff;box-shadow:0 1px 3px rgba(16,20,46,.18), inset 0 0 0 1.5px rgba(255,255,255,.9), 0 0 0 1px var(--line)}
 .flag img{width:100%;height:100%;object-fit:cover}
-.flag.flag-contain img{object-fit:contain;padding:2px}
 .flag-fb{font-weight:800;color:var(--ink2);letter-spacing:-.02em;font-family:'Archivo'}
 
 /* topbar */
@@ -953,14 +952,14 @@ function HeroCountdown({ now, timeLocked, results }) {
                   {matches.map(({ match, kickoffMs }) => (
                     <div key={match.id} className="next-match-row">
                       <span className="next-team" title={TEAMS[match.home].name}>
-                        <Flag code={match.home} size={21} contain />
+                        <Flag code={match.home} size={21} />
                         <span className="next-team-name">{TEAMS[match.home].name}</span>
                       </span>
 
                       <span className="next-vs">vs</span>
 
                       <span className="next-team away" title={TEAMS[match.away].name}>
-                        <Flag code={match.away} size={21} contain />
+                        <Flag code={match.away} size={21} />
                         <span className="next-team-name">{TEAMS[match.away].name}</span>
                       </span>
 
