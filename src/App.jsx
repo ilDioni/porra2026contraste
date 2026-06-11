@@ -8,7 +8,7 @@ import { supabase } from "./supabaseClient";
    - Perfiles con contraseña (acceso futuro para editar)
    - Bloqueo automático 1 h antes del partido inaugural
    - Panel de organizador: resultados + editar pronósticos de cualquiera
-   - Sondeo anónimo: % de 1·X·2 por partido, campeón y goleador
+   - Sondeo visible: % de 1·X·2 y perfiles que han votado cada opción
    ========================================================================= */
 
 /* =========================================================================
@@ -130,6 +130,143 @@ const GROUP_MATCHES = [
   { id:"L2", group:"L", matchday:2, home:"ENG", away:"GHA" }, { id:"L3", group:"L", matchday:2, home:"PAN", away:"CRO" },
   { id:"L4", group:"L", matchday:3, home:"PAN", away:"ENG" }, { id:"L5", group:"L", matchday:3, home:"CRO", away:"GHA" },
 ];
+
+/* --------------------- RESULTADOS Y HORARIOS EDITABLES -------------------
+   Edita SOLO esta sección durante el torneo.
+   - result: "" si aún no hay resultado; "1" gana local, "X" empate, "2" gana visitante.
+   - kickoffSpain: hora de inicio en España, formato "AAAA-MM-DDTHH:mm:ss+02:00".
+     Si lo dejas vacío, ese partido no aparecerá en la cuenta atrás del bloque principal.
+   Los valores escritos aquí tienen prioridad sobre los resultados guardados desde el panel admin.
+   ------------------------------------------------------------------------ */
+const MATCH_CONTROL = {
+  A0: { kickoffSpain: "2026-06-11T21:00:00+02:00", result: "" }, // México - Sudáfrica
+  A1: { kickoffSpain: "", result: "" }, // Corea del Sur - República Checa
+  A2: { kickoffSpain: "", result: "" }, // República Checa - Sudáfrica
+  A3: { kickoffSpain: "", result: "" }, // México - Corea del Sur
+  A4: { kickoffSpain: "", result: "" }, // República Checa - México
+  A5: { kickoffSpain: "", result: "" }, // Sudáfrica - Corea del Sur
+  B0: { kickoffSpain: "", result: "" }, // Canadá - Bosnia y Herzeg.
+  B1: { kickoffSpain: "", result: "" }, // Catar - Suiza
+  B2: { kickoffSpain: "", result: "" }, // Suiza - Bosnia y Herzeg.
+  B3: { kickoffSpain: "", result: "" }, // Canadá - Catar
+  B4: { kickoffSpain: "", result: "" }, // Suiza - Canadá
+  B5: { kickoffSpain: "", result: "" }, // Bosnia y Herzeg. - Catar
+  C0: { kickoffSpain: "", result: "" }, // Brasil - Marruecos
+  C1: { kickoffSpain: "", result: "" }, // Haití - Escocia
+  C2: { kickoffSpain: "", result: "" }, // Escocia - Marruecos
+  C3: { kickoffSpain: "", result: "" }, // Brasil - Haití
+  C4: { kickoffSpain: "", result: "" }, // Escocia - Brasil
+  C5: { kickoffSpain: "", result: "" }, // Marruecos - Haití
+  D0: { kickoffSpain: "", result: "" }, // Estados Unidos - Paraguay
+  D1: { kickoffSpain: "", result: "" }, // Australia - Turquía
+  D2: { kickoffSpain: "", result: "" }, // Estados Unidos - Australia
+  D3: { kickoffSpain: "", result: "" }, // Turquía - Paraguay
+  D4: { kickoffSpain: "", result: "" }, // Turquía - Estados Unidos
+  D5: { kickoffSpain: "", result: "" }, // Paraguay - Australia
+  E0: { kickoffSpain: "", result: "" }, // Alemania - Curazao
+  E1: { kickoffSpain: "", result: "" }, // Costa de Marfil - Ecuador
+  E2: { kickoffSpain: "", result: "" }, // Alemania - Costa de Marfil
+  E3: { kickoffSpain: "", result: "" }, // Ecuador - Curazao
+  E4: { kickoffSpain: "", result: "" }, // Curazao - Costa de Marfil
+  E5: { kickoffSpain: "", result: "" }, // Ecuador - Alemania
+  F0: { kickoffSpain: "", result: "" }, // Países Bajos - Japón
+  F1: { kickoffSpain: "", result: "" }, // Suecia - Túnez
+  F2: { kickoffSpain: "", result: "" }, // Países Bajos - Suecia
+  F3: { kickoffSpain: "", result: "" }, // Túnez - Japón
+  F4: { kickoffSpain: "", result: "" }, // Japón - Suecia
+  F5: { kickoffSpain: "", result: "" }, // Túnez - Países Bajos
+  G0: { kickoffSpain: "", result: "" }, // Bélgica - Egipto
+  G1: { kickoffSpain: "", result: "" }, // Irán - Nueva Zelanda
+  G2: { kickoffSpain: "", result: "" }, // Bélgica - Irán
+  G3: { kickoffSpain: "", result: "" }, // Nueva Zelanda - Egipto
+  G4: { kickoffSpain: "", result: "" }, // Egipto - Irán
+  G5: { kickoffSpain: "", result: "" }, // Nueva Zelanda - Bélgica
+  H0: { kickoffSpain: "", result: "" }, // España - Cabo Verde
+  H1: { kickoffSpain: "", result: "" }, // Arabia Saudí - Uruguay
+  H2: { kickoffSpain: "", result: "" }, // España - Arabia Saudí
+  H3: { kickoffSpain: "", result: "" }, // Uruguay - Cabo Verde
+  H4: { kickoffSpain: "", result: "" }, // Cabo Verde - Arabia Saudí
+  H5: { kickoffSpain: "", result: "" }, // Uruguay - España
+  I0: { kickoffSpain: "", result: "" }, // Francia - Senegal
+  I1: { kickoffSpain: "", result: "" }, // Irak - Noruega
+  I2: { kickoffSpain: "", result: "" }, // Francia - Irak
+  I3: { kickoffSpain: "", result: "" }, // Noruega - Senegal
+  I4: { kickoffSpain: "", result: "" }, // Noruega - Francia
+  I5: { kickoffSpain: "", result: "" }, // Senegal - Irak
+  J0: { kickoffSpain: "", result: "" }, // Argentina - Argelia
+  J1: { kickoffSpain: "", result: "" }, // Austria - Jordania
+  J2: { kickoffSpain: "", result: "" }, // Argentina - Austria
+  J3: { kickoffSpain: "", result: "" }, // Jordania - Argelia
+  J4: { kickoffSpain: "", result: "" }, // Argelia - Austria
+  J5: { kickoffSpain: "", result: "" }, // Jordania - Argentina
+  K0: { kickoffSpain: "", result: "" }, // Portugal - RD del Congo
+  K1: { kickoffSpain: "", result: "" }, // Uzbekistán - Colombia
+  K2: { kickoffSpain: "", result: "" }, // Portugal - Uzbekistán
+  K3: { kickoffSpain: "", result: "" }, // Colombia - RD del Congo
+  K4: { kickoffSpain: "", result: "" }, // Colombia - Portugal
+  K5: { kickoffSpain: "", result: "" }, // RD del Congo - Uzbekistán
+  L0: { kickoffSpain: "", result: "" }, // Inglaterra - Croacia
+  L1: { kickoffSpain: "", result: "" }, // Ghana - Panamá
+  L2: { kickoffSpain: "", result: "" }, // Inglaterra - Ghana
+  L3: { kickoffSpain: "", result: "" }, // Panamá - Croacia
+  L4: { kickoffSpain: "", result: "" }, // Panamá - Inglaterra
+  L5: { kickoffSpain: "", result: "" }, // Croacia - Ghana
+};
+
+const FINAL_RESULTS = {
+  champion: "", // Código de selección campeona, por ejemplo: "ESP"
+  scorer: "",   // Nombre exacto del máximo goleador, por ejemplo: "Kylian Mbappé"
+};
+const MATCH_DURATION_MS = 2 * 60 * 60 * 1000; // 2 h: durante ese margen el hero mostrará "En juego".
+
+function cleanMatchResult(value) {
+  const v = String(value || "").trim().toUpperCase();
+  return ["1", "X", "2"].includes(v) ? v : undefined;
+}
+function buildCodeResults() {
+  const groups = {};
+  Object.entries(MATCH_CONTROL).forEach(([id, cfg]) => {
+    const result = cleanMatchResult(cfg?.result);
+    if (result) groups[id] = result;
+  });
+  return {
+    groups,
+    champion: FINAL_RESULTS.champion || "",
+    scorer: FINAL_RESULTS.scorer || "",
+  };
+}
+function mergeOfficialResults(stored = {}) {
+  const code = buildCodeResults();
+  return {
+    ...(stored || {}),
+    groups: { ...((stored || {}).groups || {}), ...code.groups },
+    champion: code.champion || stored?.champion || "",
+    scorer: code.scorer || stored?.scorer || "",
+  };
+}
+function getKickoffMs(matchId) {
+  const raw = MATCH_CONTROL?.[matchId]?.kickoffSpain;
+  if (!raw) return null;
+  const ts = Date.parse(raw);
+  return Number.isNaN(ts) ? null : ts;
+}
+function fmtSpainKickoff(ts) {
+  return new Intl.DateTimeFormat("es-ES", {
+    timeZone: "Europe/Madrid", weekday: "short", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit",
+  }).format(new Date(ts));
+}
+function getCurrentMatchInfo(now, results) {
+  const rows = GROUP_MATCHES
+    .map((match) => ({ match, kickoffMs: getKickoffMs(match.id) }))
+    .filter((row) => row.kickoffMs != null)
+    .sort((a, b) => a.kickoffMs - b.kickoffMs);
+  const hasResult = (id) => !!results?.groups?.[id];
+  const live = rows.find((row) => !hasResult(row.match.id) && now >= row.kickoffMs && now < row.kickoffMs + MATCH_DURATION_MS);
+  if (live) return { ...live, status: "live" };
+  const next = rows.find((row) => !hasResult(row.match.id) && row.kickoffMs > now);
+  return next ? { ...next, status: "upcoming" } : null;
+}
+
 // Selecciones ordenadas alfabéticamente por nombre (para el selector de campeón)
 const TEAMS_ALPHA = Object.keys(TEAMS).sort((a,b)=>TEAMS[a].name.localeCompare(TEAMS[b].name,"es"));
 
@@ -167,7 +304,7 @@ const MAX_TOTAL = MAX_GROUP + MAX_KO + MAX_SPECIAL;
 const KICKOFF = Date.UTC(2026, 5, 11, 19, 0, 0);
 //const LOCK_TIME = KICKOFF - 24 * 3600 * 1000; // 10 jun 19:00 UTC
 const LOCK_TIME = KICKOFF - 1 * 3600 * 1000; // 11 jun 18:00 UTC
-const ADMIN_PIN = "2605"; // PIN del organizador
+const ADMIN_PIN = "ildioni"; // PIN del organizador
 
 /* ----------------------------- AVATARES ---------------------------------- */
 const COLORS = ["#0B1F8F","#E8402E","#FF7A1A","#13A05B","#2FA0E0","#7A3FB5","#C6A700","#0F8A8A","#111111","#FFFFFF"];
@@ -489,6 +626,10 @@ function Styles() {
 .poll .fill{height:100%;border-radius:7px;transition:width .5s}
 .poll .pc{text-align:right;font-weight:700;font-size:13px;font-variant-numeric:tabular-nums}
 .poll-n{text-align:center;font-size:11.5px;color:var(--ink2);margin-top:6px}
+.poll-voters{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px 37px}
+.poll-voter{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line2);background:var(--paper2);border-radius:999px;padding:3px 8px 3px 4px;font-size:12px;font-weight:600;color:var(--ink)}
+.poll-voter .av{width:20px;height:20px;font-size:11px}
+.poll-empty{font-size:12px;color:var(--ink2);font-style:italic}
 
 .team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
 .team-opt{display:flex;align-items:center;gap:9px;padding:9px 11px;border:1.5px solid var(--line);border-radius:12px;background:var(--card);font-weight:600;font-size:13.5px;text-align:left}
@@ -766,9 +907,12 @@ function Onboarding({ profiles, onCreate, onLogin, onAdmin }) {
 }
 
 /* ============================== HERO + COUNTDOWN ========================= */
-function HeroCountdown({ now, timeLocked }) {
-  const toLock = LOCK_TIME - now, toKick = KICKOFF - now;
+function HeroCountdown({ now, timeLocked, results }) {
+  const matchInfo = getCurrentMatchInfo(now, results);
   const bg = IMAGES.HERO_BG_URL;
+  const match = matchInfo?.match;
+  const statusLabel = matchInfo?.status === "live" ? "Partido en juego" : "Próximo partido";
+  const countdownText = matchInfo?.status === "live" ? "En juego" : (matchInfo ? fmtCountdown(matchInfo.kickoffMs - now) : "Sin horario");
   return (
     <div className={`hero ${bg ? "has-bg" : ""}`}
       style={bg ? { backgroundImage: `url(${bg})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}>
@@ -779,17 +923,28 @@ function HeroCountdown({ now, timeLocked }) {
         <h2>El Mundial está al caer</h2>
         <p>11 de junio – 19 de julio · 48 selecciones · 12 grupos</p>
         <div className="countdown">
-          {timeLocked ? (
+          {match ? (
             <>
-              <span style={{ color: "var(--clay)", display: "inline-flex" }}><Ball s={22} /></span>
-              <div><div style={{ fontSize: 12.5, color: "var(--ink2)", fontWeight: 600 }}>Los pronósticos están cerrados</div>
-                <div className="big">{toKick > 0 ? `Saque inicial en ${fmtCountdown(toKick)}` : "¡El torneo ha comenzado!"}</div></div>
+              <span style={{ color: "var(--lime)", display: "inline-flex" }}><Ball s={22} /></span>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: 12.5, color: "rgba(255,255,255,.7)", fontWeight: 700 }}>{statusLabel}</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", margin: "2px 0 1px", fontWeight: 700 }}>
+                  <Flag code={match.home} size={21} /> {TEAMS[match.home].name}
+                  <span style={{ color: "rgba(255,255,255,.65)" }}>vs</span>
+                  <Flag code={match.away} size={21} /> {TEAMS[match.away].name}
+                </div>
+                <div style={{ fontSize: 12.5, color: "rgba(255,255,255,.78)", fontWeight: 600 }}>Hora en España: {fmtSpainKickoff(matchInfo.kickoffMs)}</div>
+                <div className="big">{countdownText}</div>
+              </div>
             </>
           ) : (
             <>
-              <span style={{ color: "var(--clay)", display: "inline-flex" }}>🔒</span>
-              <div><div style={{ fontSize: 12.5, color: "var(--ink2)", fontWeight: 600 }}>Tiempo para cerrar y editar tu porra</div>
-                <div className="big">{fmtCountdown(toLock)}</div></div>
+              <span style={{ color: "var(--lime)", display: "inline-flex" }}><Ball s={22} /></span>
+              <div>
+                <div style={{ fontSize: 12.5, color: "rgba(255,255,255,.7)", fontWeight: 700 }}>Próximo partido</div>
+                <div className="big">Añade horario en MATCH_CONTROL</div>
+                <div style={{ fontSize: 12.5, color: "rgba(255,255,255,.78)", fontWeight: 600 }}>{timeLocked ? "Pronósticos cerrados" : "Pronósticos abiertos hasta el cierre"}</div>
+              </div>
             </>
           )}
         </div>
@@ -802,12 +957,13 @@ function HeroCountdown({ now, timeLocked }) {
 /* ============================== FASE DE GRUPOS =========================== */
 function GroupsView({ picks, setPick, results, locked, now, timeLocked }) {
   const [g, setG] = useState("A");
+  const score = computeScore(picks, results);
   const groupMatches = GROUP_MATCHES.filter((m) => m.group === g);
   const done = GROUP_MATCHES.filter((m) => picks.groups?.[m.id]).length;
   const groupDone = (gl) => GROUP_MATCHES.filter((m) => m.group === gl && picks.groups?.[m.id]).length === 6;
   return (
     <div>
-      <HeroCountdown now={now} timeLocked={timeLocked} />
+      <HeroCountdown now={now} timeLocked={timeLocked} results={results} />
       <div className="section-h"><div className="ttl"><span className="ic"><Ball /></span><h2>Fase de grupos</h2></div>
         <p>Marca <b>1</b> (gana el local), <b>X</b> (empate) o <b>2</b> (gana el visitante) en cada partido.</p></div>
 
@@ -817,6 +973,14 @@ function GroupsView({ picks, setPick, results, locked, now, timeLocked }) {
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5, fontWeight: 600, marginBottom: 8 }}>
           <span>Tu progreso</span><span>{done} / {GROUP_MATCHES.length} partidos</span></div>
         <div className="prog-track"><div className="prog-fill" style={{ width: `${(done / GROUP_MATCHES.length) * 100}%` }} /></div>
+      </div>
+
+      <div className="card" style={{ padding: "14px 16px", marginTop: 10, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+        <div>
+          <div style={{ fontSize: 12.5, color: "var(--ink2)", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".04em" }}>Puntos acumulados</div>
+          <div className="note">{score.scored} partido{score.scored === 1 ? "" : "s"} corregido{score.scored === 1 ? "" : "s"} · grupos: {score.group}{score.special ? ` · especiales: ${score.special}` : ""}</div>
+        </div>
+        <div className="lb-pts" style={{ marginLeft: 0 }}><b>{score.total}</b><span>puntos</span></div>
       </div>
 
       <div className="gnav">{Object.keys(GROUPS).map((gl) => (
@@ -882,21 +1046,21 @@ function SpecialsView({ picks, setChampion, setScorer, results, locked }) {
 
 /* =============================== SONDEO ================================= */
 function pct(n, total) { return total ? Math.round((n / total) * 100) : 0; }
-function PollView({ allPicks, loading, onRefresh }) {
+function PollView({ profiles, allPicks, loading, onRefresh }) {
   const [g, setG] = useState("A");
-  const voters = Object.values(allPicks);
+  const voters = profiles.map((profile) => ({ profile, picks: allPicks[profile.id] }));
   const groupMatches = GROUP_MATCHES.filter((m) => m.group === g);
 
   const champTally = useMemo(() => {
     const t = {}; let tot = 0;
-    voters.forEach((p) => { if (p?.champion) { t[p.champion] = (t[p.champion] || 0) + 1; tot++; } });
+    voters.forEach(({ picks }) => { if (picks?.champion) { t[picks.champion] = (t[picks.champion] || 0) + 1; tot++; } });
     return { rows: Object.entries(t).sort((a, b) => b[1] - a[1]).slice(0, 8), tot };
-  }, [allPicks]);
+  }, [allPicks, profiles]);
   const scorerTally = useMemo(() => {
     const t = {}; let tot = 0;
-    voters.forEach((p) => { const s = p?.scorer?.trim(); if (s) { t[s] = (t[s] || 0) + 1; tot++; } });
+    voters.forEach(({ picks }) => { const s = picks?.scorer?.trim(); if (s) { t[s] = (t[s] || 0) + 1; tot++; } });
     return { rows: Object.entries(t).sort((a, b) => b[1] - a[1]).slice(0, 8), tot };
-  }, [allPicks]);
+  }, [allPicks, profiles]);
 
   const COL = { "1": "var(--blue)", "X": "var(--ink2)", "2": "var(--green)" };
 
@@ -904,11 +1068,11 @@ function PollView({ allPicks, loading, onRefresh }) {
     <div>
       <div className="section-h" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
         <div><div className="ttl"><span className="ic"><Poll /></span><h2>Sondeo de la peña</h2></div>
-          <p>Qué ha votado todo el mundo, de forma anónima.</p></div>
+          <p>Qué ha votado cada perfil en cada partido.</p></div>
         <button className="btn ghost" style={{ padding: "8px 14px", fontSize: 13 }} onClick={onRefresh} disabled={loading}>{loading ? "…" : "↻"}</button>
       </div>
 
-      <div className="banner flat">👥 {voters.length} participante{voters.length === 1 ? "" : "s"} en la porra.</div>
+      <div className="banner flat">👥 {profiles.length} participante{profiles.length === 1 ? "" : "s"} en la porra.</div>
 
       <div className="gnav">{Object.keys(GROUPS).map((gl) => <button key={gl} className={`gbtn ${g === gl ? "on" : ""}`} onClick={() => setG(gl)}>{gl}</button>)}</div>
       <div className="glabel"><span className="badge">{g}</span><h3>Grupo {g}</h3></div>
@@ -916,7 +1080,11 @@ function PollView({ allPicks, loading, onRefresh }) {
       <div className="card">
         {groupMatches.map((m) => {
           let c = { "1": 0, "X": 0, "2": 0 }, tot = 0;
-          voters.forEach((p) => { const v = p?.groups?.[m.id]; if (v) { c[v]++; tot++; } });
+          const optionVoters = { "1": [], "X": [], "2": [] };
+          voters.forEach(({ profile, picks }) => {
+            const v = picks?.groups?.[m.id];
+            if (v && optionVoters[v]) { c[v]++; tot++; optionVoters[v].push(profile); }
+          });
           return (
             <div className="match" key={m.id}>
               <div className="duel duel-poll">
@@ -925,10 +1093,19 @@ function PollView({ allPicks, loading, onRefresh }) {
                 <div className="side away"><Flag code={m.away} size={24} /><span className="nm">{TEAMS[m.away].name}</span></div>
               </div>
               {["1", "X", "2"].map((o) => (
-                <div className="poll" key={o}>
-                  <span className="lab">{o}</span>
-                  <div className="bar"><div className="fill" style={{ width: `${pct(c[o], tot)}%`, background: COL[o] }} /></div>
-                  <span className="pc">{pct(c[o], tot)}%</span>
+                <div key={o}>
+                  <div className="poll">
+                    <span className="lab">{o}</span>
+                    <div className="bar"><div className="fill" style={{ width: `${pct(c[o], tot)}%`, background: COL[o] }} /></div>
+                    <span className="pc">{pct(c[o], tot)}%</span>
+                  </div>
+                  <div className="poll-voters">
+                    {optionVoters[o].length ? optionVoters[o].map((profile) => (
+                      <span className="poll-voter" key={`${m.id}-${o}-${profile.id}`}>
+                        <span className="av" style={avatarStyle(profile.color)}>{profile.avatar}</span>{profile.name}
+                      </span>
+                    )) : <span className="poll-empty">Sin perfiles</span>}
+                  </div>
                 </div>
               ))}
               <div className="poll-n">{tot} voto{tot === 1 ? "" : "s"}</div>
@@ -1288,7 +1465,7 @@ export default function App() {
   const [me, setMe] = useState(null);
   const [tab, setTab] = useState("groups");
   const [picks, setPicks] = useState({ groups: {}, champion: "", scorer: undefined });
-  const [results, setResults] = useState({ groups: {} });
+  const [results, setResults] = useState(() => mergeOfficialResults({ groups: {} }));
   const [config, setConfigState] = useState({});
   const [profiles, setProfiles] = useState([]);
   const [allPicks, setAllPicks] = useState({});
@@ -1303,7 +1480,7 @@ export default function App() {
       const [m, res, cfg, profs] = await Promise.all([
         sget(KEY.me, false), sget(KEY.results, true), sget(KEY.config, true), sget(KEY.profiles, true),
       ]);
-      if (res) setResults(res);
+      setResults(mergeOfficialResults(res || { groups: {} }));
       if (cfg) setConfigState(cfg);
       if (profs) setProfiles(profs);
       if (m) { setMe(m); const mine = await sget(KEY.picks(m.id), true); if (mine) setPicks(mine); }
@@ -1317,7 +1494,7 @@ export default function App() {
     setProfiles(profs);
     const entries = await Promise.all(profs.map(async (p) => [p.id, await sget(KEY.picks(p.id), true)]));
     setAllPicks(Object.fromEntries(entries));
-    const res = await sget(KEY.results, true); if (res) setResults(res);
+    const res = await sget(KEY.results, true); setResults(mergeOfficialResults(res || { groups: {} }));
     setBusy(false);
   }, []);
   useEffect(() => { if (tab === "leaderboard" || tab === "poll") loadAll(); }, [tab, loadAll]);
@@ -1346,7 +1523,7 @@ export default function App() {
 
   const setConfig = async (c) => { setConfigState(c); await sset(KEY.config, c, true); };
   const setLocked = (v) => setConfig({ ...config, locked: v });
-  const saveResults = async (r) => { setResults(r); await sset(KEY.results, r, true); };
+  const saveResults = async (r) => { setResults(mergeOfficialResults(r)); await sset(KEY.results, r, true); };
   const savePicksFor = async (id, p) => { await sset(KEY.picks(id), p, true); setAllPicks((cur) => ({ ...cur, [id]: p })); if (me && id === me.id) setPicks(p); };
 
   // Editar MI propio perfil (emoji, nombre, color)
@@ -1426,7 +1603,7 @@ export default function App() {
       <div className="wrap">
         {tab === "groups" && <GroupsView picks={picks} setPick={setPick} results={results} locked={locked} now={now} timeLocked={timeLocked} />}
         {tab === "specials" && <SpecialsView picks={picks} setChampion={setChampion} setScorer={setScorer} results={results} locked={locked} />}
-        {tab === "poll" && <PollView allPicks={allPicks} loading={busy} onRefresh={loadAll} />}
+        {tab === "poll" && <PollView profiles={profiles} allPicks={allPicks} loading={busy} onRefresh={loadAll} />}
         {tab === "leaderboard" && <Leaderboard profiles={profiles} allPicks={allPicks} results={results} meId={me.id} onRefresh={loadAll} loading={busy} />}
         {tab === "profile" && <ProfileEditor me={me} profiles={profiles} onSave={updateMyProfile} onChangePassword={changeMyPassword} />}
         {tab === "rules" && <Rules />}
