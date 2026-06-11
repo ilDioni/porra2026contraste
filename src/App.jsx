@@ -582,6 +582,12 @@ function Styles() {
 .countdown{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);border-radius:13px;padding:11px 15px;backdrop-filter:blur(4px)}
 .countdown .big{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;color:var(--lime);font-variant-numeric:tabular-nums}
 .countdown>div div:first-child{color:rgba(255,255,255,.7)!important}
+.next-match-list{display:grid;gap:6px;margin:4px 0 3px;min-width:0;width:100%;max-width:100%}
+.next-match-row{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:8px;min-width:0;width:100%;max-width:100%;font-weight:700;font-size:18px;line-height:1.15}
+.next-team{display:flex;align-items:center;gap:7px;min-width:0;max-width:100%;overflow:hidden}
+.next-team-name{display:block;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.next-vs{color:rgba(255,255,255,.65);white-space:nowrap;flex:none}
+.next-kickoff{grid-column:1 / -1;color:rgba(255,255,255,.72);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 .banner{margin-top:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--clay-soft);border:1px solid #C9D4FF;border-radius:14px;padding:12px 16px;font-size:14px}
 .banner b{color:var(--clay-d)}
@@ -747,6 +753,9 @@ select:focus,input.txt:focus{outline:none;border-color:var(--clay)}
   /* Encabezados de sección un poco menores */
   .section-h h2{ font-size:21px; }
   .hero h2{ font-size:22px; }
+  .countdown{ align-items:flex-start; }
+  .next-match-row{ font-size:16px; gap:6px; }
+  .next-team{ gap:6px; }
 
   /* Botones de acción a lo ancho y cómodos */
   .btn{ padding:13px 18px; }
@@ -916,6 +925,7 @@ function HeroCountdown({ now, timeLocked, results }) {
   const bg = IMAGES.HERO_BG_URL;
   const matches = matchInfo?.rows || [];
   const many = matches.length > 1;
+  const hasDifferentKickoffs = many && matches.some((row) => row.kickoffMs !== matchInfo.kickoffMs);
   const statusLabel = matchInfo?.status === "live"
     ? (many ? "Partidos en juego" : "Partido en juego")
     : (many ? "Próximos partidos" : "Próximo partido");
@@ -926,37 +936,46 @@ function HeroCountdown({ now, timeLocked, results }) {
       <Bunting />
       <div className="hero-body" style={{ display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
         <Crest s={72} />
-        <div style={{ flex: 1, minWidth: 220 }}>
+        <div style={{ flex: 1, minWidth: 220, maxWidth: "100%" }}>
         <h2>¡El Mundial ha comenzado!</h2>
         <p>11 de junio – 19 de julio · 48 selecciones · 12 grupos</p>
         <div className="countdown">
           {matches.length ? (
             <>
-              <span style={{ color: "var(--lime)", display: "inline-flex" }}><Ball s={22} /></span>
-              <div style={{ minWidth: 0 }}>
+              <span style={{ color: "var(--lime)", display: "inline-flex", flex: "0 0 auto" }}><Ball s={22} /></span>
+              <div style={{ flex: "1 1 0", minWidth: 0, maxWidth: "100%" }}>
                 <div style={{ fontSize: 12.5, color: "rgba(255,255,255,.7)", fontWeight: 700 }}>{statusLabel}</div>
-                <div style={{ display: "grid", gap: 5, margin: "4px 0 3px" }}>
+                <div className="next-match-list">
                   {matches.map(({ match, kickoffMs }) => (
-                          <div key={match.id} style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", fontWeight: 700 }}>
-                          <Flag code={match.home} size={21} /> {TEAMS[match.home].name}
-                          <span style={{ color: "rgba(255,255,255,.65)" }}>vs</span>
-                          <Flag code={match.away} size={21} /> {TEAMS[match.away].name}
-                          {many && matches.some((row) => row.kickoffMs !== matchInfo.kickoffMs) && (
-                            <span style={{ color: "rgba(255,255,255,.72)", fontSize: 12 }}>{fmtSpainKickoff(kickoffMs)}</span>
-                              )}
-                           </div>
+                    <div key={match.id} className="next-match-row">
+                      <span className="next-team" title={TEAMS[match.home].name}>
+                        <Flag code={match.home} size={21} />
+                        <span className="next-team-name">{TEAMS[match.home].name}</span>
+                      </span>
+
+                      <span className="next-vs">vs</span>
+
+                      <span className="next-team" title={TEAMS[match.away].name}>
+                        <Flag code={match.away} size={21} />
+                        <span className="next-team-name">{TEAMS[match.away].name}</span>
+                      </span>
+
+                      {hasDifferentKickoffs && (
+                        <span className="next-kickoff">{fmtSpainKickoff(kickoffMs)}</span>
+                      )}
+                    </div>
                   ))}
                 </div>
                 <div style={{ fontSize: 12.5, color: "rgba(255,255,255,.78)", fontWeight: 600 }}>
-                  {many ? "Hora en España" : "Hora en España"}: {fmtSpainKickoff(matchInfo.kickoffMs)}
+                  Hora en España: {fmtSpainKickoff(matchInfo.kickoffMs)}
                 </div>
                 <div className="big">{countdownText}</div>
               </div>
             </>
           ) : (
             <>
-              <span style={{ color: "var(--lime)", display: "inline-flex" }}><Ball s={22} /></span>
-              <div>
+              <span style={{ color: "var(--lime)", display: "inline-flex", flex: "0 0 auto" }}><Ball s={22} /></span>
+              <div style={{ flex: "1 1 0", minWidth: 0 }}>
                 <div style={{ fontSize: 12.5, color: "rgba(255,255,255,.7)", fontWeight: 700 }}>Próximo partido</div>
                 <div className="big">Añade horario en MATCH_CONTROL</div>
                 <div style={{ fontSize: 12.5, color: "rgba(255,255,255,.78)", fontWeight: 600 }}>{timeLocked ? "Pronósticos cerrados" : "Pronósticos abiertos hasta el cierre"}</div>
