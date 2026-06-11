@@ -55,10 +55,8 @@ const FLAG_OVERRIDES = {
   JPN: "https://logodownload.org/wp-content/uploads/2022/08/japan-national-football-team-logo.png",
   GHA: "https://logodownload.org/wp-content/uploads/2022/12/ghana-national-football-team-logo.png",
   CAN: "https://logodownload.org/wp-content/uploads/2021/10/canada-soccer-team-logo.png",
-  KOR: "https://logodownload.org/wp-content/uploads/2022/12/south-korea-national-football-team-logo-7.png",
   SEN: "https://logodownload.org/wp-content/uploads/2022/07/fsf-senegal-national-football-team-logo.png",
   COL: "https://logodownload.org/wp-content/uploads/2021/09/fcf-seleccion-de-f%C3%BAtbol-de-colombia-logo.png",
-  TUN: "https://logodownload.org/wp-content/uploads/2022/08/tunisia-national-football-team-logo.png",
   CRO: "https://logodownload.org/wp-content/uploads/2022/11/croatia-national-football-team-logo.png",
   PAR: "https://logodownload.org/wp-content/uploads/2021/09/apf-seleccion-de-futbol-de-paraguay-logo.png",
   JOR: "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwww.worldatlas.com%2Fupload%2F92%2Fe2%2Fed%2Fjo-flag.jpg",
@@ -929,7 +927,7 @@ function HeroCountdown({ now, timeLocked, results }) {
       <div className="hero-body" style={{ display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
         <Crest s={72} />
         <div style={{ flex: 1, minWidth: 220 }}>
-        <h2>El Mundial está al caer</h2>
+        <h2>¡El Mundial ha comenzado!</h2>
         <p>11 de junio – 19 de julio · 48 selecciones · 12 grupos</p>
         <div className="countdown">
           {matches.length ? (
@@ -939,14 +937,14 @@ function HeroCountdown({ now, timeLocked, results }) {
                 <div style={{ fontSize: 12.5, color: "rgba(255,255,255,.7)", fontWeight: 700 }}>{statusLabel}</div>
                 <div style={{ display: "grid", gap: 5, margin: "4px 0 3px" }}>
                   {matches.map(({ match, kickoffMs }) => (
-                    <div key={match.id} style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", fontWeight: 700 }}>
-                      <Flag code={match.home} size={21} /> {TEAMS[match.home].name}
-                      <span style={{ color: "rgba(255,255,255,.65)" }}>vs</span>
-                      <Flag code={match.away} size={21} /> {TEAMS[match.away].name}
-                      {many && matches.some((row) => row.kickoffMs !== matchInfo.kickoffMs) && (
-                        <span style={{ color: "rgba(255,255,255,.72)", fontSize: 12 }}>{fmtSpainKickoff(kickoffMs)}</span>
-                      )}
-                    </div>
+                          <div key={match.id} style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", fontWeight: 700 }}>
+                          <Flag code={match.home} size={21} /> {TEAMS[match.home].name}
+                          <span style={{ color: "rgba(255,255,255,.65)" }}>vs</span>
+                          <Flag code={match.away} size={21} /> {TEAMS[match.away].name}
+                          {many && matches.some((row) => row.kickoffMs !== matchInfo.kickoffMs) && (
+                            <span style={{ color: "rgba(255,255,255,.72)", fontSize: 12 }}>{fmtSpainKickoff(kickoffMs)}</span>
+                              )}
+                           </div>
                   ))}
                 </div>
                 <div style={{ fontSize: 12.5, color: "rgba(255,255,255,.78)", fontWeight: 600 }}>
