@@ -49,7 +49,6 @@ const FLAG_OVERRIDES = {
   GER: "https://images.vexels.com/media/users/3/152460/isolated/preview/825e80bac186d247dd9332f1440d20df-logotipo-del-equipo-de-futbol-de-alemania.png?w=360",  // Alemania (DFB)
   ARG: "https://images.seeklogo.com/logo-png/0/1/afa-logo-png_seeklogo-4069.png",  // Argentina (AFA)
   FRA: "https://upload.wikimedia.org/wikipedia/it/2/2d/Logo_FFF_%282018%29.png",  // Francia (FFF)
-  POR: "https://logodownload.org/wp-content/uploads/2021/10/fpf-selecao-de-portugal-logo.png",  // Portugal (FPF)
   NED: "https://logodownload.org/wp-content/uploads/2022/07/holanda-netherlands-football-team-logo.png",  // Países Bajos (KNVB)
   MEX: "https://logodownload.org/wp-content/uploads/2021/10/fmf-seleccion-de-mexico-logo-5.png",  // México (FMF)
   BEL: "https://logodownload.org/wp-content/uploads/2022/09/belgian-national-team-logo-1.png",
@@ -139,78 +138,78 @@ const GROUP_MATCHES = [
    Los valores escritos aquí tienen prioridad sobre los resultados guardados desde el panel admin.
    ------------------------------------------------------------------------ */
 const MATCH_CONTROL = {
-  A0: { kickoffSpain: "2026-06-11T21:00:00+02:00", result: "" }, // México - Sudáfrica
-  A1: { kickoffSpain: "", result: "" }, // Corea del Sur - República Checa
-  A2: { kickoffSpain: "", result: "" }, // República Checa - Sudáfrica
-  A3: { kickoffSpain: "", result: "" }, // México - Corea del Sur
-  A4: { kickoffSpain: "", result: "" }, // República Checa - México
-  A5: { kickoffSpain: "", result: "" }, // Sudáfrica - Corea del Sur
-  B0: { kickoffSpain: "", result: "" }, // Canadá - Bosnia y Herzeg.
-  B1: { kickoffSpain: "", result: "" }, // Catar - Suiza
-  B2: { kickoffSpain: "", result: "" }, // Suiza - Bosnia y Herzeg.
-  B3: { kickoffSpain: "", result: "" }, // Canadá - Catar
-  B4: { kickoffSpain: "", result: "" }, // Suiza - Canadá
-  B5: { kickoffSpain: "", result: "" }, // Bosnia y Herzeg. - Catar
-  C0: { kickoffSpain: "", result: "" }, // Brasil - Marruecos
-  C1: { kickoffSpain: "", result: "" }, // Haití - Escocia
-  C2: { kickoffSpain: "", result: "" }, // Escocia - Marruecos
-  C3: { kickoffSpain: "", result: "" }, // Brasil - Haití
-  C4: { kickoffSpain: "", result: "" }, // Escocia - Brasil
-  C5: { kickoffSpain: "", result: "" }, // Marruecos - Haití
-  D0: { kickoffSpain: "", result: "" }, // Estados Unidos - Paraguay
-  D1: { kickoffSpain: "", result: "" }, // Australia - Turquía
-  D2: { kickoffSpain: "", result: "" }, // Estados Unidos - Australia
-  D3: { kickoffSpain: "", result: "" }, // Turquía - Paraguay
-  D4: { kickoffSpain: "", result: "" }, // Turquía - Estados Unidos
-  D5: { kickoffSpain: "", result: "" }, // Paraguay - Australia
-  E0: { kickoffSpain: "", result: "" }, // Alemania - Curazao
-  E1: { kickoffSpain: "", result: "" }, // Costa de Marfil - Ecuador
-  E2: { kickoffSpain: "", result: "" }, // Alemania - Costa de Marfil
-  E3: { kickoffSpain: "", result: "" }, // Ecuador - Curazao
-  E4: { kickoffSpain: "", result: "" }, // Curazao - Costa de Marfil
-  E5: { kickoffSpain: "", result: "" }, // Ecuador - Alemania
-  F0: { kickoffSpain: "", result: "" }, // Países Bajos - Japón
-  F1: { kickoffSpain: "", result: "" }, // Suecia - Túnez
-  F2: { kickoffSpain: "", result: "" }, // Países Bajos - Suecia
-  F3: { kickoffSpain: "", result: "" }, // Túnez - Japón
-  F4: { kickoffSpain: "", result: "" }, // Japón - Suecia
-  F5: { kickoffSpain: "", result: "" }, // Túnez - Países Bajos
-  G0: { kickoffSpain: "", result: "" }, // Bélgica - Egipto
-  G1: { kickoffSpain: "", result: "" }, // Irán - Nueva Zelanda
-  G2: { kickoffSpain: "", result: "" }, // Bélgica - Irán
-  G3: { kickoffSpain: "", result: "" }, // Nueva Zelanda - Egipto
-  G4: { kickoffSpain: "", result: "" }, // Egipto - Irán
-  G5: { kickoffSpain: "", result: "" }, // Nueva Zelanda - Bélgica
-  H0: { kickoffSpain: "", result: "" }, // España - Cabo Verde
-  H1: { kickoffSpain: "", result: "" }, // Arabia Saudí - Uruguay
-  H2: { kickoffSpain: "", result: "" }, // España - Arabia Saudí
-  H3: { kickoffSpain: "", result: "" }, // Uruguay - Cabo Verde
-  H4: { kickoffSpain: "", result: "" }, // Cabo Verde - Arabia Saudí
-  H5: { kickoffSpain: "", result: "" }, // Uruguay - España
-  I0: { kickoffSpain: "", result: "" }, // Francia - Senegal
-  I1: { kickoffSpain: "", result: "" }, // Irak - Noruega
-  I2: { kickoffSpain: "", result: "" }, // Francia - Irak
-  I3: { kickoffSpain: "", result: "" }, // Noruega - Senegal
-  I4: { kickoffSpain: "", result: "" }, // Noruega - Francia
-  I5: { kickoffSpain: "", result: "" }, // Senegal - Irak
-  J0: { kickoffSpain: "", result: "" }, // Argentina - Argelia
-  J1: { kickoffSpain: "", result: "" }, // Austria - Jordania
-  J2: { kickoffSpain: "", result: "" }, // Argentina - Austria
-  J3: { kickoffSpain: "", result: "" }, // Jordania - Argelia
-  J4: { kickoffSpain: "", result: "" }, // Argelia - Austria
-  J5: { kickoffSpain: "", result: "" }, // Jordania - Argentina
-  K0: { kickoffSpain: "", result: "" }, // Portugal - RD del Congo
-  K1: { kickoffSpain: "", result: "" }, // Uzbekistán - Colombia
-  K2: { kickoffSpain: "", result: "" }, // Portugal - Uzbekistán
-  K3: { kickoffSpain: "", result: "" }, // Colombia - RD del Congo
-  K4: { kickoffSpain: "", result: "" }, // Colombia - Portugal
-  K5: { kickoffSpain: "", result: "" }, // RD del Congo - Uzbekistán
-  L0: { kickoffSpain: "", result: "" }, // Inglaterra - Croacia
-  L1: { kickoffSpain: "", result: "" }, // Ghana - Panamá
-  L2: { kickoffSpain: "", result: "" }, // Inglaterra - Ghana
-  L3: { kickoffSpain: "", result: "" }, // Panamá - Croacia
-  L4: { kickoffSpain: "", result: "" }, // Panamá - Inglaterra
-  L5: { kickoffSpain: "", result: "" }, // Croacia - Ghana
+  A0: { kickoffSpain: "2026-06-11T21:00:00+02:00", result: "1" }, // México - Sudáfrica
+  A1: { kickoffSpain: "2026-06-12T04:00:00+02:00", result: "" }, // Corea del Sur - República Checa
+  A2: { kickoffSpain: "2026-06-18T18:00:00+02:00", result: "" }, // República Checa - Sudáfrica
+  A3: { kickoffSpain: "2026-06-19T03:00:00+02:00", result: "" }, // México - Corea del Sur
+  A4: { kickoffSpain: "2026-06-25T03:00:00+02:00", result: "" }, // República Checa - México
+  A5: { kickoffSpain: "2026-06-25T03:00:00+02:00", result: "" }, // Sudáfrica - Corea del Sur
+  B0: { kickoffSpain: "2026-06-12T21:00:00+02:00", result: "" }, // Canadá - Bosnia y Herzeg.
+  B1: { kickoffSpain: "2026-06-13T21:00:00+02:00", result: "" }, // Catar - Suiza
+  B2: { kickoffSpain: "2026-06-18T21:00:00+02:00", result: "" }, // Suiza - Bosnia y Herzeg.
+  B3: { kickoffSpain: "2026-06-19T00:00:00+02:00", result: "" }, // Canadá - Catar
+  B4: { kickoffSpain: "2026-06-24T21:00:00+02:00", result: "" }, // Suiza - Canadá
+  B5: { kickoffSpain: "2026-06-24T21:00:00+02:00", result: "" }, // Bosnia y Herzeg. - Catar
+  C0: { kickoffSpain: "2026-06-14T00:00:00+02:00", result: "" }, // Brasil - Marruecos
+  C1: { kickoffSpain: "2026-06-14T03:00:00+02:00", result: "" }, // Haití - Escocia
+  C2: { kickoffSpain: "2026-06-20T00:00:00+02:00", result: "" }, // Escocia - Marruecos
+  C3: { kickoffSpain: "2026-06-20T03:00:00+02:00", result: "" }, // Brasil - Haití
+  C4: { kickoffSpain: "2026-06-25T00:00:00+02:00", result: "" }, // Escocia - Brasil
+  C5: { kickoffSpain: "2026-06-25T00:00:00+02:00", result: "" }, // Marruecos - Haití
+  D0: { kickoffSpain: "2026-06-13T03:00:00+02:00", result: "" }, // Estados Unidos - Paraguay
+  D1: { kickoffSpain: "2026-06-13T06:00:00+02:00", result: "" }, // Australia - Turquía
+  D2: { kickoffSpain: "2026-06-19T21:00:00+02:00", result: "" }, // Estados Unidos - Australia
+  D3: { kickoffSpain: "2026-06-19T06:00:00+02:00", result: "" }, // Turquía - Paraguay
+  D4: { kickoffSpain: "2026-06-26T04:00:00+02:00", result: "" }, // Turquía - Estados Unidos
+  D5: { kickoffSpain: "2026-06-26T04:00:00+02:00", result: "" }, // Paraguay - Australia
+  E0: { kickoffSpain: "2026-06-14T19:00:00+02:00", result: "" }, // Alemania - Curazao
+  E1: { kickoffSpain: "2026-06-15T01:00:00+02:00", result: "" }, // Costa de Marfil - Ecuador
+  E2: { kickoffSpain: "2026-06-20T22:00:00+02:00", result: "" }, // Alemania - Costa de Marfil
+  E3: { kickoffSpain: "2026-06-21T04:00:00+02:00", result: "" }, // Ecuador - Curazao
+  E4: { kickoffSpain: "2026-06-25T22:00:00+02:00", result: "" }, // Curazao - Costa de Marfil
+  E5: { kickoffSpain: "2026-06-25T22:00:00+02:00", result: "" }, // Ecuador - Alemania
+  F0: { kickoffSpain: "2026-06-14T22:00:00+02:00", result: "" }, // Países Bajos - Japón
+  F1: { kickoffSpain: "2026-06-15T04:00:00+02:00", result: "" }, // Suecia - Túnez
+  F2: { kickoffSpain: "2026-06-20T19:00:00+02:00", result: "" }, // Países Bajos - Suecia
+  F3: { kickoffSpain: "2026-06-20T06:00:00+02:00", result: "" }, // Túnez - Japón
+  F4: { kickoffSpain: "2026-06-26T01:00:00+02:00", result: "" }, // Japón - Suecia
+  F5: { kickoffSpain: "2026-06-26T01:00:00+02:00", result: "" }, // Túnez - Países Bajos
+  G0: { kickoffSpain: "2026-06-15T21:00:00+02:00", result: "" }, // Bélgica - Egipto
+  G1: { kickoffSpain: "2026-06-16T03:00:00+02:00", result: "" }, // Irán - Nueva Zelanda
+  G2: { kickoffSpain: "2026-06-21T21:00:00+02:00", result: "" }, // Bélgica - Irán
+  G3: { kickoffSpain: "2026-06-22T03:00:00+02:00", result: "" }, // Nueva Zelanda - Egipto
+  G4: { kickoffSpain: "2026-06-27T05:00:00+02:00", result: "" }, // Egipto - Irán
+  G5: { kickoffSpain: "2026-06-27T05:00:00+02:00", result: "" }, // Nueva Zelanda - Bélgica
+  H0: { kickoffSpain: "2026-06-15T18:00:00+02:00", result: "" }, // España - Cabo Verde
+  H1: { kickoffSpain: "2026-06-16T00:00:00+02:00", result: "" }, // Arabia Saudí - Uruguay
+  H2: { kickoffSpain: "2026-06-21T18:00:00+02:00", result: "" }, // España - Arabia Saudí
+  H3: { kickoffSpain: "2026-06-22T00:00:00+02:00", result: "" }, // Uruguay - Cabo Verde
+  H4: { kickoffSpain: "2026-06-27T02:00:00+02:00", result: "" }, // Cabo Verde - Arabia Saudí
+  H5: { kickoffSpain: "2026-06-27T02:00:00+02:00", result: "" }, // Uruguay - España
+  I0: { kickoffSpain: "2026-06-16T21:00:00+02:00", result: "" }, // Francia - Senegal
+  I1: { kickoffSpain: "2026-06-17T00:00:00+02:00", result: "" }, // Irak - Noruega
+  I2: { kickoffSpain: "2026-06-22T23:00:00+02:00", result: "" }, // Francia - Irak
+  I3: { kickoffSpain: "2026-06-23T02:00:00+02:00", result: "" }, // Noruega - Senegal
+  I4: { kickoffSpain: "2026-06-26T21:00:00+02:00", result: "" }, // Noruega - Francia
+  I5: { kickoffSpain: "2026-06-26T21:00:00+02:00", result: "" }, // Senegal - Irak
+  J0: { kickoffSpain: "2026-06-17T03:00:00+02:00", result: "" }, // Argentina - Argelia
+  J1: { kickoffSpain: "2026-06-16T06:00:00+02:00", result: "" }, // Austria - Jordania
+  J2: { kickoffSpain: "2026-06-22T19:00:00+02:00", result: "" }, // Argentina - Austria
+  J3: { kickoffSpain: "2026-06-23T05:00:00+02:00", result: "" }, // Jordania - Argelia
+  J4: { kickoffSpain: "2026-06-28T04:00:00+02:00", result: "" }, // Argelia - Austria
+  J5: { kickoffSpain: "2026-06-28T04:00:00+02:00", result: "" }, // Jordania - Argentina
+  K0: { kickoffSpain: "2026-06-17T19:00:00+02:00", result: "" }, // Portugal - RD del Congo
+  K1: { kickoffSpain: "2026-06-18T04:00:00+02:00", result: "" }, // Uzbekistán - Colombia
+  K2: { kickoffSpain: "2026-06-23T19:00:00+02:00", result: "" }, // Portugal - Uzbekistán
+  K3: { kickoffSpain: "2026-06-24T04:00:00+02:00", result: "" }, // Colombia - RD del Congo
+  K4: { kickoffSpain: "2026-06-28T01:30:00+02:00", result: "" }, // Colombia - Portugal
+  K5: { kickoffSpain: "2026-06-28T01:30:00+02:00", result: "" }, // RD del Congo - Uzbekistán
+  L0: { kickoffSpain: "2026-06-17T22:00:00+02:00", result: "" }, // Inglaterra - Croacia
+  L1: { kickoffSpain: "2026-06-18T01:00:00+02:00", result: "" }, // Ghana - Panamá
+  L2: { kickoffSpain: "2026-06-23T22:00:00+02:00", result: "" }, // Inglaterra - Ghana
+  L3: { kickoffSpain: "2026-06-24T01:00:00+02:00", result: "" }, // Panamá - Croacia
+  L4: { kickoffSpain: "2026-06-27T23:00:00+02:00", result: "" }, // Panamá - Inglaterra
+  L5: { kickoffSpain: "2026-06-27T23:00:00+02:00", result: "" }, // Croacia - Ghana
 };
 
 const FINAL_RESULTS = {
@@ -261,10 +260,17 @@ function getCurrentMatchInfo(now, results) {
     .filter((row) => row.kickoffMs != null)
     .sort((a, b) => a.kickoffMs - b.kickoffMs);
   const hasResult = (id) => !!results?.groups?.[id];
-  const live = rows.find((row) => !hasResult(row.match.id) && now >= row.kickoffMs && now < row.kickoffMs + MATCH_DURATION_MS);
-  if (live) return { ...live, status: "live" };
+
+  const liveRows = rows.filter((row) => !hasResult(row.match.id) && now >= row.kickoffMs && now < row.kickoffMs + MATCH_DURATION_MS);
+  if (liveRows.length) {
+    return { rows: liveRows, kickoffMs: liveRows[0].kickoffMs, status: "live" };
+  }
+
   const next = rows.find((row) => !hasResult(row.match.id) && row.kickoffMs > now);
-  return next ? { ...next, status: "upcoming" } : null;
+  if (!next) return null;
+
+  const nextRows = rows.filter((row) => !hasResult(row.match.id) && row.kickoffMs === next.kickoffMs);
+  return { rows: nextRows, kickoffMs: next.kickoffMs, status: "upcoming" };
 }
 
 // Selecciones ordenadas alfabéticamente por nombre (para el selector de campeón)
@@ -910,8 +916,11 @@ function Onboarding({ profiles, onCreate, onLogin, onAdmin }) {
 function HeroCountdown({ now, timeLocked, results }) {
   const matchInfo = getCurrentMatchInfo(now, results);
   const bg = IMAGES.HERO_BG_URL;
-  const match = matchInfo?.match;
-  const statusLabel = matchInfo?.status === "live" ? "Partido en juego" : "Próximo partido";
+  const matches = matchInfo?.rows || [];
+  const many = matches.length > 1;
+  const statusLabel = matchInfo?.status === "live"
+    ? (many ? "Partidos en juego" : "Partido en juego")
+    : (many ? "Próximos partidos" : "Próximo partido");
   const countdownText = matchInfo?.status === "live" ? "En juego" : (matchInfo ? fmtCountdown(matchInfo.kickoffMs - now) : "Sin horario");
   return (
     <div className={`hero ${bg ? "has-bg" : ""}`}
@@ -920,20 +929,29 @@ function HeroCountdown({ now, timeLocked, results }) {
       <div className="hero-body" style={{ display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
         <Crest s={72} />
         <div style={{ flex: 1, minWidth: 220 }}>
-        <h2>¡El Mundial ha comenzado!</h2>
+        <h2>El Mundial está al caer</h2>
         <p>11 de junio – 19 de julio · 48 selecciones · 12 grupos</p>
         <div className="countdown">
-          {match ? (
+          {matches.length ? (
             <>
               <span style={{ color: "var(--lime)", display: "inline-flex" }}><Ball s={22} /></span>
               <div style={{ minWidth: 0 }}>
                 <div style={{ fontSize: 12.5, color: "rgba(255,255,255,.7)", fontWeight: 700 }}>{statusLabel}</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", margin: "2px 0 1px", fontWeight: 700 }}>
-                  <Flag code={match.home} size={21} /> {TEAMS[match.home].name}
-                  <span style={{ color: "rgba(255,255,255,.65)" }}>vs</span>
-                  <Flag code={match.away} size={21} /> {TEAMS[match.away].name}
+                <div style={{ display: "grid", gap: 5, margin: "4px 0 3px" }}>
+                  {matches.map(({ match, kickoffMs }) => (
+                    <div key={match.id} style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", fontWeight: 700 }}>
+                      <Flag code={match.home} size={21} /> {TEAMS[match.home].name}
+                      <span style={{ color: "rgba(255,255,255,.65)" }}>vs</span>
+                      <Flag code={match.away} size={21} /> {TEAMS[match.away].name}
+                      {many && matches.some((row) => row.kickoffMs !== matchInfo.kickoffMs) && (
+                        <span style={{ color: "rgba(255,255,255,.72)", fontSize: 12 }}>{fmtSpainKickoff(kickoffMs)}</span>
+                      )}
+                    </div>
+                  ))}
                 </div>
-                <div style={{ fontSize: 12.5, color: "rgba(255,255,255,.78)", fontWeight: 600 }}>Hora en España: {fmtSpainKickoff(matchInfo.kickoffMs)}</div>
+                <div style={{ fontSize: 12.5, color: "rgba(255,255,255,.78)", fontWeight: 600 }}>
+                  {many ? "Hora en España" : "Hora en España"}: {fmtSpainKickoff(matchInfo.kickoffMs)}
+                </div>
                 <div className="big">{countdownText}</div>
               </div>
             </>
