@@ -920,7 +920,7 @@ function HeroCountdown({ now, timeLocked, results }) {
       <div className="hero-body" style={{ display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
         <Crest s={72} />
         <div style={{ flex: 1, minWidth: 220 }}>
-        <h2>El Mundial está al caer</h2>
+        <h2>¡El Mundial ha comenzado!</h2>
         <p>11 de junio – 19 de julio · 48 selecciones · 12 grupos</p>
         <div className="countdown">
           {match ? (
