@@ -137,7 +137,7 @@ const GROUP_MATCHES = [
    ------------------------------------------------------------------------ */
 const MATCH_CONTROL = {
   A0: { kickoffSpain: "2026-06-11T21:00:00+02:00", result: "1" }, // México - Sudáfrica
-  A1: { kickoffSpain: "2026-06-12T04:00:00+02:00", result: "" }, // Corea del Sur - República Checa
+  A1: { kickoffSpain: "2026-06-12T04:00:00+02:00", result: "1" }, // Corea del Sur - República Checa
   A2: { kickoffSpain: "2026-06-18T18:00:00+02:00", result: "" }, // República Checa - Sudáfrica
   A3: { kickoffSpain: "2026-06-19T03:00:00+02:00", result: "" }, // México - Corea del Sur
   A4: { kickoffSpain: "2026-06-25T03:00:00+02:00", result: "" }, // República Checa - México
