@@ -140,7 +140,7 @@ const MATCH_CONTROL = {
   A0: { kickoffSpain: "2026-06-11T21:00:00+02:00", result: "1" }, // México - Sudáfrica
   A1: { kickoffSpain: "2026-06-12T04:00:00+02:00", result: "1" }, // Corea del Sur - República Checa
   // ——— Jornada del viernes, 12 de junio ———
-  B0: { kickoffSpain: "2026-06-12T21:00:00+02:00", result: "" }, // Canadá - Bosnia y Herzeg.
+  B0: { kickoffSpain: "2026-06-12T21:00:00+02:00", result: "X" }, // Canadá - Bosnia y Herzeg.
   D0: { kickoffSpain: "2026-06-13T03:00:00+02:00", result: "" }, // Estados Unidos - Paraguay
   D1: { kickoffSpain: "2026-06-13T06:00:00+02:00", result: "" }, // Australia - Turquía
   // ——— Jornada del sábado, 13 de junio ———
