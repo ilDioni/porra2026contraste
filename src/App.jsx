@@ -1038,7 +1038,7 @@ function Onboarding({ profiles, onCreate, onLogin, onAdmin }) {
             <span>Entrar como organizador<br /><span className="note">Gestiona resultados, cuentas y selecciones (requiere PIN)</span></span>
           </button>
         </div>
-        <p className="note" style={{ textAlign: "center", marginTop: 14 }}>Comparte este enlace con tu peña: todos compiten en la misma clasificación.</p>
+        <p className="note" style={{ textAlign: "center", marginTop: 14 }}>Ttodos compiten en la misma clasificación.</p>
       </div>
     );
   }
@@ -1367,12 +1367,12 @@ function AnswersView({ profiles, allPicks, loading, onRefresh }) {
   return (
     <div>
       <div className="section-h" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-        <div><div className="ttl"><span className="ic"><Poll /></span><h2>Respuestas de la peña</h2></div>
+        <div><div className="ttl"><span className="ic"><Poll /></span><h2>Respuestas</h2></div>
           <p>Qué ha votado cada perfil, jornada a jornada.</p></div>
         <button className="btn ghost" style={{ padding: "8px 14px", fontSize: 13 }} onClick={onRefresh} disabled={loading}>{loading ? "…" : "↻"}</button>
       </div>
 
-      <div className="banner flat">👥 {profiles.length} participante{profiles.length === 1 ? "" : "s"} en la porra. Cada día agrupa los partidos desde las 10:00 (hora España) hasta la madrugada siguiente.</div>
+      <div className="banner flat">👥 {profiles.length} participante{profiles.length === 1 ? "" : "s"} en la porra.</div>
 
       {days.map(({ key, rows }) => (
         <div key={key}>
@@ -1456,8 +1456,6 @@ function KnockoutView({ results, config }) {
       {!complete && (
         <div className="banner">⏳ <b>Provisional:</b> con {playedCount}/{GROUP_MATCHES.length} resultados. Los cruces se irán ajustando con cada partido y se confirmarán al cerrar la fase de grupos.</div>
       )}
-      <div className="banner flat">ℹ️ Tabla por puntos y diferencia de goles (cuando el resultado tiene marcador, p. ej. "2-0"). Si un desempate queda mal resuelto, el organizador puede corregir la tabla a mano.</div>
-
       <div className="glabel" style={{ marginTop: 20 }}><span className="badge"><Rank s={17} /></span><h3>Clasificación de los grupos</h3></div>
       <div className="stand-grid">
         {Object.keys(GROUPS).map((g) => (
@@ -1545,7 +1543,7 @@ function PollView({ profiles, allPicks, loading, onRefresh }) {
   return (
     <div>
       <div className="section-h" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-        <div><div className="ttl"><span className="ic"><Poll /></span><h2>Sondeo de la peña</h2></div>
+        <div><div className="ttl"><span className="ic"><Poll /></span><h2>Sondeo</h2></div>
           <p>Qué ha votado cada perfil en cada partido.</p></div>
         <button className="btn ghost" style={{ padding: "8px 14px", fontSize: 13 }} onClick={onRefresh} disabled={loading}>{loading ? "…" : "↻"}</button>
       </div>
