@@ -130,17 +130,20 @@ const GROUP_MATCHES = [
 
 /* --------------------- RESULTADOS Y HORARIOS EDITABLES -------------------
    Edita SOLO esta sección durante el torneo.
-   - result: "" si aún no hay resultado; "1" gana local, "X" empate, "2" gana visitante.
+   - result: "" si aún no hay resultado. Admite dos formatos:
+       · Marcador exacto: "2-0", "1-1", "0-3"…  ► recomendado: permite calcular
+         la diferencia de goles en la clasificación de grupos.
+       · Solo signo: "1" gana local, "X" empate, "2" gana visitante.
    - kickoffSpain: hora de inicio en España, formato "AAAA-MM-DDTHH:mm:ss+02:00".
      Si lo dejas vacío, ese partido no aparecerá en la cuenta atrás del bloque principal.
    Los valores escritos aquí tienen prioridad sobre los resultados guardados desde el panel admin.
    ------------------------------------------------------------------------ */
 const MATCH_CONTROL = {
   // ——— Jornada del jueves, 11 de junio ———
-  A0: { kickoffSpain: "2026-06-11T21:00:00+02:00", result: "1" }, // México - Sudáfrica
-  A1: { kickoffSpain: "2026-06-12T04:00:00+02:00", result: "1" }, // Corea del Sur - República Checa
+  A0: { kickoffSpain: "2026-06-11T21:00:00+02:00", result: "2-0" }, // México - Sudáfrica
+  A1: { kickoffSpain: "2026-06-12T04:00:00+02:00", result: "2-1" }, // Corea del Sur - República Checa
   // ——— Jornada del viernes, 12 de junio ———
-  B0: { kickoffSpain: "2026-06-12T21:00:00+02:00", result: "X" }, // Canadá - Bosnia y Herzeg.
+  B0: { kickoffSpain: "2026-06-12T21:00:00+02:00", result: "1-1" }, // Canadá - Bosnia y Herzeg.
   D0: { kickoffSpain: "2026-06-13T03:00:00+02:00", result: "" }, // Estados Unidos - Paraguay
   D1: { kickoffSpain: "2026-06-13T06:00:00+02:00", result: "" }, // Australia - Turquía
   // ——— Jornada del sábado, 13 de junio ———
@@ -233,18 +236,31 @@ const FINAL_RESULTS = {
 };
 const MATCH_DURATION_MS = 2 * 60 * 60 * 1000; // 2 h: durante ese margen el hero mostrará "En juego".
 
-function cleanMatchResult(value) {
+/* Acepta "1"/"X"/"2" o un marcador "h-a" (también "h:a"). Devuelve el signo
+   y, si hay marcador, los goles para la diferencia de goles. */
+function parseMatchResult(value) {
   const v = String(value || "").trim().toUpperCase();
-  return ["1", "X", "2"].includes(v) ? v : undefined;
+  if (["1", "X", "2"].includes(v)) return { sign: v, score: null };
+  const m = v.match(/^(\d{1,2})\s*[-:]\s*(\d{1,2})$/);
+  if (m) {
+    const h = +m[1], a = +m[2];
+    return { sign: h > a ? "1" : h < a ? "2" : "X", score: { h, a } };
+  }
+  return null;
 }
 function buildCodeResults() {
   const groups = {};
+  const scores = {};
   Object.entries(MATCH_CONTROL).forEach(([id, cfg]) => {
-    const result = cleanMatchResult(cfg?.result);
-    if (result) groups[id] = result;
+    const parsed = parseMatchResult(cfg?.result);
+    if (parsed) {
+      groups[id] = parsed.sign;
+      if (parsed.score) scores[id] = parsed.score;
+    }
   });
   return {
     groups,
+    scores,
     champion: FINAL_RESULTS.champion || "",
     scorer: FINAL_RESULTS.scorer || "",
   };
@@ -254,6 +270,7 @@ function mergeOfficialResults(stored = {}) {
   return {
     ...(stored || {}),
     groups: { ...((stored || {}).groups || {}), ...code.groups },
+    scores: { ...((stored || {}).scores || {}), ...code.scores },
     champion: code.champion || stored?.champion || "",
     scorer: code.scorer || stored?.scorer || "",
   };
@@ -347,15 +364,16 @@ const R32_BRACKET = [
   { id:"M88", n:88, home:{type:"runner", group:"D"}, away:{type:"runner", group:"G"} },
 ];
 
-/* Calcula la tabla de cada grupo a partir de los resultados 1·X·2 (3-1-0 pts).
-   Sin marcadores no hay diferencia de goles: empates a puntos se ordenan por
-   victorias y, si persiste, por el enfrentamiento directo. El organizador
-   puede corregir cualquier orden desde su panel (overrides). */
+/* Calcula la tabla de cada grupo a partir de los resultados (3-1-0 pts).
+   Si el resultado está escrito como marcador ("2-0"), también suma goles y
+   ordena por puntos → diferencia de goles → goles a favor → victorias →
+   enfrentamiento directo. El organizador puede corregir cualquier orden
+   desde su panel (overrides). */
 function computeGroupStandings(results, overrides) {
   const out = {};
   for (const g of Object.keys(GROUPS)) {
     const stats = {};
-    GROUPS[g].forEach((c) => { stats[c] = { code: c, pj: 0, w: 0, d: 0, l: 0, pts: 0 }; });
+    GROUPS[g].forEach((c) => { stats[c] = { code: c, pj: 0, w: 0, d: 0, l: 0, pts: 0, gf: 0, ga: 0, gd: 0 }; });
     const matches = GROUP_MATCHES.filter((m) => m.group === g);
     matches.forEach((m) => {
       const r = results?.groups?.[m.id];
@@ -364,7 +382,13 @@ function computeGroupStandings(results, overrides) {
       if (r === "1") { stats[m.home].w++; stats[m.home].pts += 3; stats[m.away].l++; }
       else if (r === "2") { stats[m.away].w++; stats[m.away].pts += 3; stats[m.home].l++; }
       else { stats[m.home].d++; stats[m.away].d++; stats[m.home].pts++; stats[m.away].pts++; }
+      const sc = results?.scores?.[m.id];
+      if (sc) {
+        stats[m.home].gf += sc.h; stats[m.home].ga += sc.a;
+        stats[m.away].gf += sc.a; stats[m.away].ga += sc.h;
+      }
     });
+    GROUPS[g].forEach((c) => { stats[c].gd = stats[c].gf - stats[c].ga; });
     const h2h = (a, b) => { // 1 si a ganó a b, -1 si b ganó a a, 0 en otro caso
       const m = matches.find((x) => (x.home === a && x.away === b) || (x.home === b && x.away === a));
       const r = m ? results?.groups?.[m.id] : null;
@@ -378,7 +402,8 @@ function computeGroupStandings(results, overrides) {
       order = ov;
     } else {
       order = [...GROUPS[g]].sort((a, b) =>
-        stats[b].pts - stats[a].pts || stats[b].w - stats[a].w || h2h(b, a) ||
+        stats[b].pts - stats[a].pts || stats[b].gd - stats[a].gd || stats[b].gf - stats[a].gf ||
+        stats[b].w - stats[a].w || h2h(b, a) ||
         GROUPS[g].indexOf(a) - GROUPS[g].indexOf(b));
     }
     out[g] = { rows: order.map((c) => stats[c]), manual: Array.isArray(ov) && ov.length === 4 };
@@ -386,11 +411,12 @@ function computeGroupStandings(results, overrides) {
   return out;
 }
 
-/* Ranking de terceros: pasan los 8 mejores (puntos → victorias → letra). */
+/* Ranking de terceros: pasan los 8 mejores (puntos → dif. goles → goles →
+   victorias → letra de grupo). */
 function rankThirds(standings) {
   return Object.keys(GROUPS)
     .map((g) => ({ group: g, ...standings[g].rows[2] }))
-    .sort((a, b) => b.pts - a.pts || b.w - a.w || a.group.localeCompare(b.group));
+    .sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf || b.w - a.w || a.group.localeCompare(b.group));
 }
 
 /* Asigna cada tercero clasificado a su hueco del cuadro respetando los grupos
@@ -724,6 +750,7 @@ function Styles() {
 .fs-label{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);line-height:1.2}
 .fs-pts{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:19px;line-height:1.15;font-variant-numeric:tabular-nums}
 .fs-pts small{font-family:'Archivo',sans-serif;font-size:11px;font-weight:600;color:var(--ink2);margin-left:3px}
+.fs-sep{width:1px;align-self:stretch;background:var(--line);margin:2px 1px}
 @keyframes fsIn{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
 @media (prefers-reduced-motion: reduce){.float-score{animation:none}}
 
@@ -841,6 +868,7 @@ select:focus,input.txt:focus{outline:none;border-color:var(--clay)}
 .stand-row.q3 .pos{color:var(--gold)}
 .stand-row .snm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
 .stand-row .spts{font-weight:700;font-variant-numeric:tabular-nums;font-family:'Space Grotesk',sans-serif}
+.stand-row .sgd{color:var(--ink2);font-size:11.5px;font-variant-numeric:tabular-nums;width:28px;text-align:right}
 .stand-row .spj{color:var(--ink2);font-size:11.5px;font-variant-numeric:tabular-nums;width:30px;text-align:right}
 .manual-tag{margin-left:auto;font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;background:var(--clay-soft);color:var(--clay-d);border-radius:99px;padding:2px 8px}
 
@@ -1206,7 +1234,7 @@ function GroupsView({ picks, setPick, results, locked }) {
                 </div>
                 <div className="side away"><Flag code={m.away} /><span className="nm">{TEAMS[m.away].name}</span></div>
               </div>
-              {res && <div className="result-tag">Resultado oficial: <b>{res}</b> · {sel ? (sel === res ? <b className="ok">+{SCORING.group} pts</b> : <b className="no">0 pts</b>) : "sin pronóstico"}</div>}
+              {res && <div className="result-tag">Resultado oficial: <b>{results?.scores?.[m.id] ? `${results.scores[m.id].h}-${results.scores[m.id].a} (${res})` : res}</b> · {sel ? (sel === res ? <b className="ok">+{SCORING.group} pts</b> : <b className="no">0 pts</b>) : "sin pronóstico"}</div>}
             </div>
           );
         })}
@@ -1428,7 +1456,7 @@ function KnockoutView({ results, config }) {
       {!complete && (
         <div className="banner">⏳ <b>Provisional:</b> con {playedCount}/{GROUP_MATCHES.length} resultados. Los cruces se irán ajustando con cada partido y se confirmarán al cerrar la fase de grupos.</div>
       )}
-      <div className="banner flat">ℹ️ Sin marcadores exactos no hay diferencia de goles: los empates a puntos se ordenan por victorias y enfrentamiento directo, y el organizador puede corregir cualquier tabla a mano.</div>
+      <div className="banner flat">ℹ️ Tabla por puntos y diferencia de goles (cuando el resultado tiene marcador, p. ej. "2-0"). Si un desempate queda mal resuelto, el organizador puede corregir la tabla a mano.</div>
 
       <div className="glabel" style={{ marginTop: 20 }}><span className="badge"><Rank s={17} /></span><h3>Clasificación de los grupos</h3></div>
       <div className="stand-grid">
@@ -1441,6 +1469,7 @@ function KnockoutView({ results, config }) {
                 <Flag code={r.code} size={20} />
                 <span className="snm">{TEAMS[r.code].name}</span>
                 <span className="spts">{r.pts} pts</span>
+                <span className="sgd" title="Diferencia de goles">{fmtGd(r.gd)}</span>
                 <span className="spj">{r.pj} PJ</span>
               </div>
             ))}
@@ -1457,6 +1486,7 @@ function KnockoutView({ results, config }) {
             <Flag code={t.code} size={20} />
             <span className="snm">{TEAMS[t.code].name} <span style={{ color: "var(--ink2)", fontWeight: 500 }}>· grupo {t.group}</span></span>
             <span className="spts">{t.pts} pts</span>
+            <span className="sgd" title="Diferencia de goles">{fmtGd(t.gd)}</span>
             <span className="spj">{t.pj} PJ</span>
           </div>
         ))}
@@ -1565,12 +1595,24 @@ function computeScore(picks, results) {
   if (results.scorer && picks.scorer && picks.scorer.trim().toLowerCase() === results.scorer.trim().toLowerCase()) special += SCORING.scorer;
   return { total: group + special, group, special, scored };
 }
+
+/* Puestos compartidos en empates: con totales [2,2,1] hay dos 1.º y un 3.º.
+   Recibe filas YA ordenadas de mayor a menor total y les añade `pos`. */
+function withSharedRanks(rows) {
+  let lastTotal = null, lastPos = 0;
+  return rows.map((r, i) => {
+    const pos = r.total === lastTotal ? lastPos : i + 1;
+    lastTotal = r.total; lastPos = pos;
+    return { ...r, pos };
+  });
+}
+const fmtGd = (gd) => (gd > 0 ? `+${gd}` : String(gd));
 function Leaderboard({ profiles, allPicks, results, meId, onRefresh, loading, now, timeLocked }) {
-  const rows = profiles.map((p) => {
+  const rows = withSharedRanks(profiles.map((p) => {
     const sc = computeScore(allPicks[p.id], results);
     const made = allPicks[p.id] ? GROUP_MATCHES.filter((m) => allPicks[p.id].groups?.[m.id]).length : 0;
     return { ...p, ...sc, made };
-  }).sort((a, b) => b.total - a.total || b.made - a.made);
+  }).sort((a, b) => b.total - a.total || b.made - a.made));
   const scoredMatches = GROUP_MATCHES.filter((m) => results?.groups?.[m.id]).length;
   const remaining = (GROUP_MATCHES.length - scoredMatches) * SCORING.group + MAX_KO + (results?.champion ? 0 : SCORING.champion) + (results?.scorer ? 0 : SCORING.scorer);
   return (
@@ -1584,9 +1626,9 @@ function Leaderboard({ profiles, allPicks, results, meId, onRefresh, loading, no
       <div className="banner">🔥 Quedan <b>{remaining} puntos</b> en juego de {MAX_TOTAL} totales —<span>&nbsp;hay remontada posible hasta la final.</span></div>
       <div className="card" style={{ marginTop: 14 }}>
         {rows.length === 0 ? <div className="empty">Aún no hay participantes.</div> :
-          rows.map((r, i) => (
+          rows.map((r) => (
             <div className={`lb-row ${r.id === meId ? "me" : ""}`} key={r.id}>
-              <div className="rank">{i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1}</div>
+              <div className="rank">{r.pos === 1 ? "🥇" : r.pos === 2 ? "🥈" : r.pos === 3 ? "🥉" : r.pos}</div>
               <div className="av" style={avatarStyle(r.color)}>{r.avatar}</div>
               <div style={{ minWidth: 0 }}>
                 <div className="lb-name">{r.name}{r.id === meId ? " · tú" : ""}</div>
@@ -1702,12 +1744,12 @@ function AdminView({ config, setConfig, results, saveResults, locked, setLocked,
     setConfig({ ...config, standingsOverride: ov });
   };
 
-  const shareRows = profiles
+  const shareRows = withSharedRanks(profiles
     .map((p) => ({ ...p, ...computeScore(allPicks[p.id], results) }))
-    .sort((a, b) => b.total - a.total);
+    .sort((a, b) => b.total - a.total));
   const shareDate = new Intl.DateTimeFormat("es-ES", { timeZone: "Europe/Madrid", day: "2-digit", month: "2-digit", year: "numeric" }).format(new Date());
   const shareText = `> Clasificación Mundial 2026\n> ${shareDate}\n` +
-    shareRows.map((r, i) => `${i + 1}.${r.avatar} ${r.name} - ${r.total} punto${r.total === 1 ? "" : "s"}`).join("\n");
+    shareRows.map((r) => `${r.pos}.${r.avatar} ${r.name} - ${r.total} punto${r.total === 1 ? "" : "s"}`).join("\n");
   const copyShare = async () => {
     try { await navigator.clipboard.writeText(shareText); }
     catch {
@@ -1744,12 +1786,12 @@ function AdminView({ config, setConfig, results, saveResults, locked, setLocked,
             <span className="sp">{GROUP_MATCHES.filter((m) => draft.groups?.[m.id]).length}/{GROUP_MATCHES.length} resultados</span></div>
           <div className="card">
             {(() => {
-              const rows = profiles.map((p) => ({ ...p, ...computeScore(allPicks[p.id], draft) }))
-                .sort((a, b) => b.total - a.total);
+              const rows = withSharedRanks(profiles.map((p) => ({ ...p, ...computeScore(allPicks[p.id], draft) }))
+                .sort((a, b) => b.total - a.total));
               if (rows.length === 0) return <div className="empty">Aún no hay participantes.</div>;
-              return rows.map((r, i) => (
+              return rows.map((r) => (
                 <div className="lb-row" key={r.id}>
-                  <div className="rank">{i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1}</div>
+                  <div className="rank">{r.pos === 1 ? "🥇" : r.pos === 2 ? "🥈" : r.pos === 3 ? "🥉" : r.pos}</div>
                   <div className="av" style={avatarStyle(r.color)}>{r.avatar}</div>
                   <div style={{ minWidth: 0 }}><div className="lb-name">{r.name}</div>
                     <div className="lb-sub">{r.group} grupos{r.special ? ` · ${r.special} especiales` : ""}</div></div>
@@ -1763,7 +1805,7 @@ function AdminView({ config, setConfig, results, saveResults, locked, setLocked,
 
       {sub === "standings" && (
         <div style={{ marginTop: 12 }}>
-          <div className="banner flat" style={{ marginTop: 0 }}>📊 <b>Clasificación de grupos:</b> se calcula sola con los resultados 1·X·2 (3-1-0 puntos). Sin goles no hay diferencia de gol, así que si un desempate queda mal resuelto, corrígelo con las flechas. El orden manual manda sobre el automático y alimenta la pestaña Eliminatorias.</div>
+          <div className="banner flat" style={{ marginTop: 0 }}>📊 <b>Clasificación de grupos:</b> se calcula sola con los resultados (3-1-0 puntos) y, si escribes marcadores en MATCH_CONTROL (p. ej. "2-0"), también con la diferencia de goles. Si aun así un desempate queda mal resuelto, corrígelo con las flechas: el orden manual manda sobre el automático y alimenta la pestaña Eliminatorias.</div>
           <div className="stand-grid">
             {Object.keys(GROUPS).map((g) => (
               <div className="stand-card" key={g}>
@@ -1779,6 +1821,7 @@ function AdminView({ config, setConfig, results, saveResults, locked, setLocked,
                     <Flag code={r.code} size={20} />
                     <span className="snm">{TEAMS[r.code].name}</span>
                     <span className="spts">{r.pts}</span>
+                    <span className="sgd" title="Diferencia de goles">{fmtGd(r.gd)}</span>
                     <span className="ord-btns">
                       <button disabled={i === 0} onClick={() => moveTeam(g, i, -1)} title="Subir">↑</button>
                       <button disabled={i === 3} onClick={() => moveTeam(g, i, 1)} title="Bajar">↓</button>
@@ -2116,13 +2159,23 @@ export default function App() {
       </div>
       {(() => {
         const score = computeScore(picks, results);
+        // Posición con puestos compartidos: 1 + cuántos perfiles tienen MÁS puntos.
+        const others = profiles.filter((p) => p.id !== me.id)
+          .map((p) => computeScore(allPicks[p.id], results).total);
+        const pos = others.filter((t) => t > score.total).length + 1;
+        const totalPlayers = profiles.length || 1;
         return (
           <div className="float-score"
-            title={`${score.scored} partido${score.scored === 1 ? "" : "s"} corregido${score.scored === 1 ? "" : "s"} · grupos: ${score.group}${score.special ? ` · especiales: ${score.special}` : ""}`}>
+            title={`${score.scored} partido${score.scored === 1 ? "" : "s"} corregido${score.scored === 1 ? "" : "s"} · grupos: ${score.group}${score.special ? ` · especiales: ${score.special}` : ""} · ${pos}.º de ${totalPlayers}`}>
             <div className="av" style={avatarStyle(me.color)}>{me.avatar}</div>
             <div>
               <div className="fs-label">Tus puntos</div>
               <div className="fs-pts">{score.total}<small>pts</small></div>
+            </div>
+            <div className="fs-sep" />
+            <div>
+              <div className="fs-label">Posición</div>
+              <div className="fs-pts">{pos === 1 ? "🥇" : pos === 2 ? "🥈" : pos === 3 ? "🥉" : ""}{pos}<small>.º</small></div>
             </div>
           </div>
         );
