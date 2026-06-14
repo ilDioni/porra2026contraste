@@ -148,7 +148,7 @@ const MATCH_CONTROL = {
   // ——— Jornada del sábado, 13 de junio ———
   B1: { kickoffSpain: "2026-06-13T21:00:00+02:00", result: "1-1" }, // Catar - Suiza
   C0: { kickoffSpain: "2026-06-14T00:00:00+02:00", result: "1-1" }, // Brasil - Marruecos
-  C1: { kickoffSpain: "2026-06-14T03:00:00+02:00", result: "" }, // Haití - Escocia
+  C1: { kickoffSpain: "2026-06-14T03:00:00+02:00", result: "0-1" }, // Haití - Escocia
   D1: { kickoffSpain: "2026-06-14T06:00:00+02:00", result: "" }, // Australia - Turquía
   // ——— Jornada del domingo, 14 de junio ———
   E0: { kickoffSpain: "2026-06-14T19:00:00+02:00", result: "" }, // Alemania - Curazao
