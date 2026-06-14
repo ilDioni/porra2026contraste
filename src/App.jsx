@@ -146,8 +146,8 @@ const MATCH_CONTROL = {
   B0: { kickoffSpain: "2026-06-12T21:00:00+02:00", result: "1-1" }, // Canadá - Bosnia y Herzeg.
   D0: { kickoffSpain: "2026-06-13T03:00:00+02:00", result: "4-1" }, // Estados Unidos - Paraguay
   // ——— Jornada del sábado, 13 de junio ———
-  B1: { kickoffSpain: "2026-06-13T21:00:00+02:00", result: "" }, // Catar - Suiza
-  C0: { kickoffSpain: "2026-06-14T00:00:00+02:00", result: "" }, // Brasil - Marruecos
+  B1: { kickoffSpain: "2026-06-13T21:00:00+02:00", result: "1-1" }, // Catar - Suiza
+  C0: { kickoffSpain: "2026-06-14T00:00:00+02:00", result: "1-1" }, // Brasil - Marruecos
   C1: { kickoffSpain: "2026-06-14T03:00:00+02:00", result: "" }, // Haití - Escocia
   D1: { kickoffSpain: "2026-06-14T06:00:00+02:00", result: "" }, // Australia - Turquía
   // ——— Jornada del domingo, 14 de junio ———
