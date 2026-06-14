@@ -152,7 +152,7 @@ const MATCH_CONTROL = {
   D1: { kickoffSpain: "2026-06-14T06:00:00+02:00", result: "2-0" }, // Australia - Turquía
   // ——— Jornada del domingo, 14 de junio ———
   E0: { kickoffSpain: "2026-06-14T19:00:00+02:00", result: "7-1" }, // Alemania - Curazao
-  F0: { kickoffSpain: "2026-06-14T22:00:00+02:00", result: "" }, // Países Bajos - Japón
+  F0: { kickoffSpain: "2026-06-14T22:00:00+02:00", result: "2-2" }, // Países Bajos - Japón
   E1: { kickoffSpain: "2026-06-15T01:00:00+02:00", result: "" }, // Costa de Marfil - Ecuador
   F1: { kickoffSpain: "2026-06-15T04:00:00+02:00", result: "" }, // Suecia - Túnez
   // ——— Jornada del lunes, 15 de junio ———
