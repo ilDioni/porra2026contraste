@@ -746,6 +746,7 @@ function Styles() {
 .fs-label{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);line-height:1.2}
 .fs-pts{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:19px;line-height:1.15;font-variant-numeric:tabular-nums}
 .fs-pts small{font-family:'Archivo',sans-serif;font-size:11px;font-weight:600;color:var(--ink2);margin-left:3px}
+.fs-sep{width:1px;align-self:stretch;background:var(--line);margin:2px 1px}
 @keyframes fsIn{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
 @media (prefers-reduced-motion: reduce){.float-score{animation:none}}
 
@@ -1201,15 +1202,13 @@ function HeroCountdown({ now, timeLocked, results }) {
 }
 
 /* ============================== FASE DE GRUPOS =========================== */
-function GroupsView({ me, picks, setPick, results, locked, now, timeLocked }) {
+function GroupsView({ picks, setPick, results, locked }) {
   const [g, setG] = useState("A");
-  const score = computeScore(picks, results);
   const groupMatches = GROUP_MATCHES.filter((m) => m.group === g);
   const done = GROUP_MATCHES.filter((m) => picks.groups?.[m.id]).length;
   const groupDone = (gl) => GROUP_MATCHES.filter((m) => m.group === gl && picks.groups?.[m.id]).length === 6;
   return (
     <div>
-      <HeroCountdown now={now} timeLocked={timeLocked} results={results} />
       <div className="section-h"><div className="ttl"><span className="ic"><Ball /></span><h2>Fase de grupos</h2></div>
         <p>Marca <b>1</b> (gana el local), <b>X</b> (empate) o <b>2</b> (gana el visitante) en cada partido.</p></div>
 
@@ -1241,22 +1240,11 @@ function GroupsView({ me, picks, setPick, results, locked, now, timeLocked }) {
                 </div>
                 <div className="side away"><Flag code={m.away} /><span className="nm">{TEAMS[m.away].name}</span></div>
               </div>
-              {res && <div className="result-tag">Resultado oficial: <b>{res}</b> · {sel ? (sel === res ? <b className="ok">+{SCORING.group} pts</b> : <b className="no">0 pts</b>) : "sin pronóstico"}</div>}
+              {res && <div className="result-tag">Resultado oficial: <b>{results?.scores?.[m.id] ? `${results.scores[m.id].h}-${results.scores[m.id].a} (${res})` : res}</b> · {sel ? (sel === res ? <b className="ok">+{SCORING.group} pts</b> : <b className="no">0 pts</b>) : "sin pronóstico"}</div>}
             </div>
           );
         })}
       </div>
-
-      {me && (
-        <div className="float-score"
-          title={`${score.scored} partido${score.scored === 1 ? "" : "s"} corregido${score.scored === 1 ? "" : "s"} · grupos: ${score.group}${score.special ? ` · especiales: ${score.special}` : ""}`}>
-          <div className="av" style={avatarStyle(me.color)}>{me.avatar}</div>
-          <div>
-            <div className="fs-label">Tus puntos</div>
-            <div className="fs-pts">{score.total}<small>pts</small></div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -1577,7 +1565,7 @@ function ShareBlock({ text }) {
     </div>
   );
 }
-function Leaderboard({ profiles, allPicks, results, meId, onRefresh, loading, config }) {
+function Leaderboard({ profiles, allPicks, results, meId, onRefresh, loading, config, now, timeLocked }) {
   const rows = withSharedRanks(profiles.map((p) => {
     const sc = computeScore(allPicks[p.id], results);
     const made = allPicks[p.id] ? GROUP_MATCHES.filter((m) => allPicks[p.id].groups?.[m.id]).length : 0;
@@ -1588,6 +1576,7 @@ function Leaderboard({ profiles, allPicks, results, meId, onRefresh, loading, co
   const canShare = (config?.shareViewers || []).includes(meId);
   return (
     <div>
+      <HeroCountdown now={now} timeLocked={timeLocked} results={results} />
       <div className="section-h" style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
         <div><div className="ttl"><span className="ic"><Rank /></span><h2>Clasificación</h2></div>
           <p>{profiles.length} participante{profiles.length === 1 ? "" : "s"} · puntos en vivo</p></div>
@@ -1966,11 +1955,10 @@ function ProfileEditor({ me, profiles, onSave, onChangePassword }) {
 
 /* ================================= APP ================================== */
 const TABS = [
-  ["groups", "Grupos", Ball],
-  ["specials", "Apuestas", Trophy],
+  ["leaderboard", "Clasificación", Rank],
   ["answers", "Respuestas", Poll],
   ["knockout", "Eliminatorias", BracketIcon],
-  ["leaderboard", "Clasificación", Rank],
+  ["specials", "Apuestas", Trophy],
   ["profile", "Perfil", UserIcon],
   ["rules", "Reglas", BookIcon],
 ];
@@ -2117,14 +2105,39 @@ export default function App() {
         </div>
       </div>
       <div className="wrap">
-        {tab === "groups" && <GroupsView me={me} picks={picks} setPick={setPick} results={results} locked={locked} now={now} timeLocked={timeLocked} />}
-        {tab === "specials" && <SpecialsView picks={picks} setChampion={setChampion} setScorer={setScorer} results={results} locked={locked} />}
+        {tab === "specials" && (
+          <>
+            <GroupsView picks={picks} setPick={setPick} results={results} locked={locked} />
+            <SpecialsView picks={picks} setChampion={setChampion} setScorer={setScorer} results={results} locked={locked} />
+          </>
+        )}
         {tab === "answers" && <AnswersView profiles={profiles} allPicks={allPicks} results={results} loading={busy} onRefresh={loadAll} />}
         {tab === "knockout" && <KnockoutView results={results} config={config} />}
-        {tab === "leaderboard" && <Leaderboard profiles={profiles} allPicks={allPicks} results={results} meId={me.id} onRefresh={loadAll} loading={busy} config={config} />}
+        {tab === "leaderboard" && <Leaderboard profiles={profiles} allPicks={allPicks} results={results} meId={me.id} onRefresh={loadAll} loading={busy} config={config} now={now} timeLocked={timeLocked} />}
         {tab === "profile" && <ProfileEditor me={me} profiles={profiles} onSave={updateMyProfile} onChangePassword={changeMyPassword} />}
         {tab === "rules" && <Rules />}
       </div>
+      {(() => {
+        const score = computeScore(picks, results);
+        const others = profiles.filter((p) => p.id !== me.id).map((p) => computeScore(allPicks[p.id], results).total);
+        const pos = others.filter((t) => t > score.total).length + 1;
+        const totalPlayers = profiles.length || 1;
+        return (
+          <div className="float-score"
+            title={`${score.scored} partido${score.scored === 1 ? "" : "s"} corregido${score.scored === 1 ? "" : "s"} · grupos: ${score.group}${score.special ? ` · especiales: ${score.special}` : ""} · ${pos}.º de ${totalPlayers}`}>
+            <div className="av" style={avatarStyle(me.color)}>{me.avatar}</div>
+            <div>
+              <div className="fs-label">Tus puntos</div>
+              <div className="fs-pts">{score.total}<small>pts</small></div>
+            </div>
+            <div className="fs-sep" />
+            <div>
+              <div className="fs-label">Posición</div>
+              <div className="fs-pts">{pos === 1 ? "🥇" : pos === 2 ? "🥈" : pos === 3 ? "🥉" : ""}{pos}<small>.º</small></div>
+            </div>
+          </div>
+        );
+      })()}
       <nav className="bottomnav">
         {TABS.map(([id, label, Icon]) => (
           <button key={id} className={tab === id ? "on" : ""} onClick={() => { setTab(id); window.scrollTo({ top: 0 }); }}>
