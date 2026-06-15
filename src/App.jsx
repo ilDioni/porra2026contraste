@@ -130,84 +130,104 @@ const GROUP_MATCHES = [
 
 /* --------------------- RESULTADOS Y HORARIOS EDITABLES -------------------
    Edita SOLO esta sección durante el torneo.
-   - result: "" si aún no hay resultado; "1" gana local, "X" empate, "2" gana visitante.
+   - result: "" si aún no hay resultado. Admite dos formatos:
+       · Marcador exacto: "2-0", "1-1", "0-3"…  ► recomendado: permite calcular
+         la diferencia de goles en la clasificación de grupos.
+       · Solo signo: "1" gana local, "X" empate, "2" gana visitante.
    - kickoffSpain: hora de inicio en España, formato "AAAA-MM-DDTHH:mm:ss+02:00".
      Si lo dejas vacío, ese partido no aparecerá en la cuenta atrás del bloque principal.
    Los valores escritos aquí tienen prioridad sobre los resultados guardados desde el panel admin.
    ------------------------------------------------------------------------ */
 const MATCH_CONTROL = {
-  A0: { kickoffSpain: "2026-06-11T21:00:00+02:00", result: "1" }, // México - Sudáfrica
-  A1: { kickoffSpain: "2026-06-12T04:00:00+02:00", result: "" }, // Corea del Sur - República Checa
-  A2: { kickoffSpain: "2026-06-18T18:00:00+02:00", result: "" }, // República Checa - Sudáfrica
-  A3: { kickoffSpain: "2026-06-19T03:00:00+02:00", result: "" }, // México - Corea del Sur
-  A4: { kickoffSpain: "2026-06-25T03:00:00+02:00", result: "" }, // República Checa - México
-  A5: { kickoffSpain: "2026-06-25T03:00:00+02:00", result: "" }, // Sudáfrica - Corea del Sur
-  B0: { kickoffSpain: "2026-06-12T21:00:00+02:00", result: "" }, // Canadá - Bosnia y Herzeg.
-  B1: { kickoffSpain: "2026-06-13T21:00:00+02:00", result: "" }, // Catar - Suiza
-  B2: { kickoffSpain: "2026-06-18T21:00:00+02:00", result: "" }, // Suiza - Bosnia y Herzeg.
-  B3: { kickoffSpain: "2026-06-19T00:00:00+02:00", result: "" }, // Canadá - Catar
-  B4: { kickoffSpain: "2026-06-24T21:00:00+02:00", result: "" }, // Suiza - Canadá
-  B5: { kickoffSpain: "2026-06-24T21:00:00+02:00", result: "" }, // Bosnia y Herzeg. - Catar
-  C0: { kickoffSpain: "2026-06-14T00:00:00+02:00", result: "" }, // Brasil - Marruecos
-  C1: { kickoffSpain: "2026-06-14T03:00:00+02:00", result: "" }, // Haití - Escocia
-  C2: { kickoffSpain: "2026-06-20T00:00:00+02:00", result: "" }, // Escocia - Marruecos
-  C3: { kickoffSpain: "2026-06-20T03:00:00+02:00", result: "" }, // Brasil - Haití
-  C4: { kickoffSpain: "2026-06-25T00:00:00+02:00", result: "" }, // Escocia - Brasil
-  C5: { kickoffSpain: "2026-06-25T00:00:00+02:00", result: "" }, // Marruecos - Haití
-  D0: { kickoffSpain: "2026-06-13T03:00:00+02:00", result: "" }, // Estados Unidos - Paraguay
-  D1: { kickoffSpain: "2026-06-13T06:00:00+02:00", result: "" }, // Australia - Turquía
-  D2: { kickoffSpain: "2026-06-19T21:00:00+02:00", result: "" }, // Estados Unidos - Australia
-  D3: { kickoffSpain: "2026-06-19T06:00:00+02:00", result: "" }, // Turquía - Paraguay
-  D4: { kickoffSpain: "2026-06-26T04:00:00+02:00", result: "" }, // Turquía - Estados Unidos
-  D5: { kickoffSpain: "2026-06-26T04:00:00+02:00", result: "" }, // Paraguay - Australia
-  E0: { kickoffSpain: "2026-06-14T19:00:00+02:00", result: "" }, // Alemania - Curazao
-  E1: { kickoffSpain: "2026-06-15T01:00:00+02:00", result: "" }, // Costa de Marfil - Ecuador
-  E2: { kickoffSpain: "2026-06-20T22:00:00+02:00", result: "" }, // Alemania - Costa de Marfil
-  E3: { kickoffSpain: "2026-06-21T04:00:00+02:00", result: "" }, // Ecuador - Curazao
-  E4: { kickoffSpain: "2026-06-25T22:00:00+02:00", result: "" }, // Curazao - Costa de Marfil
-  E5: { kickoffSpain: "2026-06-25T22:00:00+02:00", result: "" }, // Ecuador - Alemania
-  F0: { kickoffSpain: "2026-06-14T22:00:00+02:00", result: "" }, // Países Bajos - Japón
-  F1: { kickoffSpain: "2026-06-15T04:00:00+02:00", result: "" }, // Suecia - Túnez
-  F2: { kickoffSpain: "2026-06-20T19:00:00+02:00", result: "" }, // Países Bajos - Suecia
-  F3: { kickoffSpain: "2026-06-20T06:00:00+02:00", result: "" }, // Túnez - Japón
-  F4: { kickoffSpain: "2026-06-26T01:00:00+02:00", result: "" }, // Japón - Suecia
-  F5: { kickoffSpain: "2026-06-26T01:00:00+02:00", result: "" }, // Túnez - Países Bajos
-  G0: { kickoffSpain: "2026-06-15T21:00:00+02:00", result: "" }, // Bélgica - Egipto
-  G1: { kickoffSpain: "2026-06-16T03:00:00+02:00", result: "" }, // Irán - Nueva Zelanda
-  G2: { kickoffSpain: "2026-06-21T21:00:00+02:00", result: "" }, // Bélgica - Irán
-  G3: { kickoffSpain: "2026-06-22T03:00:00+02:00", result: "" }, // Nueva Zelanda - Egipto
-  G4: { kickoffSpain: "2026-06-27T05:00:00+02:00", result: "" }, // Egipto - Irán
-  G5: { kickoffSpain: "2026-06-27T05:00:00+02:00", result: "" }, // Nueva Zelanda - Bélgica
+  // ——— Jornada del jueves, 11 de junio ———
+  A0: { kickoffSpain: "2026-06-11T21:00:00+02:00", result: "2-0" }, // México - Sudáfrica
+  A1: { kickoffSpain: "2026-06-12T04:00:00+02:00", result: "2-1" }, // Corea del Sur - República Checa
+  // ——— Jornada del viernes, 12 de junio ———
+  B0: { kickoffSpain: "2026-06-12T21:00:00+02:00", result: "1-1" }, // Canadá - Bosnia y Herzeg.
+  D0: { kickoffSpain: "2026-06-13T03:00:00+02:00", result: "4-1" }, // Estados Unidos - Paraguay
+  // ——— Jornada del sábado, 13 de junio ———
+  B1: { kickoffSpain: "2026-06-13T21:00:00+02:00", result: "1-1" }, // Catar - Suiza
+  C0: { kickoffSpain: "2026-06-14T00:00:00+02:00", result: "1-1" }, // Brasil - Marruecos
+  C1: { kickoffSpain: "2026-06-14T03:00:00+02:00", result: "0-1" }, // Haití - Escocia
+  D1: { kickoffSpain: "2026-06-14T06:00:00+02:00", result: "2-0" }, // Australia - Turquía
+  // ——— Jornada del domingo, 14 de junio ———
+  E0: { kickoffSpain: "2026-06-14T19:00:00+02:00", result: "7-1" }, // Alemania - Curazao
+  F0: { kickoffSpain: "2026-06-14T22:00:00+02:00", result: "2-2" }, // Países Bajos - Japón
+  E1: { kickoffSpain: "2026-06-15T01:00:00+02:00", result: "1-0" }, // Costa de Marfil - Ecuador
+  F1: { kickoffSpain: "2026-06-15T04:00:00+02:00", result: "5-1" }, // Suecia - Túnez
+  // ——— Jornada del lunes, 15 de junio ———
   H0: { kickoffSpain: "2026-06-15T18:00:00+02:00", result: "" }, // España - Cabo Verde
+  G0: { kickoffSpain: "2026-06-15T21:00:00+02:00", result: "" }, // Bélgica - Egipto
   H1: { kickoffSpain: "2026-06-16T00:00:00+02:00", result: "" }, // Arabia Saudí - Uruguay
-  H2: { kickoffSpain: "2026-06-21T18:00:00+02:00", result: "" }, // España - Arabia Saudí
-  H3: { kickoffSpain: "2026-06-22T00:00:00+02:00", result: "" }, // Uruguay - Cabo Verde
-  H4: { kickoffSpain: "2026-06-27T02:00:00+02:00", result: "" }, // Cabo Verde - Arabia Saudí
-  H5: { kickoffSpain: "2026-06-27T02:00:00+02:00", result: "" }, // Uruguay - España
+  G1: { kickoffSpain: "2026-06-16T03:00:00+02:00", result: "" }, // Irán - Nueva Zelanda
+  J1: { kickoffSpain: "2026-06-16T06:00:00+02:00", result: "" }, // Austria - Jordania
+  // ——— Jornada del martes, 16 de junio ———
   I0: { kickoffSpain: "2026-06-16T21:00:00+02:00", result: "" }, // Francia - Senegal
   I1: { kickoffSpain: "2026-06-17T00:00:00+02:00", result: "" }, // Irak - Noruega
-  I2: { kickoffSpain: "2026-06-22T23:00:00+02:00", result: "" }, // Francia - Irak
-  I3: { kickoffSpain: "2026-06-23T02:00:00+02:00", result: "" }, // Noruega - Senegal
-  I4: { kickoffSpain: "2026-06-26T21:00:00+02:00", result: "" }, // Noruega - Francia
-  I5: { kickoffSpain: "2026-06-26T21:00:00+02:00", result: "" }, // Senegal - Irak
   J0: { kickoffSpain: "2026-06-17T03:00:00+02:00", result: "" }, // Argentina - Argelia
-  J1: { kickoffSpain: "2026-06-16T06:00:00+02:00", result: "" }, // Austria - Jordania
-  J2: { kickoffSpain: "2026-06-22T19:00:00+02:00", result: "" }, // Argentina - Austria
-  J3: { kickoffSpain: "2026-06-23T05:00:00+02:00", result: "" }, // Jordania - Argelia
-  J4: { kickoffSpain: "2026-06-28T04:00:00+02:00", result: "" }, // Argelia - Austria
-  J5: { kickoffSpain: "2026-06-28T04:00:00+02:00", result: "" }, // Jordania - Argentina
+  // ——— Jornada del miércoles, 17 de junio ———
   K0: { kickoffSpain: "2026-06-17T19:00:00+02:00", result: "" }, // Portugal - RD del Congo
-  K1: { kickoffSpain: "2026-06-18T04:00:00+02:00", result: "" }, // Uzbekistán - Colombia
-  K2: { kickoffSpain: "2026-06-23T19:00:00+02:00", result: "" }, // Portugal - Uzbekistán
-  K3: { kickoffSpain: "2026-06-24T04:00:00+02:00", result: "" }, // Colombia - RD del Congo
-  K4: { kickoffSpain: "2026-06-28T01:30:00+02:00", result: "" }, // Colombia - Portugal
-  K5: { kickoffSpain: "2026-06-28T01:30:00+02:00", result: "" }, // RD del Congo - Uzbekistán
   L0: { kickoffSpain: "2026-06-17T22:00:00+02:00", result: "" }, // Inglaterra - Croacia
   L1: { kickoffSpain: "2026-06-18T01:00:00+02:00", result: "" }, // Ghana - Panamá
+  K1: { kickoffSpain: "2026-06-18T04:00:00+02:00", result: "" }, // Uzbekistán - Colombia
+  // ——— Jornada del jueves, 18 de junio ———
+  A2: { kickoffSpain: "2026-06-18T18:00:00+02:00", result: "" }, // República Checa - Sudáfrica
+  B2: { kickoffSpain: "2026-06-18T21:00:00+02:00", result: "" }, // Suiza - Bosnia y Herzeg.
+  B3: { kickoffSpain: "2026-06-19T00:00:00+02:00", result: "" }, // Canadá - Catar
+  A3: { kickoffSpain: "2026-06-19T03:00:00+02:00", result: "" }, // México - Corea del Sur
+  D3: { kickoffSpain: "2026-06-19T06:00:00+02:00", result: "" }, // Turquía - Paraguay
+  // ——— Jornada del viernes, 19 de junio ———
+  D2: { kickoffSpain: "2026-06-19T21:00:00+02:00", result: "" }, // Estados Unidos - Australia
+  C2: { kickoffSpain: "2026-06-20T00:00:00+02:00", result: "" }, // Escocia - Marruecos
+  C3: { kickoffSpain: "2026-06-20T03:00:00+02:00", result: "" }, // Brasil - Haití
+  F3: { kickoffSpain: "2026-06-20T06:00:00+02:00", result: "" }, // Túnez - Japón
+  // ——— Jornada del sábado, 20 de junio ———
+  F2: { kickoffSpain: "2026-06-20T19:00:00+02:00", result: "" }, // Países Bajos - Suecia
+  E2: { kickoffSpain: "2026-06-20T22:00:00+02:00", result: "" }, // Alemania - Costa de Marfil
+  E3: { kickoffSpain: "2026-06-21T04:00:00+02:00", result: "" }, // Ecuador - Curazao
+  // ——— Jornada del domingo, 21 de junio ———
+  H2: { kickoffSpain: "2026-06-21T18:00:00+02:00", result: "" }, // España - Arabia Saudí
+  G2: { kickoffSpain: "2026-06-21T21:00:00+02:00", result: "" }, // Bélgica - Irán
+  H3: { kickoffSpain: "2026-06-22T00:00:00+02:00", result: "" }, // Uruguay - Cabo Verde
+  G3: { kickoffSpain: "2026-06-22T03:00:00+02:00", result: "" }, // Nueva Zelanda - Egipto
+  // ——— Jornada del lunes, 22 de junio ———
+  J2: { kickoffSpain: "2026-06-22T19:00:00+02:00", result: "" }, // Argentina - Austria
+  I2: { kickoffSpain: "2026-06-22T23:00:00+02:00", result: "" }, // Francia - Irak
+  I3: { kickoffSpain: "2026-06-23T02:00:00+02:00", result: "" }, // Noruega - Senegal
+  J3: { kickoffSpain: "2026-06-23T05:00:00+02:00", result: "" }, // Jordania - Argelia
+  // ——— Jornada del martes, 23 de junio ———
+  K2: { kickoffSpain: "2026-06-23T19:00:00+02:00", result: "" }, // Portugal - Uzbekistán
   L2: { kickoffSpain: "2026-06-23T22:00:00+02:00", result: "" }, // Inglaterra - Ghana
   L3: { kickoffSpain: "2026-06-24T01:00:00+02:00", result: "" }, // Panamá - Croacia
+  K3: { kickoffSpain: "2026-06-24T04:00:00+02:00", result: "" }, // Colombia - RD del Congo
+  // ——— Jornada del miércoles, 24 de junio ———
+  B4: { kickoffSpain: "2026-06-24T21:00:00+02:00", result: "" }, // Suiza - Canadá
+  B5: { kickoffSpain: "2026-06-24T21:00:00+02:00", result: "" }, // Bosnia y Herzeg. - Catar
+  C4: { kickoffSpain: "2026-06-25T00:00:00+02:00", result: "" }, // Escocia - Brasil
+  C5: { kickoffSpain: "2026-06-25T00:00:00+02:00", result: "" }, // Marruecos - Haití
+  A4: { kickoffSpain: "2026-06-25T03:00:00+02:00", result: "" }, // República Checa - México
+  A5: { kickoffSpain: "2026-06-25T03:00:00+02:00", result: "" }, // Sudáfrica - Corea del Sur
+  // ——— Jornada del jueves, 25 de junio ———
+  E4: { kickoffSpain: "2026-06-25T22:00:00+02:00", result: "" }, // Curazao - Costa de Marfil
+  E5: { kickoffSpain: "2026-06-25T22:00:00+02:00", result: "" }, // Ecuador - Alemania
+  F4: { kickoffSpain: "2026-06-26T01:00:00+02:00", result: "" }, // Japón - Suecia
+  F5: { kickoffSpain: "2026-06-26T01:00:00+02:00", result: "" }, // Túnez - Países Bajos
+  D4: { kickoffSpain: "2026-06-26T04:00:00+02:00", result: "" }, // Turquía - Estados Unidos
+  D5: { kickoffSpain: "2026-06-26T04:00:00+02:00", result: "" }, // Paraguay - Australia
+  // ——— Jornada del viernes, 26 de junio ———
+  I4: { kickoffSpain: "2026-06-26T21:00:00+02:00", result: "" }, // Noruega - Francia
+  I5: { kickoffSpain: "2026-06-26T21:00:00+02:00", result: "" }, // Senegal - Irak
+  H4: { kickoffSpain: "2026-06-27T02:00:00+02:00", result: "" }, // Cabo Verde - Arabia Saudí
+  H5: { kickoffSpain: "2026-06-27T02:00:00+02:00", result: "" }, // Uruguay - España
+  G4: { kickoffSpain: "2026-06-27T05:00:00+02:00", result: "" }, // Egipto - Irán
+  G5: { kickoffSpain: "2026-06-27T05:00:00+02:00", result: "" }, // Nueva Zelanda - Bélgica
+  // ——— Jornada del sábado, 27 de junio ———
   L4: { kickoffSpain: "2026-06-27T23:00:00+02:00", result: "" }, // Panamá - Inglaterra
   L5: { kickoffSpain: "2026-06-27T23:00:00+02:00", result: "" }, // Croacia - Ghana
+  K4: { kickoffSpain: "2026-06-28T01:30:00+02:00", result: "" }, // Colombia - Portugal
+  K5: { kickoffSpain: "2026-06-28T01:30:00+02:00", result: "" }, // RD del Congo - Uzbekistán
+  J4: { kickoffSpain: "2026-06-28T04:00:00+02:00", result: "" }, // Argelia - Austria
+  J5: { kickoffSpain: "2026-06-28T04:00:00+02:00", result: "" }, // Jordania - Argentina
 };
 
 const FINAL_RESULTS = {
@@ -216,18 +236,31 @@ const FINAL_RESULTS = {
 };
 const MATCH_DURATION_MS = 2 * 60 * 60 * 1000; // 2 h: durante ese margen el hero mostrará "En juego".
 
-function cleanMatchResult(value) {
+/* Acepta "1"/"X"/"2" o un marcador "h-a" (también "h:a"). Devuelve el signo
+   y, si hay marcador, los goles (para mostrar el resultado y la dif. de goles). */
+function parseMatchResult(value) {
   const v = String(value || "").trim().toUpperCase();
-  return ["1", "X", "2"].includes(v) ? v : undefined;
+  if (["1", "X", "2"].includes(v)) return { sign: v, score: null };
+  const m = v.match(/^(\d{1,2})\s*[-:]\s*(\d{1,2})$/);
+  if (m) {
+    const h = +m[1], a = +m[2];
+    return { sign: h > a ? "1" : h < a ? "2" : "X", score: { h, a } };
+  }
+  return null;
 }
 function buildCodeResults() {
   const groups = {};
+  const scores = {};
   Object.entries(MATCH_CONTROL).forEach(([id, cfg]) => {
-    const result = cleanMatchResult(cfg?.result);
-    if (result) groups[id] = result;
+    const parsed = parseMatchResult(cfg?.result);
+    if (parsed) {
+      groups[id] = parsed.sign;
+      if (parsed.score) scores[id] = parsed.score;
+    }
   });
   return {
     groups,
+    scores,
     champion: FINAL_RESULTS.champion || "",
     scorer: FINAL_RESULTS.scorer || "",
   };
@@ -237,6 +270,7 @@ function mergeOfficialResults(stored = {}) {
   return {
     ...(stored || {}),
     groups: { ...((stored || {}).groups || {}), ...code.groups },
+    scores: { ...((stored || {}).scores || {}), ...code.scores },
     champion: code.champion || stored?.champion || "",
     scorer: code.scorer || stored?.scorer || "",
   };
@@ -302,6 +336,108 @@ const MAX_GROUP = GROUP_MATCHES.length * SCORING.group;
 const MAX_KO = Object.values(SCORING.knockout).reduce((s,r)=>s+r.matches*(r.sign+r.exact),0);
 const MAX_SPECIAL = SCORING.champion + SCORING.scorer;
 const MAX_TOTAL = MAX_GROUP + MAX_KO + MAX_SPECIAL;
+
+/* ------------------ CLASIFICACIÓN DE GRUPOS + DIECISEISAVOS --------------
+   Cuadro OFICIAL FIFA de dieciseisavos (Mundial 2026, partidos 73-88).
+   Los huecos de terceros indican de qué grupos puede venir cada tercero.   */
+const R32_BRACKET = [
+  { id:"M73", n:73, home:{type:"runner", group:"A"}, away:{type:"runner", group:"B"} },
+  { id:"M74", n:74, home:{type:"winner", group:"E"}, away:{type:"third", groups:["A","B","C","D","F"]} },
+  { id:"M75", n:75, home:{type:"winner", group:"F"}, away:{type:"runner", group:"C"} },
+  { id:"M76", n:76, home:{type:"winner", group:"C"}, away:{type:"runner", group:"F"} },
+  { id:"M77", n:77, home:{type:"winner", group:"I"}, away:{type:"third", groups:["C","D","F","G","H"]} },
+  { id:"M78", n:78, home:{type:"runner", group:"E"}, away:{type:"runner", group:"I"} },
+  { id:"M79", n:79, home:{type:"winner", group:"A"}, away:{type:"third", groups:["C","E","F","H","I"]} },
+  { id:"M80", n:80, home:{type:"winner", group:"L"}, away:{type:"third", groups:["E","H","I","J","K"]} },
+  { id:"M81", n:81, home:{type:"winner", group:"D"}, away:{type:"third", groups:["B","E","F","I","J"]} },
+  { id:"M82", n:82, home:{type:"winner", group:"G"}, away:{type:"third", groups:["A","E","H","I","J"]} },
+  { id:"M83", n:83, home:{type:"runner", group:"K"}, away:{type:"runner", group:"L"} },
+  { id:"M84", n:84, home:{type:"winner", group:"H"}, away:{type:"runner", group:"J"} },
+  { id:"M85", n:85, home:{type:"winner", group:"B"}, away:{type:"third", groups:["E","F","G","I","J"]} },
+  { id:"M86", n:86, home:{type:"winner", group:"J"}, away:{type:"runner", group:"H"} },
+  { id:"M87", n:87, home:{type:"winner", group:"K"}, away:{type:"third", groups:["D","E","I","J","L"]} },
+  { id:"M88", n:88, home:{type:"runner", group:"D"}, away:{type:"runner", group:"G"} },
+];
+
+/* Calcula la tabla de cada grupo a partir de los resultados (3-1-0 pts).
+   Si el resultado tiene marcador ("2-0"), suma goles y ordena por puntos →
+   diferencia de goles → goles a favor → victorias → enfrentamiento directo.
+   El organizador puede corregir cualquier orden desde su panel (overrides). */
+function computeGroupStandings(results, overrides) {
+  const out = {};
+  for (const g of Object.keys(GROUPS)) {
+    const stats = {};
+    GROUPS[g].forEach((c) => { stats[c] = { code: c, pj: 0, w: 0, d: 0, l: 0, pts: 0, gf: 0, ga: 0, gd: 0 }; });
+    const matches = GROUP_MATCHES.filter((m) => m.group === g);
+    matches.forEach((m) => {
+      const r = results?.groups?.[m.id];
+      if (!r) return;
+      stats[m.home].pj++; stats[m.away].pj++;
+      if (r === "1") { stats[m.home].w++; stats[m.home].pts += 3; stats[m.away].l++; }
+      else if (r === "2") { stats[m.away].w++; stats[m.away].pts += 3; stats[m.home].l++; }
+      else { stats[m.home].d++; stats[m.away].d++; stats[m.home].pts++; stats[m.away].pts++; }
+      const sc = results?.scores?.[m.id];
+      if (sc) {
+        stats[m.home].gf += sc.h; stats[m.home].ga += sc.a;
+        stats[m.away].gf += sc.a; stats[m.away].ga += sc.h;
+      }
+    });
+    GROUPS[g].forEach((c) => { stats[c].gd = stats[c].gf - stats[c].ga; });
+    const h2h = (a, b) => {
+      const m = matches.find((x) => (x.home === a && x.away === b) || (x.home === b && x.away === a));
+      const r = m ? results?.groups?.[m.id] : null;
+      if (!r || r === "X") return 0;
+      const winner = r === "1" ? m.home : m.away;
+      return winner === a ? 1 : -1;
+    };
+    let order;
+    const ov = overrides?.[g];
+    if (Array.isArray(ov) && ov.length === 4 && ov.every((c) => GROUPS[g].includes(c)) && new Set(ov).size === 4) {
+      order = ov;
+    } else {
+      order = [...GROUPS[g]].sort((a, b) =>
+        stats[b].pts - stats[a].pts || stats[b].gd - stats[a].gd || stats[b].gf - stats[a].gf ||
+        stats[b].w - stats[a].w || h2h(b, a) ||
+        GROUPS[g].indexOf(a) - GROUPS[g].indexOf(b));
+    }
+    out[g] = { rows: order.map((c) => stats[c]), manual: Array.isArray(ov) && ov.length === 4 };
+  }
+  return out;
+}
+
+/* Ranking de terceros: pasan los 8 mejores (puntos → dif. goles → goles →
+   victorias → letra de grupo). */
+function rankThirds(standings) {
+  return Object.keys(GROUPS)
+    .map((g) => ({ group: g, ...standings[g].rows[2] }))
+    .sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf || b.w - a.w || a.group.localeCompare(b.group));
+}
+
+/* Asigna cada tercero clasificado a su hueco del cuadro respetando los grupos
+   permitidos en cada partido (emparejamiento por backtracking). */
+function assignThirdsToSlots(qualifiedGroups) {
+  const slots = R32_BRACKET.filter((m) => m.away.type === "third")
+    .map((m) => ({ id: m.id, allowed: m.away.groups.filter((g) => qualifiedGroups.includes(g)) }))
+    .sort((a, b) => a.allowed.length - b.allowed.length);
+  const assign = {}; const used = new Set();
+  const bt = (i) => {
+    if (i === slots.length) return true;
+    for (const g of slots[i].allowed) {
+      if (used.has(g)) continue;
+      used.add(g); assign[slots[i].id] = g;
+      if (bt(i + 1)) return true;
+      used.delete(g); delete assign[slots[i].id];
+    }
+    return false;
+  };
+  if (!bt(0)) {
+    const pool = qualifiedGroups.filter((g) => !used.has(g));
+    slots.forEach((s) => { if (!assign[s.id] && pool.length) assign[s.id] = pool.shift(); });
+  }
+  return assign;
+}
+const fmtGd = (gd) => (gd > 0 ? `+${gd}` : String(gd));
+
 
 /* ----------------------------- FECHAS / BLOQUEO -------------------------- */
 // Inaugural: 11 jun 2026, 13:00 CDMX (UTC-6) = 19:00 UTC. Bloqueo 1 h antes.
@@ -676,6 +812,36 @@ function Styles() {
 .viewer-toggle{font-size:12.5px;font-weight:700;border-radius:99px;padding:7px 13px;border:1px solid var(--line);color:var(--ink2);background:var(--paper2);white-space:nowrap}
 .viewer-toggle.on{background:var(--clay-soft);border-color:var(--clay);color:var(--clay-d)}
 .share-pre{margin:0;background:var(--paper2);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:13.5px;line-height:1.7;white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+
+/* Eliminatorias: tablas de grupo y cuadro */
+.stand-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;margin-top:12px}
+.stand-card{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.stand-card .sc-h{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--line2);font-weight:700;font-size:13.5px}
+.stand-card .sc-h .badge{background:var(--ink);color:var(--paper);width:24px;height:24px;border-radius:7px;display:grid;place-items:center;font-weight:700;font-family:'Space Grotesk',sans-serif;font-size:13px}
+.stand-row{display:flex;align-items:center;gap:8px;padding:6px 12px;font-size:13px;border-bottom:1px solid var(--line2)}
+.stand-row:last-child{border-bottom:none}
+.stand-row .pos{width:16px;text-align:center;font-weight:700;font-family:'Space Grotesk',sans-serif;color:var(--ink2)}
+.stand-row.q1 .pos,.stand-row.q2 .pos{color:var(--green)}
+.stand-row.q3 .pos{color:var(--gold)}
+.stand-row .snm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.stand-row .spts{font-weight:700;font-variant-numeric:tabular-nums;font-family:'Space Grotesk',sans-serif}
+.stand-row .sgd{color:var(--ink2);font-size:11.5px;font-variant-numeric:tabular-nums;width:28px;text-align:right}
+.stand-row .spj{color:var(--ink2);font-size:11.5px;font-variant-numeric:tabular-nums;width:30px;text-align:right}
+.manual-tag{margin-left:auto;font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;background:var(--clay-soft);color:var(--clay-d);border-radius:99px;padding:2px 8px}
+.ko-match{padding:12px 14px;border-bottom:1px solid var(--line2)}
+.ko-match:last-child{border-bottom:none}
+.ko-n{font-size:10.5px;color:var(--ink2);font-weight:800;letter-spacing:.06em;text-transform:uppercase;margin-bottom:7px}
+.ko-duel{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:9px}
+.ko-side{display:flex;align-items:center;gap:8px;min-width:0}
+.ko-side.away{flex-direction:row-reverse;text-align:right}
+.ko-side .nm{font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ko-side .slot{display:block;font-size:10.5px;color:var(--ink2);font-weight:700;letter-spacing:.03em}
+.ko-vs{color:var(--ink2);font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.ord-btns{display:flex;gap:4px;margin-left:auto}
+.ord-btns button{width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:var(--paper2);font-size:13px;color:var(--ink2)}
+.ord-btns button:hover:not(:disabled){border-color:var(--clay);color:var(--clay-d)}
+.ord-btns button:disabled{opacity:.35;cursor:default}
+
 
 
 .team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
@@ -1259,6 +1425,107 @@ function AnswersView({ profiles, allPicks, results, loading, onRefresh }) {
   );
 }
 
+/* ============================ ELIMINATORIAS ==============================
+   Clasificación de cada grupo (por resultado y goles), ranking de terceros y
+   dieciseisavos autopopulados según el cuadro oficial FIFA. Provisional hasta
+   que termine la fase de grupos; el organizador puede corregir las tablas. */
+const BracketIcon = ({ s = 22 }) => (
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 5h4M4 11h4M8 5v6M8 8h4M4 19h4M4 13v6M16 8h4M16 16h4M20 8v8M12 8v4h4M12 16h4" />
+  </svg>
+);
+function KnockoutView({ results, config }) {
+  const standings = useMemo(() => computeGroupStandings(results, config?.standingsOverride), [results, config]);
+  const thirds = useMemo(() => rankThirds(standings), [standings]);
+  const qualifiedThirds = thirds.slice(0, 8).map((t) => t.group);
+  const thirdAssign = useMemo(() => assignThirdsToSlots(qualifiedThirds), [standings]);
+  const playedCount = GROUP_MATCHES.filter((m) => results?.groups?.[m.id]).length;
+  const complete = playedCount === GROUP_MATCHES.length;
+
+  const slotTeam = (slot, matchId) => {
+    if (slot.type === "winner") return { code: standings[slot.group].rows[0].code, label: `1.º grupo ${slot.group}` };
+    if (slot.type === "runner") return { code: standings[slot.group].rows[1].code, label: `2.º grupo ${slot.group}` };
+    const g = thirdAssign[matchId];
+    return { code: g ? standings[g].rows[2].code : null, label: `3.º ${slot.groups.join("/")}` };
+  };
+
+  return (
+    <div>
+      <div className="section-h"><div className="ttl"><span className="ic"><BracketIcon /></span><h2>Eliminatorias</h2></div>
+        <p>Clasificación de grupos en vivo y cruces de dieciseisavos. Se calcula con los resultados oficiales (puntos y diferencia de goles).</p></div>
+
+      {!complete && (
+        <div className="banner">⏳ <b>Provisional:</b> con {playedCount}/{GROUP_MATCHES.length} resultados. Los cruces se ajustarán con cada partido y se confirmarán al cerrar la fase de grupos.</div>
+      )}
+      <div className="banner flat">ℹ️ Tabla por puntos y diferencia de goles (cuando el resultado tiene marcador, p. ej. "2-0"). Si un desempate queda mal resuelto, el organizador puede corregir la tabla a mano.</div>
+
+      <div className="glabel" style={{ marginTop: 20 }}><span className="badge"><Rank s={17} /></span><h3>Clasificación de los grupos</h3></div>
+      <div className="stand-grid">
+        {Object.keys(GROUPS).map((g) => (
+          <div className="stand-card" key={g}>
+            <div className="sc-h"><span className="badge">{g}</span>Grupo {g}{standings[g].manual && <span className="manual-tag">editado</span>}</div>
+            {standings[g].rows.map((r, i) => (
+              <div className={`stand-row q${i + 1}`} key={r.code}>
+                <span className="pos">{i + 1}</span>
+                <Flag code={r.code} size={20} />
+                <span className="snm">{TEAMS[r.code].name}</span>
+                <span className="spts">{r.pts} pts</span>
+                <span className="sgd" title="Diferencia de goles">{fmtGd(r.gd)}</span>
+                <span className="spj">{r.pj} PJ</span>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+      <p className="note" style={{ marginTop: 10 }}>Pasan 1.º y 2.º de cada grupo y los 8 mejores terceros.</p>
+
+      <div className="glabel" style={{ marginTop: 24 }}><span className="badge">3.º</span><h3>Ranking de terceros</h3><span className="sp">pasan los 8 primeros</span></div>
+      <div className="card">
+        {thirds.map((t, i) => (
+          <div className="stand-row" key={t.group} style={i === 7 ? { borderBottom: "2px dashed var(--line)" } : undefined}>
+            <span className="pos" style={{ color: i < 8 ? "var(--green)" : "var(--ink2)" }}>{i + 1}</span>
+            <Flag code={t.code} size={20} />
+            <span className="snm">{TEAMS[t.code].name} <span style={{ color: "var(--ink2)", fontWeight: 500 }}>· grupo {t.group}</span></span>
+            <span className="spts">{t.pts} pts</span>
+            <span className="sgd" title="Diferencia de goles">{fmtGd(t.gd)}</span>
+            <span className="spj">{t.pj} PJ</span>
+          </div>
+        ))}
+      </div>
+
+      <div className="glabel" style={{ marginTop: 24 }}><span className="badge"><BracketIcon s={17} /></span><h3>Dieciseisavos de final</h3><span className="sp">cuadro oficial FIFA</span></div>
+      <div className="card">
+        {R32_BRACKET.map((m) => {
+          const home = slotTeam(m.home, m.id), away = slotTeam(m.away, m.id);
+          return (
+            <div className="ko-match" key={m.id}>
+              <div className="ko-n">Partido {m.n}</div>
+              <div className="ko-duel">
+                <div className="ko-side">
+                  {home.code && <Flag code={home.code} size={24} />}
+                  <span style={{ minWidth: 0 }}>
+                    <span className="nm">{home.code ? TEAMS[home.code].name : "Por decidir"}</span>
+                    <span className="slot">{home.label}</span>
+                  </span>
+                </div>
+                <span className="ko-vs">vs</span>
+                <div className="ko-side away">
+                  {away.code && <Flag code={away.code} size={24} />}
+                  <span style={{ minWidth: 0 }}>
+                    <span className="nm">{away.code ? TEAMS[away.code].name : "Por decidir"}</span>
+                    <span className="slot">{away.label}</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="lock-badge" style={{ marginTop: 14 }}>🔒 La porra de dieciseisavos se abrirá aquí cuando se confirmen los cruces</div>
+    </div>
+  );
+}
+
 /* ============================= CLASIFICACIÓN ============================ */
 function computeScore(picks, results) {
   if (!picks || !results) return { total: 0, group: 0, special: 0, scored: 0 };
@@ -1443,6 +1710,21 @@ function AdminView({ config, setConfig, results, saveResults, locked, setLocked,
     setConfig({ ...config, shareViewers: next });
   };
 
+  // clasificación de grupos (con correcciones manuales del organizador)
+  const adminStandings = useMemo(() => computeGroupStandings(results, config?.standingsOverride), [results, config]);
+  const moveTeam = (g, i, dir) => {
+    const order = adminStandings[g].rows.map((r) => r.code);
+    const j = i + dir;
+    if (j < 0 || j > 3) return;
+    [order[i], order[j]] = [order[j], order[i]];
+    setConfig({ ...config, standingsOverride: { ...(config?.standingsOverride || {}), [g]: order } });
+  };
+  const resetGroupOrder = (g) => {
+    const ov = { ...(config?.standingsOverride || {}) };
+    delete ov[g];
+    setConfig({ ...config, standingsOverride: ov });
+  };
+
   useEffect(() => { setDraft(results || { groups: {}, champion: "", scorer: "" }); }, [results]);
   useEffect(() => { setPDraft(targetId && allPicks[targetId] ? JSON.parse(JSON.stringify(allPicks[targetId])) : (targetId ? { groups: {}, champion: "", scorer: "" } : null)); }, [targetId, allPicks]);
 
@@ -1451,6 +1733,7 @@ function AdminView({ config, setConfig, results, saveResults, locked, setLocked,
       <div className="section-h"><div className="ttl"><span className="ic"><ShieldIcon /></span><h2>Panel del organizador</h2></div></div>
       <div className="seg">
         <button className={sub === "results" ? "on" : ""} onClick={() => setSub("results")}>Resultados</button>
+        <button className={sub === "standings" ? "on" : ""} onClick={() => setSub("standings")}>Grupos</button>
         <button className={sub === "share" ? "on" : ""} onClick={() => { setSub("share"); onRefresh(); }}>Compartir</button>
         <button className={sub === "players" ? "on" : ""} onClick={() => { setSub("players"); onRefresh(); }}>Editar jugador</button>
         <button className={sub === "accounts" ? "on" : ""} onClick={() => { setSub("accounts"); onRefresh(); }}>Cuentas</button>
@@ -1480,6 +1763,37 @@ function AdminView({ config, setConfig, results, saveResults, locked, setLocked,
                 </div>
               ));
             })()}
+          </div>
+        </div>
+      )}
+
+      {sub === "standings" && (
+        <div style={{ marginTop: 12 }}>
+          <div className="banner flat" style={{ marginTop: 0 }}>📊 <b>Clasificación de grupos:</b> se calcula sola con los resultados (3-1-0 puntos) y, si pones marcadores ("2-0"), también con la diferencia de goles. Si un desempate queda mal resuelto, corrígelo con las flechas: el orden manual manda sobre el automático y alimenta la pestaña Eliminatorias.</div>
+          <div className="stand-grid">
+            {Object.keys(GROUPS).map((g) => (
+              <div className="stand-card" key={g}>
+                <div className="sc-h">
+                  <span className="badge">{g}</span>Grupo {g}
+                  {adminStandings[g].manual && (
+                    <button className="manual-tag" style={{ border: "none", cursor: "pointer" }} title="Volver al orden automático" onClick={() => resetGroupOrder(g)}>editado · restaurar</button>
+                  )}
+                </div>
+                {adminStandings[g].rows.map((r, i) => (
+                  <div className={`stand-row q${i + 1}`} key={r.code}>
+                    <span className="pos">{i + 1}</span>
+                    <Flag code={r.code} size={20} />
+                    <span className="snm">{TEAMS[r.code].name}</span>
+                    <span className="spts">{r.pts}</span>
+                    <span className="sgd" title="Diferencia de goles">{fmtGd(r.gd)}</span>
+                    <span className="ord-btns">
+                      <button disabled={i === 0} onClick={() => moveTeam(g, i, -1)} title="Subir">↑</button>
+                      <button disabled={i === 3} onClick={() => moveTeam(g, i, 1)} title="Bajar">↓</button>
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -1655,6 +1969,7 @@ const TABS = [
   ["groups", "Grupos", Ball],
   ["specials", "Apuestas", Trophy],
   ["answers", "Respuestas", Poll],
+  ["knockout", "Eliminatorias", BracketIcon],
   ["leaderboard", "Clasificación", Rank],
   ["profile", "Perfil", UserIcon],
   ["rules", "Reglas", BookIcon],
@@ -1664,7 +1979,7 @@ export default function App() {
   const now = useNow();
   const [booting, setBooting] = useState(true);
   const [me, setMe] = useState(null);
-  const [tab, setTab] = useState("groups");
+  const [tab, setTab] = useState("leaderboard");
   const [picks, setPicks] = useState({ groups: {}, champion: "", scorer: undefined });
   const [results, setResults] = useState(() => mergeOfficialResults({ groups: {} }));
   const [config, setConfigState] = useState({});
@@ -1756,7 +2071,7 @@ export default function App() {
     await sdel(KEY.picks(id));
     setProfiles(next);
     setAllPicks((cur) => { const c = { ...cur }; delete c[id]; return c; });
-    if (me && me.id === id) { await sdel(KEY.me); setMe(null); setTab("groups"); }
+    if (me && me.id === id) { await sdel(KEY.me); setMe(null); setTab("leaderboard"); }
   };
 
   if (booting) return (<div className="porra"><Styles /><div className="loadwrap">Cargando la porra…</div></div>);
@@ -1772,7 +2087,7 @@ export default function App() {
               <div><h1>Panel del organizador</h1><small>Porra Mundial 2026</small></div></div>
             <div className="me-chip">
               <div className="av" style={{ background: "var(--ink)", width: 24, height: 24, fontSize: 13 }}>🛡️</div>Organizador
-              <button onClick={() => { setIsAdmin(false); setTab("groups"); }}>salir</button>
+              <button onClick={() => { setIsAdmin(false); setTab("leaderboard"); }}>salir</button>
             </div>
           </div>
         </div>
@@ -1794,7 +2109,7 @@ export default function App() {
             <div><h1>Porra Mundial 2026</h1><small>EE. UU. · México · Canadá</small></div></div>
           <div className="me-chip">
             <div className="av" style={avatarStyle(me.color, { width: 24, height: 24, fontSize: 13 })}>{me.avatar}</div>{me.name}
-            <button onClick={async () => { if (confirm("¿Salir de tu perfil? Podrás volver a entrar con tu contraseña.")) { await sdel(KEY.me); setMe(null); setTab("groups"); } }}>salir</button>
+            <button onClick={async () => { if (confirm("¿Salir de tu perfil? Podrás volver a entrar con tu contraseña.")) { await sdel(KEY.me); setMe(null); setTab("leaderboard"); } }}>salir</button>
           </div>
         </div>
         <div className="tabs">{TABS.map(([id, label, Icon]) => (
@@ -1805,6 +2120,7 @@ export default function App() {
         {tab === "groups" && <GroupsView me={me} picks={picks} setPick={setPick} results={results} locked={locked} now={now} timeLocked={timeLocked} />}
         {tab === "specials" && <SpecialsView picks={picks} setChampion={setChampion} setScorer={setScorer} results={results} locked={locked} />}
         {tab === "answers" && <AnswersView profiles={profiles} allPicks={allPicks} results={results} loading={busy} onRefresh={loadAll} />}
+        {tab === "knockout" && <KnockoutView results={results} config={config} />}
         {tab === "leaderboard" && <Leaderboard profiles={profiles} allPicks={allPicks} results={results} meId={me.id} onRefresh={loadAll} loading={busy} config={config} />}
         {tab === "profile" && <ProfileEditor me={me} profiles={profiles} onSave={updateMyProfile} onChangePassword={changeMyPassword} />}
         {tab === "rules" && <Rules />}
