@@ -160,12 +160,12 @@ const MATCH_CONTROL = {
   G0: { kickoffSpain: "2026-06-15T21:00:00+02:00", result: "" }, // Bélgica - Egipto
   H1: { kickoffSpain: "2026-06-16T00:00:00+02:00", result: "" }, // Arabia Saudí - Uruguay
   G1: { kickoffSpain: "2026-06-16T03:00:00+02:00", result: "" }, // Irán - Nueva Zelanda
-  J1: { kickoffSpain: "2026-06-16T06:00:00+02:00", result: "" }, // Austria - Jordania
   // ——— Jornada del martes, 16 de junio ———
   I0: { kickoffSpain: "2026-06-16T21:00:00+02:00", result: "" }, // Francia - Senegal
   I1: { kickoffSpain: "2026-06-17T00:00:00+02:00", result: "" }, // Irak - Noruega
   J0: { kickoffSpain: "2026-06-17T03:00:00+02:00", result: "" }, // Argentina - Argelia
   // ——— Jornada del miércoles, 17 de junio ———
+  J1: { kickoffSpain: "2026-06-17T06:00:00+02:00", result: "" }, // Austria - Jordania
   K0: { kickoffSpain: "2026-06-17T19:00:00+02:00", result: "" }, // Portugal - RD del Congo
   L0: { kickoffSpain: "2026-06-17T22:00:00+02:00", result: "" }, // Inglaterra - Croacia
   L1: { kickoffSpain: "2026-06-18T01:00:00+02:00", result: "" }, // Ghana - Panamá
@@ -1366,7 +1366,7 @@ function MatchVotes({ m, voters, kickoffMs, result, score }) {
    · Partidos concluidos: partidos con resultado, marcando aciertos y fallos.
    En ambas, los partidos se agrupan por día de disputa (corte a las 06:00). */
 function AnswersView({ profiles, allPicks, results, loading, onRefresh }) {
-  const [view, setView] = useState("next"); // next | done
+  const [view, setView] = useState("next"); // next | done | scorers
   const voters = profiles.map((profile) => ({ profile, picks: allPicks[profile.id] }));
 
   const { upcoming, concluded } = useMemo(() => {
@@ -1378,14 +1378,19 @@ function AnswersView({ profiles, allPicks, results, loading, onRefresh }) {
       const bucket = results?.groups?.[m.id] ? dn : up;
       (bucket[key] = bucket[key] || []).push(row);
     });
+    // dir = orden de los días y de los partidos dentro de cada día.
+    // +1 ascendente (más próximo/antiguo arriba) · -1 descendente (más reciente arriba)
     const pack = (buckets, dir) => Object.entries(buckets)
       .sort((a, b) => dir * a[0].localeCompare(b[0]))
-      .map(([key, rows]) => ({ key, rows: rows.sort((a, b) => (a.kickoffMs ?? Infinity) - (b.kickoffMs ?? Infinity)) }));
-    // próximos: día más cercano primero (asc) · concluidos: el más reciente primero (desc)
+      .map(([key, rows]) => ({
+        key,
+        rows: rows.sort((a, b) => dir * ((a.kickoffMs ?? Infinity) - (b.kickoffMs ?? Infinity))),
+      }));
+    // próximos: el más próximo arriba (asc) · concluidos: el más reciente arriba (desc)
     return { upcoming: pack(up, 1), concluded: pack(dn, -1) };
   }, [results]);
 
-  const days = view === "next" ? upcoming : concluded;
+  const days = view === "done" ? concluded : upcoming;
   const totalMatches = days.reduce((s, d) => s + d.rows.length, 0);
 
   return (
@@ -1399,31 +1404,38 @@ function AnswersView({ profiles, allPicks, results, loading, onRefresh }) {
       <div className="seg" style={{ marginTop: 14 }}>
         <button className={view === "next" ? "on" : ""} onClick={() => setView("next")}>Partidos siguientes</button>
         <button className={view === "done" ? "on" : ""} onClick={() => setView("done")}>Partidos concluidos</button>
+        <button className={view === "scorers" ? "on" : ""} onClick={() => setView("scorers")}>Goleadores</button>
       </div>
 
-      <div className="banner flat">👥 {profiles.length} participante{profiles.length === 1 ? "" : "s"} · {totalMatches} partido{totalMatches === 1 ? "" : "s"} {view === "next" ? "por jugar" : "con resultado"}.</div>
+      {view === "scorers" ? (
+        <>
+          <div className="glabel" style={{ marginTop: 18 }}><span className="badge"><Boot s={17} /></span><h3>Goleadores</h3><span className="sp">Bota de Oro · ✓ acierta la apuesta</span></div>
+          <ScorersTable results={results} profiles={profiles} allPicks={allPicks} limit={30} />
+        </>
+      ) : (
+        <>
+          <div className="banner flat">👥 {profiles.length} participante{profiles.length === 1 ? "" : "s"} · {totalMatches} partido{totalMatches === 1 ? "" : "s"} {view === "next" ? "por jugar" : "con resultado"}.</div>
 
-      <div className="glabel" style={{ marginTop: 18 }}><span className="badge"><Boot s={17} /></span><h3>Goleadores</h3><span className="sp">Bota de Oro · ✓ acierta la apuesta</span></div>
-      <ScorersTable results={results} profiles={profiles} allPicks={allPicks} limit={view === "next" ? 5 : 0} />
-
-      {totalMatches === 0 ? (
-        <div className="empty" style={{ marginTop: 16 }}>{view === "next" ? "No quedan partidos pendientes." : "Aún no hay partidos con resultado oficial."}</div>
-      ) : days.map(({ key, rows }) => (
-        <div key={key}>
-          <div className="day-h">
-            <span className="chip">{answerDayLabel(key)}</span>
-            <span className="sub">{rows.length} partido{rows.length === 1 ? "" : "s"}</span>
-            <span className="ln" />
-          </div>
-          <div className="card">
-            {rows.map(({ match, kickoffMs }) => (
-              <MatchVotes key={match.id} m={match} voters={voters} kickoffMs={kickoffMs}
-                result={view === "done" ? results?.groups?.[match.id] : undefined}
-                score={view === "done" ? results?.scores?.[match.id] : undefined} />
-            ))}
-          </div>
-        </div>
-      ))}
+          {totalMatches === 0 ? (
+            <div className="empty" style={{ marginTop: 16 }}>{view === "next" ? "No quedan partidos pendientes." : "Aún no hay partidos con resultado oficial."}</div>
+          ) : days.map(({ key, rows }) => (
+            <div key={key}>
+              <div className="day-h">
+                <span className="chip">{answerDayLabel(key)}</span>
+                <span className="sub">{rows.length} partido{rows.length === 1 ? "" : "s"}</span>
+                <span className="ln" />
+              </div>
+              <div className="card">
+                {rows.map(({ match, kickoffMs }) => (
+                  <MatchVotes key={match.id} m={match} voters={voters} kickoffMs={kickoffMs}
+                    result={view === "done" ? results?.groups?.[match.id] : undefined}
+                    score={view === "done" ? results?.scores?.[match.id] : undefined} />
+                ))}
+              </div>
+            </div>
+          ))}
+        </>
+      )}
     </div>
   );
 }
@@ -1535,6 +1547,7 @@ function KnockoutView({ results, config, profiles, allPicks }) {
       {!complete && (
         <div className="banner">⏳ <b>Provisional:</b> con {playedCount}/{GROUP_MATCHES.length} resultados. Los cruces se ajustarán con cada partido y se confirmarán al cerrar la fase de grupos.</div>
       )}
+
       <div className="glabel" style={{ marginTop: 20 }}><span className="badge"><Rank s={17} /></span><h3>Clasificación de los grupos</h3></div>
       <div className="stand-grid">
         {Object.keys(GROUPS).map((g) => (
@@ -1598,7 +1611,7 @@ function KnockoutView({ results, config, profiles, allPicks }) {
         })}
       </div>
       <div className="glabel" style={{ marginTop: 24 }}><span className="badge"><Boot s={17} /></span><h3>Tabla de goleadores</h3><span className="sp">Bota de Oro en vivo</span></div>
-      <ScorersTable results={results} profiles={profiles} allPicks={allPicks} />
+      <ScorersTable results={results} profiles={profiles} allPicks={allPicks} limit={30} />
 
       <div className="lock-badge" style={{ marginTop: 14 }}>🔒 La porra de dieciseisavos se abrirá aquí cuando se confirmen los cruces</div>
     </div>
@@ -1727,7 +1740,6 @@ function Rules() {
           <li><b>Eliminatorias:</b> puntos por acertar el signo + un bonus por clavar el resultado exacto. El bonus nunca supera el <b>50%</b> de lo que da el signo, así que acertar el ganador siempre vale más que el marcador.</li>
           <li>Cada ronda escala: la final vale más que las semis, estas más que cuartos, y así sucesivamente.</li>
           <li>La fase de grupos solo vale el <span className="pill">{Math.round((MAX_GROUP / MAX_TOTAL) * 100)}%</span> del total; el <span className="pill">{Math.round(((MAX_TOTAL - MAX_GROUP) / MAX_TOTAL) * 100)}%</span> restante se decide después, así que siempre hay margen para remontar.</li>
-          <li>La selección se <b>bloquea automáticamente 1 h antes del partido inaugural</b>. Después solo el organizador puede tocarla en una urgencia.</li>
         </ul>
         <div className="lock-badge" style={{ marginTop: 12 }}>🔒 La porra de eliminatorias se abrirá al cerrar la fase de grupos</div>
       </div>
