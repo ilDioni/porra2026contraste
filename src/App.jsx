@@ -160,12 +160,12 @@ const MATCH_CONTROL = {
   G0: { kickoffSpain: "2026-06-15T21:00:00+02:00", result: "1-1" }, // Bélgica - Egipto
   H1: { kickoffSpain: "2026-06-16T00:00:00+02:00", result: "1-1" }, // Arabia Saudí - Uruguay
   G1: { kickoffSpain: "2026-06-16T03:00:00+02:00", result: "2-2" }, // Irán - Nueva Zelanda
-  // ——— Jornada del martes, 16 de junio ---
+  // ——— Jornada del martes, 16 de junio ———
   I0: { kickoffSpain: "2026-06-16T21:00:00+02:00", result: "" }, // Francia - Senegal
   I1: { kickoffSpain: "2026-06-17T00:00:00+02:00", result: "" }, // Irak - Noruega
   J0: { kickoffSpain: "2026-06-17T03:00:00+02:00", result: "" }, // Argentina - Argelia
   // ——— Jornada del miércoles, 17 de junio ———
-  J1: { kickoffSpain: "2026-06-17T06:00:00+02:00", result: "" }, // Austria - Jordania
+  J1: { kickoffSpain: "2026-06-17T06:00:00+02:00", result: "" }, // Austria - Jordania 
   K0: { kickoffSpain: "2026-06-17T19:00:00+02:00", result: "" }, // Portugal - RD del Congo
   L0: { kickoffSpain: "2026-06-17T22:00:00+02:00", result: "" }, // Inglaterra - Croacia
   L1: { kickoffSpain: "2026-06-18T01:00:00+02:00", result: "" }, // Ghana - Panamá
@@ -1508,6 +1508,7 @@ function KnockoutView({ results, config }) {
           );
         })}
       </div>
+      <div className="lock-badge" style={{ marginTop: 14 }}>🔒 La porra de dieciseisavos se abrirá aquí cuando se confirmen los cruces</div>
     </div>
   );
 }
@@ -2000,6 +2001,23 @@ export default function App() {
     setBusy(false);
   }, []);
   useEffect(() => { if (tab === "leaderboard" || tab === "answers") loadAll(); }, [tab, loadAll]);
+
+  // Tiempo real: cuando el cron (Edge Function sync-scores) reescribe la fila de
+  // resultados en Supabase, la app recibe el cambio y refresca clasificacion y
+  // marcador del hero al instante, sin recargar. Requiere tener habilitado
+  // Realtime para la tabla "kv" en Supabase (Database > Replication).
+  useEffect(() => {
+    const ch = supabase
+      .channel("kv-results")
+      .on("postgres_changes",
+        { event: "*", schema: "public", table: "kv", filter: `key=eq.${KEY.results}` },
+        (payload) => {
+          const val = payload.new?.value;
+          if (val) setResults(mergeOfficialResults(val));
+        })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, []);
 
   async function createProfile(data) {
     const profile = { id: (crypto.randomUUID?.() || String(Date.now()) + Math.random()), ...data };
