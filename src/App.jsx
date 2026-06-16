@@ -156,16 +156,16 @@ const MATCH_CONTROL = {
   E1: { kickoffSpain: "2026-06-15T01:00:00+02:00", result: "1-0" }, // Costa de Marfil - Ecuador
   F1: { kickoffSpain: "2026-06-15T04:00:00+02:00", result: "5-1" }, // Suecia - Túnez
   // ——— Jornada del lunes, 15 de junio ———
-  H0: { kickoffSpain: "2026-06-15T18:00:00+02:00", result: "0-0" }, // España - Cabo Verde
-  G0: { kickoffSpain: "2026-06-15T21:00:00+02:00", result: "1-1" }, // Bélgica - Egipto
-  H1: { kickoffSpain: "2026-06-16T00:00:00+02:00", result: "1-1" }, // Arabia Saudí - Uruguay
-  G1: { kickoffSpain: "2026-06-16T03:00:00+02:00", result: "2-2" }, // Irán - Nueva Zelanda
+  H0: { kickoffSpain: "2026-06-15T18:00:00+02:00", result: "" }, // España - Cabo Verde
+  G0: { kickoffSpain: "2026-06-15T21:00:00+02:00", result: "" }, // Bélgica - Egipto
+  H1: { kickoffSpain: "2026-06-16T00:00:00+02:00", result: "" }, // Arabia Saudí - Uruguay
+  G1: { kickoffSpain: "2026-06-16T03:00:00+02:00", result: "" }, // Irán - Nueva Zelanda
+  J1: { kickoffSpain: "2026-06-16T06:00:00+02:00", result: "" }, // Austria - Jordania
   // ——— Jornada del martes, 16 de junio ———
   I0: { kickoffSpain: "2026-06-16T21:00:00+02:00", result: "" }, // Francia - Senegal
   I1: { kickoffSpain: "2026-06-17T00:00:00+02:00", result: "" }, // Irak - Noruega
   J0: { kickoffSpain: "2026-06-17T03:00:00+02:00", result: "" }, // Argentina - Argelia
   // ——— Jornada del miércoles, 17 de junio ———
-  J1: { kickoffSpain: "2026-06-17T06:00:00+02:00", result: "" }, // Austria - Jordania 
   K0: { kickoffSpain: "2026-06-17T19:00:00+02:00", result: "" }, // Portugal - RD del Congo
   L0: { kickoffSpain: "2026-06-17T22:00:00+02:00", result: "" }, // Inglaterra - Croacia
   L1: { kickoffSpain: "2026-06-18T01:00:00+02:00", result: "" }, // Ghana - Panamá
@@ -843,6 +843,18 @@ function Styles() {
 .ord-btns button:hover:not(:disabled){border-color:var(--clay);color:var(--clay-d)}
 .ord-btns button:disabled{opacity:.35;cursor:default}
 
+/* Tabla de goleadores */
+.scorer-row{display:flex;align-items:center;gap:9px;padding:9px 13px;border-bottom:1px solid var(--line2);flex-wrap:wrap}
+.scorer-row:last-child{border-bottom:none}
+.scorer-row .pos{width:18px;text-align:center;font-weight:700;font-family:'Space Grotesk',sans-serif;color:var(--ink2)}
+.scorer-row.leader .pos{color:var(--gold)}
+.scorer-row .snm{flex:1;min-width:90px;font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.scorer-row .sgoals{font-family:'Space Grotesk',sans-serif;font-weight:700;font-variant-numeric:tabular-nums;font-size:15px}
+.scorer-row .sgoals small{font-family:'Archivo',sans-serif;font-size:11px;font-weight:600;color:var(--ink2)}
+.scorer-backers{display:flex;flex-wrap:wrap;gap:4px;flex-basis:100%;margin-left:27px}
+.scorer-missing{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:11px 13px;background:var(--paper2)}
+.scorer-missing .lbl{font-size:11.5px;color:var(--ink2);font-weight:700;width:100%}
+
 
 
 .team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
@@ -1391,8 +1403,11 @@ function AnswersView({ profiles, allPicks, results, loading, onRefresh }) {
 
       <div className="banner flat">👥 {profiles.length} participante{profiles.length === 1 ? "" : "s"} · {totalMatches} partido{totalMatches === 1 ? "" : "s"} {view === "next" ? "por jugar" : "con resultado"}.</div>
 
+      <div className="glabel" style={{ marginTop: 18 }}><span className="badge"><Boot s={17} /></span><h3>Goleadores</h3><span className="sp">Bota de Oro · ✓ acierta la apuesta</span></div>
+      <ScorersTable results={results} profiles={profiles} allPicks={allPicks} limit={view === "next" ? 5 : 0} />
+
       {totalMatches === 0 ? (
-        <div className="empty">{view === "next" ? "No quedan partidos pendientes." : "Aún no hay partidos con resultado oficial."}</div>
+        <div className="empty" style={{ marginTop: 16 }}>{view === "next" ? "No quedan partidos pendientes." : "Aún no hay partidos con resultado oficial."}</div>
       ) : days.map(({ key, rows }) => (
         <div key={key}>
           <div className="day-h">
@@ -1413,6 +1428,81 @@ function AnswersView({ profiles, allPicks, results, loading, onRefresh }) {
   );
 }
 
+/* ============================ TABLA DE GOLEADORES =========================
+   Se alimenta de results.scorers (lo rellena el cron desde openfootball:
+   [{ name, code, goals }] ya ordenado de más a menos goles). Marca con ✓/✗
+   qué perfiles acertaron su apuesta de Bota de Oro (campo picks.scorer),
+   comparando el nombre apostado con los goleadores reales. */
+function normName(s) {
+  return (s || "").toString().trim().toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+// ¿el nombre apostado coincide con algún goleador real? (match flexible por apellido)
+function scorerMatches(pick, realName) {
+  const p = normName(pick), r = normName(realName);
+  if (!p || !r) return false;
+  if (p === r) return true;
+  // coincidencia por inclusión (p. ej. "Mbappé" dentro de "Kylian Mbappé")
+  if (r.includes(p) || p.includes(r)) return true;
+  // por último token (apellido)
+  const pl = p.split(/\s+/).pop(), rl = r.split(/\s+/).pop();
+  return pl && rl && pl === rl && pl.length >= 4;
+}
+function ScorersTable({ results, profiles, allPicks, compact = false, limit = 0 }) {
+  const scorers = results?.scorers || [];
+  // apuestas de Bota de Oro de cada perfil (las que tienen valor)
+  const bets = (profiles || [])
+    .map((p) => ({ profile: p, pick: (allPicks?.[p.id]?.scorer || "").trim() }))
+    .filter((b) => b.pick);
+  const topGoals = scorers.length ? scorers[0].goals : 0;
+  const rows = limit > 0 ? scorers.slice(0, limit) : scorers;
+
+  if (scorers.length === 0) {
+    return <div className="empty" style={{ padding: compact ? 18 : 30 }}>Aún no hay goles registrados.</div>;
+  }
+  return (
+    <div className="card">
+      {rows.map((s, i) => {
+        const leader = s.goals === topGoals;
+        // perfiles que apostaron por este goleador
+        const backers = bets.filter((b) => scorerMatches(b.pick, s.name));
+        return (
+          <div className={`scorer-row ${leader ? "leader" : ""}`} key={`${s.name}-${i}`}>
+            <span className="pos">{i + 1}</span>
+            {s.code && TEAMS[s.code] ? <Flag code={s.code} size={20} /> : <span style={{ width: 20 }} />}
+            <span className="snm">{s.name}</span>
+            <span className="sgoals">{s.goals}<small> {s.goals === 1 ? "gol" : "goles"}</small></span>
+            {backers.length > 0 && (
+              <span className="scorer-backers">
+                {backers.map((b) => (
+                  <span className="poll-voter correct" key={b.profile.id} title={`${b.profile.name} apostó por ${b.pick}`}>
+                    <span className="av" style={avatarStyle(b.profile.color)}>{b.profile.avatar}</span>{b.profile.name}<span className="vmark">✓</span>
+                  </span>
+                ))}
+              </span>
+            )}
+          </div>
+        );
+      })}
+      {bets.length > 0 && (() => {
+        // perfiles cuya apuesta NO está (todavía) entre los goleadores reales
+        const missing = bets.filter((b) => !scorers.some((s) => scorerMatches(b.pick, s.name)));
+        if (missing.length === 0) return null;
+        return (
+          <div className="scorer-missing">
+            <span className="lbl">Apuestas que aún no han marcado:</span>
+            {missing.map((b) => (
+              <span className="poll-voter wrong" key={b.profile.id} title={`${b.profile.name} apostó por ${b.pick}`}>
+                <span className="av" style={avatarStyle(b.profile.color)}>{b.profile.avatar}</span>{b.pick}<span className="vmark">✗</span>
+              </span>
+            ))}
+          </div>
+        );
+      })()}
+    </div>
+  );
+}
+
 /* ============================ ELIMINATORIAS ==============================
    Clasificación de cada grupo (por resultado y goles), ranking de terceros y
    dieciseisavos autopopulados según el cuadro oficial FIFA. Provisional hasta
@@ -1422,7 +1512,7 @@ const BracketIcon = ({ s = 22 }) => (
     <path d="M4 5h4M4 11h4M8 5v6M8 8h4M4 19h4M4 13v6M16 8h4M16 16h4M20 8v8M12 8v4h4M12 16h4" />
   </svg>
 );
-function KnockoutView({ results, config }) {
+function KnockoutView({ results, config, profiles, allPicks }) {
   const standings = useMemo(() => computeGroupStandings(results, config?.standingsOverride), [results, config]);
   const thirds = useMemo(() => rankThirds(standings), [standings]);
   const qualifiedThirds = thirds.slice(0, 8).map((t) => t.group);
@@ -1445,7 +1535,6 @@ function KnockoutView({ results, config }) {
       {!complete && (
         <div className="banner">⏳ <b>Provisional:</b> con {playedCount}/{GROUP_MATCHES.length} resultados. Los cruces se ajustarán con cada partido y se confirmarán al cerrar la fase de grupos.</div>
       )}
-
       <div className="glabel" style={{ marginTop: 20 }}><span className="badge"><Rank s={17} /></span><h3>Clasificación de los grupos</h3></div>
       <div className="stand-grid">
         {Object.keys(GROUPS).map((g) => (
@@ -1508,6 +1597,9 @@ function KnockoutView({ results, config }) {
           );
         })}
       </div>
+      <div className="glabel" style={{ marginTop: 24 }}><span className="badge"><Boot s={17} /></span><h3>Tabla de goleadores</h3><span className="sp">Bota de Oro en vivo</span></div>
+      <ScorersTable results={results} profiles={profiles} allPicks={allPicks} />
+
       <div className="lock-badge" style={{ marginTop: 14 }}>🔒 La porra de dieciseisavos se abrirá aquí cuando se confirmen los cruces</div>
     </div>
   );
@@ -1596,7 +1688,6 @@ function Leaderboard({ profiles, allPicks, results, meId, onRefresh, loading, co
             </div>
           ))}
       </div>
-      <p className="note" style={{ marginTop: 12 }}>Los puntos aparecen a medida que el organizador introduce los resultados oficiales.</p>
       {canShare && (
         <>
           <div className="glabel" style={{ marginTop: 24 }}><span className="badge">📋</span><h3>Clasificación para compartir</h3></div>
@@ -2000,7 +2091,7 @@ export default function App() {
     const res = await sget(KEY.results, true); setResults(mergeOfficialResults(res || { groups: {} }));
     setBusy(false);
   }, []);
-  useEffect(() => { if (tab === "leaderboard" || tab === "answers") loadAll(); }, [tab, loadAll]);
+  useEffect(() => { if (tab === "leaderboard" || tab === "answers" || tab === "knockout") loadAll(); }, [tab, loadAll]);
 
   // Tiempo real: cuando el cron (Edge Function sync-scores) reescribe la fila de
   // resultados en Supabase, la app recibe el cambio y refresca clasificacion y
@@ -2128,7 +2219,7 @@ export default function App() {
           </>
         )}
         {tab === "answers" && <AnswersView profiles={profiles} allPicks={allPicks} results={results} loading={busy} onRefresh={loadAll} />}
-        {tab === "knockout" && <KnockoutView results={results} config={config} />}
+        {tab === "knockout" && <KnockoutView results={results} config={config} profiles={profiles} allPicks={allPicks} />}
         {tab === "leaderboard" && <Leaderboard profiles={profiles} allPicks={allPicks} results={results} meId={me.id} onRefresh={loadAll} loading={busy} config={config} now={now} timeLocked={timeLocked} />}
         {tab === "profile" && <ProfileEditor me={me} profiles={profiles} onSave={updateMyProfile} onChangePassword={changeMyPassword} />}
         {tab === "rules" && <Rules />}
