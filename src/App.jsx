@@ -159,13 +159,13 @@ const MATCH_CONTROL = {
   H0: { kickoffSpain: "2026-06-15T18:00:00+02:00", result: "0-0" }, // España - Cabo Verde
   G0: { kickoffSpain: "2026-06-15T21:00:00+02:00", result: "1-1" }, // Bélgica - Egipto
   H1: { kickoffSpain: "2026-06-16T00:00:00+02:00", result: "1-1" }, // Arabia Saudí - Uruguay
-  G1: { kickoffSpain: "2026-06-16T03:00:00+02:00", result: "" }, // Irán - Nueva Zelanda
-  J1: { kickoffSpain: "2026-06-16T06:00:00+02:00", result: "" }, // Austria - Jordania
-  // ——— Jornada del martes, 16 de junio ———
+  G1: { kickoffSpain: "2026-06-16T03:00:00+02:00", result: "2-2" }, // Irán - Nueva Zelanda
+  // ——— Jornada del martes, 16 de junio ---
   I0: { kickoffSpain: "2026-06-16T21:00:00+02:00", result: "" }, // Francia - Senegal
   I1: { kickoffSpain: "2026-06-17T00:00:00+02:00", result: "" }, // Irak - Noruega
   J0: { kickoffSpain: "2026-06-17T03:00:00+02:00", result: "" }, // Argentina - Argelia
   // ——— Jornada del miércoles, 17 de junio ———
+  J1: { kickoffSpain: "2026-06-17T06:00:00+02:00", result: "" }, // Austria - Jordania
   K0: { kickoffSpain: "2026-06-17T19:00:00+02:00", result: "" }, // Portugal - RD del Congo
   L0: { kickoffSpain: "2026-06-17T22:00:00+02:00", result: "" }, // Inglaterra - Croacia
   L1: { kickoffSpain: "2026-06-18T01:00:00+02:00", result: "" }, // Ghana - Panamá
