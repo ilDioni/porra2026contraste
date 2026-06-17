@@ -160,12 +160,12 @@ const MATCH_CONTROL = {
   G0: { kickoffSpain: "2026-06-15T21:00:00+02:00", result: "" }, // Bélgica - Egipto
   H1: { kickoffSpain: "2026-06-16T00:00:00+02:00", result: "" }, // Arabia Saudí - Uruguay
   G1: { kickoffSpain: "2026-06-16T03:00:00+02:00", result: "" }, // Irán - Nueva Zelanda
+  J1: { kickoffSpain: "2026-06-16T06:00:00+02:00", result: "" }, // Austria - Jordania
   // ——— Jornada del martes, 16 de junio ———
   I0: { kickoffSpain: "2026-06-16T21:00:00+02:00", result: "" }, // Francia - Senegal
   I1: { kickoffSpain: "2026-06-17T00:00:00+02:00", result: "" }, // Irak - Noruega
   J0: { kickoffSpain: "2026-06-17T03:00:00+02:00", result: "" }, // Argentina - Argelia
   // ——— Jornada del miércoles, 17 de junio ———
-  J1: { kickoffSpain: "2026-06-17T06:00:00+02:00", result: "" }, // Austria - Jordania
   K0: { kickoffSpain: "2026-06-17T19:00:00+02:00", result: "" }, // Portugal - RD del Congo
   L0: { kickoffSpain: "2026-06-17T22:00:00+02:00", result: "" }, // Inglaterra - Croacia
   L1: { kickoffSpain: "2026-06-18T01:00:00+02:00", result: "" }, // Ghana - Panamá
@@ -729,6 +729,16 @@ function Styles() {
 .next-team-name{display:block;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .next-vs{color:rgba(255,255,255,.6);white-space:nowrap;flex:none;padding:0 2px;font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
 .next-kickoff{grid-column:1 / -1;color:rgba(255,255,255,.72);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
+/* Votantes por opción dentro del marcador del hero */
+.hero-votes{grid-column:1 / -1;display:grid;grid-template-columns:1fr auto 1fr;align-items:start;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.18)}
+.hero-votes .hv-col{display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:0}
+.hero-votes .hv-col.mid{align-items:center}
+.hero-votes .hv-col.away{align-items:flex-end}
+.hv-draw{font-size:9.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.65)}
+.hero-voters{display:flex;flex-wrap:wrap;gap:3px;justify-content:inherit}
+.hero-votes .hv-col.mid .hero-voters{justify-content:center}
+.hero-votes .hv-col.away .hero-voters{justify-content:flex-end}
+.hero-voter .av{width:22px;height:22px;font-size:12px;box-shadow:0 1px 3px rgba(0,0,0,.35),inset 0 0 0 1.5px rgba(255,255,255,.85)}
 
 .banner{margin-top:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--clay-soft);border:1px solid #C9D4FF;border-radius:14px;padding:12px 16px;font-size:14px}
 .banner b{color:var(--clay-d)}
@@ -1144,7 +1154,7 @@ function Onboarding({ profiles, onCreate, onLogin, onAdmin }) {
 }
 
 /* ============================== HERO + COUNTDOWN ========================= */
-function HeroCountdown({ now, timeLocked, results }) {
+function HeroCountdown({ now, timeLocked, results, profiles = [], allPicks = {} }) {
   const matchInfo = getCurrentMatchInfo(now, results);
   const bg = IMAGES.HERO_BG_URL;
   const matches = matchInfo?.rows || [];
@@ -1154,6 +1164,26 @@ function HeroCountdown({ now, timeLocked, results }) {
     ? (many ? "Partidos en juego" : "Partido en juego")
     : (many ? "Próximos partidos" : "Próximo partido");
   const countdownText = matchInfo?.status === "live" ? "En juego" : (matchInfo ? fmtCountdown(matchInfo.kickoffMs - now) : "Sin horario");
+
+  // Reparte los participantes según su pronóstico (1·X·2) para un partido.
+  const votersByPick = (matchId) => {
+    const out = { "1": [], "X": [], "2": [] };
+    profiles.forEach((p) => {
+      const v = allPicks?.[p.id]?.groups?.[matchId];
+      if (v && out[v]) out[v].push(p);
+    });
+    return out;
+  };
+  const Chips = ({ list }) => (
+    <span className="hero-voters">
+      {list.map((p) => (
+        <span className="hero-voter" key={p.id} title={p.name}>
+          <span className="av" style={avatarStyle(p.color)}>{p.avatar}</span>
+        </span>
+      ))}
+    </span>
+  );
+
   return (
     <div className={`hero ${bg ? "has-bg" : ""}`}
       style={bg ? { backgroundImage: `url(${bg})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}>
@@ -1170,7 +1200,10 @@ function HeroCountdown({ now, timeLocked, results }) {
               <div style={{ flex: "1 1 0", minWidth: 0, maxWidth: "100%" }}>
                 <div style={{ fontSize: 12.5, color: "rgba(255,255,255,.7)", fontWeight: 700 }}>{statusLabel}</div>
                 <div className="next-match-list">
-                  {matches.map(({ match, kickoffMs }) => (
+                  {matches.map(({ match, kickoffMs }) => {
+                    const vb = votersByPick(match.id);
+                    const anyVotes = vb["1"].length + vb["X"].length + vb["2"].length > 0;
+                    return (
                     <div key={match.id} className="next-match-row">
                       <span className="next-team" title={TEAMS[match.home].name}>
                         <Flag code={match.home} size={26} />
@@ -1187,8 +1220,20 @@ function HeroCountdown({ now, timeLocked, results }) {
                       {hasDifferentKickoffs && (
                         <span className="next-kickoff">{fmtSpainKickoff(kickoffMs)}</span>
                       )}
+
+                      {anyVotes && (
+                        <div className="hero-votes">
+                          <span className="hv-col"><Chips list={vb["1"]} /></span>
+                          <span className="hv-col mid">
+                            {vb["X"].length > 0 && <span className="hv-draw">empate</span>}
+                            <Chips list={vb["X"]} />
+                          </span>
+                          <span className="hv-col away"><Chips list={vb["2"]} /></span>
+                        </div>
+                      )}
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
                 <div style={{ fontSize: 12.5, color: "rgba(255,255,255,.78)", fontWeight: 600 }}>
                   Hora en España: {fmtSpainKickoff(matchInfo.kickoffMs)}
@@ -1547,6 +1592,7 @@ function KnockoutView({ results, config, profiles, allPicks }) {
       {!complete && (
         <div className="banner">⏳ <b>Provisional:</b> con {playedCount}/{GROUP_MATCHES.length} resultados. Los cruces se ajustarán con cada partido y se confirmarán al cerrar la fase de grupos.</div>
       )}
+      <div className="banner flat">ℹ️ Tabla por puntos y diferencia de goles (cuando el resultado tiene marcador, p. ej. "2-0"). Si un desempate queda mal resuelto, el organizador puede corregir la tabla a mano.</div>
 
       <div className="glabel" style={{ marginTop: 20 }}><span className="badge"><Rank s={17} /></span><h3>Clasificación de los grupos</h3></div>
       <div className="stand-grid">
@@ -1610,7 +1656,7 @@ function KnockoutView({ results, config, profiles, allPicks }) {
           );
         })}
       </div>
-      <div className="glabel" style={{ marginTop: 24 }}><span className="badge"><Boot s={17} /></span><h3>Tabla de goleadores</h3><span className="sp">Bota de Oro en vivo</span></div>
+      <div className="glabel" style={{ marginTop: 24 }}><span className="badge"><Boot s={17} /></span><h3>Tabla de goleadores</h3></div>
       <ScorersTable results={results} profiles={profiles} allPicks={allPicks} limit={30} />
 
       <div className="lock-badge" style={{ marginTop: 14 }}>🔒 La porra de dieciseisavos se abrirá aquí cuando se confirmen los cruces</div>
@@ -1680,7 +1726,7 @@ function Leaderboard({ profiles, allPicks, results, meId, onRefresh, loading, co
   const canShare = (config?.shareViewers || []).includes(meId);
   return (
     <div>
-      <HeroCountdown now={now} timeLocked={timeLocked} results={results} />
+      <HeroCountdown now={now} timeLocked={timeLocked} results={results} profiles={profiles} allPicks={allPicks} />
       <div className="section-h" style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
         <div><div className="ttl"><span className="ic"><Rank /></span><h2>Clasificación</h2></div>
           <p>{profiles.length} participante{profiles.length === 1 ? "" : "s"} · puntos en vivo</p></div>
