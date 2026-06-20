@@ -175,16 +175,16 @@ const MATCH_CONTROL = {
   B2: { kickoffSpain: "2026-06-18T21:00:00+02:00", result: "" }, // Suiza - Bosnia y Herzeg.
   B3: { kickoffSpain: "2026-06-19T00:00:00+02:00", result: "" }, // Canadá - Catar
   A3: { kickoffSpain: "2026-06-19T03:00:00+02:00", result: "" }, // México - Corea del Sur
-  D3: { kickoffSpain: "2026-06-19T06:00:00+02:00", result: "" }, // Turquía - Paraguay
+  D3: { kickoffSpain: "2026-06-20T05:00:00+02:00", result: "" }, // Turquía - Paraguay
   // ——— Jornada del viernes, 19 de junio ———
   D2: { kickoffSpain: "2026-06-19T21:00:00+02:00", result: "" }, // Estados Unidos - Australia
   C2: { kickoffSpain: "2026-06-20T00:00:00+02:00", result: "" }, // Escocia - Marruecos
-  C3: { kickoffSpain: "2026-06-20T03:00:00+02:00", result: "" }, // Brasil - Haití
-  F3: { kickoffSpain: "2026-06-20T06:00:00+02:00", result: "" }, // Túnez - Japón
+  C3: { kickoffSpain: "2026-06-20T02:30:00+02:00", result: "" }, // Brasil - Haití
+  F3: { kickoffSpain: "2026-06-21T06:00:00+02:00", result: "" }, // Túnez - Japón
   // ——— Jornada del sábado, 20 de junio ———
   F2: { kickoffSpain: "2026-06-20T19:00:00+02:00", result: "" }, // Países Bajos - Suecia
   E2: { kickoffSpain: "2026-06-20T22:00:00+02:00", result: "" }, // Alemania - Costa de Marfil
-  E3: { kickoffSpain: "2026-06-21T04:00:00+02:00", result: "" }, // Ecuador - Curazao
+  E3: { kickoffSpain: "2026-06-21T04:02:00+02:00", result: "" }, // Ecuador - Curazao
   // ——— Jornada del domingo, 21 de junio ———
   H2: { kickoffSpain: "2026-06-21T18:00:00+02:00", result: "" }, // España - Arabia Saudí
   G2: { kickoffSpain: "2026-06-21T21:00:00+02:00", result: "" }, // Bélgica - Irán
