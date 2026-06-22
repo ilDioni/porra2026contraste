@@ -156,78 +156,78 @@ const MATCH_CONTROL = {
   E1: { kickoffSpain: "2026-06-15T01:00:00+02:00", result: "1-0" }, // Costa de Marfil - Ecuador
   F1: { kickoffSpain: "2026-06-15T04:00:00+02:00", result: "5-1" }, // Suecia - Túnez
   // ——— Jornada del lunes, 15 de junio ———
-  H0: { kickoffSpain: "2026-06-15T18:00:00+02:00", result: "" }, // España - Cabo Verde
-  G0: { kickoffSpain: "2026-06-15T21:00:00+02:00", result: "" }, // Bélgica - Egipto
-  H1: { kickoffSpain: "2026-06-16T00:00:00+02:00", result: "" }, // Arabia Saudí - Uruguay
-  G1: { kickoffSpain: "2026-06-16T03:00:00+02:00", result: "" }, // Irán - Nueva Zelanda
-  J1: { kickoffSpain: "2026-06-16T06:00:00+02:00", result: "" }, // Austria - Jordania
+  H0: { kickoffSpain: "2026-06-15T18:00:00+02:00", result: "0-0" }, // España - Cabo Verde
+  G0: { kickoffSpain: "2026-06-15T21:00:00+02:00", result: "1-1" }, // Bélgica - Egipto
+  H1: { kickoffSpain: "2026-06-16T00:00:00+02:00", result: "1-1" }, // Arabia Saudí - Uruguay
+  G1: { kickoffSpain: "2026-06-16T03:00:00+02:00", result: "2-2" }, // Irán - Nueva Zelanda
   // ——— Jornada del martes, 16 de junio ———
-  I0: { kickoffSpain: "2026-06-16T21:00:00+02:00", result: "" }, // Francia - Senegal
-  I1: { kickoffSpain: "2026-06-17T00:00:00+02:00", result: "" }, // Irak - Noruega
-  J0: { kickoffSpain: "2026-06-17T03:00:00+02:00", result: "" }, // Argentina - Argelia
+  I0: { kickoffSpain: "2026-06-16T21:00:00+02:00", result: "3-1" }, // Francia - Senegal
+  I1: { kickoffSpain: "2026-06-17T00:00:00+02:00", result: "1-4" }, // Irak - Noruega
+  J1: { kickoffSpain: "2026-06-17T03:00:00+02:00", result: "3-1" }, // Austria - Jordania
+  J0: { kickoffSpain: "2026-06-17T03:00:00+02:00", result: "3-0" }, // Argentina - Argelia
   // ——— Jornada del miércoles, 17 de junio ———
-  K0: { kickoffSpain: "2026-06-17T19:00:00+02:00", result: "" }, // Portugal - RD del Congo
-  L0: { kickoffSpain: "2026-06-17T22:00:00+02:00", result: "" }, // Inglaterra - Croacia
-  L1: { kickoffSpain: "2026-06-18T01:00:00+02:00", result: "" }, // Ghana - Panamá
-  K1: { kickoffSpain: "2026-06-18T04:00:00+02:00", result: "" }, // Uzbekistán - Colombia
+  K0: { kickoffSpain: "2026-06-17T19:00:00+02:00", result: "1-1" }, // Portugal - RD del Congo
+  L0: { kickoffSpain: "2026-06-17T22:00:00+02:00", result: "4-2" }, // Inglaterra - Croacia
+  L1: { kickoffSpain: "2026-06-18T01:00:00+02:00", result: "1-0" }, // Ghana - Panamá
+  K1: { kickoffSpain: "2026-06-18T04:00:00+02:00", result: "1-3" }, // Uzbekistán - Colombia
   // ——— Jornada del jueves, 18 de junio ———
-  A2: { kickoffSpain: "2026-06-18T18:00:00+02:00", result: "" }, // República Checa - Sudáfrica
-  B2: { kickoffSpain: "2026-06-18T21:00:00+02:00", result: "" }, // Suiza - Bosnia y Herzeg.
-  B3: { kickoffSpain: "2026-06-19T00:00:00+02:00", result: "" }, // Canadá - Catar
-  A3: { kickoffSpain: "2026-06-19T03:00:00+02:00", result: "" }, // México - Corea del Sur
-  D3: { kickoffSpain: "2026-06-20T05:00:00+02:00", result: "" }, // Turquía - Paraguay
+  A2: { kickoffSpain: "2026-06-18T18:00:00+02:00", result: "1-1" }, // República Checa - Sudáfrica
+  B2: { kickoffSpain: "2026-06-18T21:00:00+02:00", result: "4-1" }, // Suiza - Bosnia y Herzeg.
+  B3: { kickoffSpain: "2026-06-19T00:00:00+02:00", result: "6-0" }, // Canadá - Catar
+  A3: { kickoffSpain: "2026-06-19T03:00:00+02:00", result: "1-0" }, // México - Corea del Sur
   // ——— Jornada del viernes, 19 de junio ———
-  D2: { kickoffSpain: "2026-06-19T21:00:00+02:00", result: "" }, // Estados Unidos - Australia
-  C2: { kickoffSpain: "2026-06-20T00:00:00+02:00", result: "" }, // Escocia - Marruecos
-  C3: { kickoffSpain: "2026-06-20T02:30:00+02:00", result: "" }, // Brasil - Haití
-  F3: { kickoffSpain: "2026-06-21T06:00:00+02:00", result: "" }, // Túnez - Japón
+  D2: { kickoffSpain: "2026-06-19T21:00:00+02:00", result: "2-0" }, // Estados Unidos - Australia
+  C2: { kickoffSpain: "2026-06-20T00:00:00+02:00", result: "0-1" }, // Escocia - Marruecos
   // ——— Jornada del sábado, 20 de junio ———
-  F2: { kickoffSpain: "2026-06-20T19:00:00+02:00", result: "" }, // Países Bajos - Suecia
-  E2: { kickoffSpain: "2026-06-20T22:00:00+02:00", result: "" }, // Alemania - Costa de Marfil
-  E3: { kickoffSpain: "2026-06-21T04:02:00+02:00", result: "" }, // Ecuador - Curazao
+  C3: { kickoffSpain: "2026-06-20T19:00:00+02:00", result: "3-0" }, // Brasil - Haití
+  D3: { kickoffSpain: "2026-06-20T22:00:00+02:00", result: "0-1" }, // Turquía - Paraguay
+  F2: { kickoffSpain: "2026-06-20T19:00:00+02:00", result: "5-1" }, // Países Bajos - Suecia
+  E2: { kickoffSpain: "2026-06-20T22:00:00+02:00", result: "2-1" }, // Alemania - Costa de Marfil
   // ——— Jornada del domingo, 21 de junio ———
-  H2: { kickoffSpain: "2026-06-21T18:00:00+02:00", result: "" }, // España - Arabia Saudí
-  G2: { kickoffSpain: "2026-06-21T21:00:00+02:00", result: "" }, // Bélgica - Irán
-  H3: { kickoffSpain: "2026-06-22T00:00:00+02:00", result: "" }, // Uruguay - Cabo Verde
-  G3: { kickoffSpain: "2026-06-22T03:00:00+02:00", result: "" }, // Nueva Zelanda - Egipto
+  E3: { kickoffSpain: "2026-06-21T18:00:00+02:00", result: "0-0" }, // Ecuador - Curazao
+  F3: { kickoffSpain: "2026-06-21T21:00:00+02:00", result: "0-4" }, // Túnez - Japón
+  H2: { kickoffSpain: "2026-06-21T18:00:00+02:00", result: "4-0" }, // España - Arabia Saudí
+  G2: { kickoffSpain: "2026-06-21T21:00:00+02:00", result: "0-0" }, // Bélgica - Irán
+  H3: { kickoffSpain: "2026-06-22T00:00:00+02:00", result: "2-2" }, // Uruguay - Cabo Verde
+  G3: { kickoffSpain: "2026-06-22T03:00:00+02:00", result: "1-3" }, // Nueva Zelanda - Egipto
   // ——— Jornada del lunes, 22 de junio ———
   J2: { kickoffSpain: "2026-06-22T19:00:00+02:00", result: "" }, // Argentina - Austria
-  I2: { kickoffSpain: "2026-06-22T23:00:00+02:00", result: "" }, // Francia - Irak
-  I3: { kickoffSpain: "2026-06-23T02:00:00+02:00", result: "" }, // Noruega - Senegal
-  J3: { kickoffSpain: "2026-06-23T05:00:00+02:00", result: "" }, // Jordania - Argelia
+  I2: { kickoffSpain: "2026-06-22T21:00:00+02:00", result: "" }, // Francia - Irak
+  I3: { kickoffSpain: "2026-06-23T00:00:00+02:00", result: "" }, // Noruega - Senegal
+  J3: { kickoffSpain: "2026-06-23T03:00:00+02:00", result: "" }, // Jordania - Argelia
   // ——— Jornada del martes, 23 de junio ———
-  K2: { kickoffSpain: "2026-06-23T19:00:00+02:00", result: "" }, // Portugal - Uzbekistán
-  L2: { kickoffSpain: "2026-06-23T22:00:00+02:00", result: "" }, // Inglaterra - Ghana
-  L3: { kickoffSpain: "2026-06-24T01:00:00+02:00", result: "" }, // Panamá - Croacia
-  K3: { kickoffSpain: "2026-06-24T04:00:00+02:00", result: "" }, // Colombia - RD del Congo
+  K2: { kickoffSpain: "2026-06-23T17:00:00+02:00", result: "" }, // Portugal - Uzbekistán
+  L2: { kickoffSpain: "2026-06-23T20:00:00+02:00", result: "" }, // Inglaterra - Ghana
+  L3: { kickoffSpain: "2026-06-23T23:00:00+02:00", result: "" }, // Panamá - Croacia
+  K3: { kickoffSpain: "2026-06-24T02:00:00+02:00", result: "" }, // Colombia - RD del Congo
   // ——— Jornada del miércoles, 24 de junio ———
-  B4: { kickoffSpain: "2026-06-24T21:00:00+02:00", result: "" }, // Suiza - Canadá
-  B5: { kickoffSpain: "2026-06-24T21:00:00+02:00", result: "" }, // Bosnia y Herzeg. - Catar
-  C4: { kickoffSpain: "2026-06-25T00:00:00+02:00", result: "" }, // Escocia - Brasil
-  C5: { kickoffSpain: "2026-06-25T00:00:00+02:00", result: "" }, // Marruecos - Haití
-  A4: { kickoffSpain: "2026-06-25T03:00:00+02:00", result: "" }, // República Checa - México
-  A5: { kickoffSpain: "2026-06-25T03:00:00+02:00", result: "" }, // Sudáfrica - Corea del Sur
+  B4: { kickoffSpain: "2026-06-24T19:00:00+02:00", result: "" }, // Suiza - Canadá
+  B5: { kickoffSpain: "2026-06-24T19:00:00+02:00", result: "" }, // Bosnia y Herzeg. - Catar
+  C4: { kickoffSpain: "2026-06-24T22:00:00+02:00", result: "" }, // Escocia - Brasil
+  C5: { kickoffSpain: "2026-06-24T22:00:00+02:00", result: "" }, // Marruecos - Haití
+  A4: { kickoffSpain: "2026-06-25T01:00:00+02:00", result: "" }, // República Checa - México
+  A5: { kickoffSpain: "2026-06-25T01:00:00+02:00", result: "" }, // Sudáfrica - Corea del Sur
   // ——— Jornada del jueves, 25 de junio ———
-  E4: { kickoffSpain: "2026-06-25T22:00:00+02:00", result: "" }, // Curazao - Costa de Marfil
-  E5: { kickoffSpain: "2026-06-25T22:00:00+02:00", result: "" }, // Ecuador - Alemania
-  F4: { kickoffSpain: "2026-06-26T01:00:00+02:00", result: "" }, // Japón - Suecia
-  F5: { kickoffSpain: "2026-06-26T01:00:00+02:00", result: "" }, // Túnez - Países Bajos
-  D4: { kickoffSpain: "2026-06-26T04:00:00+02:00", result: "" }, // Turquía - Estados Unidos
-  D5: { kickoffSpain: "2026-06-26T04:00:00+02:00", result: "" }, // Paraguay - Australia
+  E4: { kickoffSpain: "2026-06-25T20:00:00+02:00", result: "" }, // Curazao - Costa de Marfil
+  E5: { kickoffSpain: "2026-06-25T20:00:00+02:00", result: "" }, // Ecuador - Alemania
+  F4: { kickoffSpain: "2026-06-25T23:00:00+02:00", result: "" }, // Japón - Suecia
+  F5: { kickoffSpain: "2026-06-25T23:00:00+02:00", result: "" }, // Túnez - Países Bajos
+  D4: { kickoffSpain: "2026-06-26T02:00:00+02:00", result: "" }, // Turquía - Estados Unidos
+  D5: { kickoffSpain: "2026-06-26T02:00:00+02:00", result: "" }, // Paraguay - Australia
   // ——— Jornada del viernes, 26 de junio ———
-  I4: { kickoffSpain: "2026-06-26T21:00:00+02:00", result: "" }, // Noruega - Francia
-  I5: { kickoffSpain: "2026-06-26T21:00:00+02:00", result: "" }, // Senegal - Irak
-  H4: { kickoffSpain: "2026-06-27T02:00:00+02:00", result: "" }, // Cabo Verde - Arabia Saudí
-  H5: { kickoffSpain: "2026-06-27T02:00:00+02:00", result: "" }, // Uruguay - España
-  G4: { kickoffSpain: "2026-06-27T05:00:00+02:00", result: "" }, // Egipto - Irán
-  G5: { kickoffSpain: "2026-06-27T05:00:00+02:00", result: "" }, // Nueva Zelanda - Bélgica
+  I4: { kickoffSpain: "2026-06-26T19:00:00+02:00", result: "" }, // Noruega - Francia
+  I5: { kickoffSpain: "2026-06-26T19:00:00+02:00", result: "" }, // Senegal - Irak
+  H4: { kickoffSpain: "2026-06-27T00:00:00+02:00", result: "" }, // Cabo Verde - Arabia Saudí
+  H5: { kickoffSpain: "2026-06-27T00:00:00+02:00", result: "" }, // Uruguay - España
+  G4: { kickoffSpain: "2026-06-27T03:00:00+02:00", result: "" }, // Egipto - Irán
+  G5: { kickoffSpain: "2026-06-27T03:00:00+02:00", result: "" }, // Nueva Zelanda - Bélgica
   // ——— Jornada del sábado, 27 de junio ———
-  L4: { kickoffSpain: "2026-06-27T23:00:00+02:00", result: "" }, // Panamá - Inglaterra
-  L5: { kickoffSpain: "2026-06-27T23:00:00+02:00", result: "" }, // Croacia - Ghana
-  K4: { kickoffSpain: "2026-06-28T01:30:00+02:00", result: "" }, // Colombia - Portugal
-  K5: { kickoffSpain: "2026-06-28T01:30:00+02:00", result: "" }, // RD del Congo - Uzbekistán
-  J4: { kickoffSpain: "2026-06-28T04:00:00+02:00", result: "" }, // Argelia - Austria
-  J5: { kickoffSpain: "2026-06-28T04:00:00+02:00", result: "" }, // Jordania - Argentina
+  L4: { kickoffSpain: "2026-06-27T21:00:00+02:00", result: "" }, // Panamá - Inglaterra
+  L5: { kickoffSpain: "2026-06-27T21:00:00+02:00", result: "" }, // Croacia - Ghana
+  K4: { kickoffSpain: "2026-06-27T23:30:00+02:00", result: "" }, // Colombia - Portugal
+  K5: { kickoffSpain: "2026-06-27T23:30:00+02:00", result: "" }, // RD del Congo - Uzbekistán
+  J4: { kickoffSpain: "2026-06-28T02:00:00+02:00", result: "" }, // Argelia - Austria
+  J5: { kickoffSpain: "2026-06-28T02:00:00+02:00", result: "" }, // Jordania - Argentina
 };
 
 const FINAL_RESULTS = {
