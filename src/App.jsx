@@ -499,8 +499,11 @@ function computeKnockoutTeams(results, standings, thirdAssign) {
   const winLose = (mid, wantWinner) => {
     const t = teams[mid], r = koRes[mid];
     if (!t || !r || t.home == null || t.away == null) return null;
-    if (typeof r.h !== "number" || typeof r.a !== "number" || r.h === r.a) return null;
-    const homeWins = r.h > r.a;
+    if (typeof r.h !== "number" || typeof r.a !== "number") return null;
+    let homeWins;
+    if (r.w === "home" || r.w === "away") homeWins = r.w === "home"; // quién pasó (penaltis/prórroga)
+    else if (r.h === r.a) return null;                               // empate a 90' sin desempate definido
+    else homeWins = r.h > r.a;
     return (wantWinner ? homeWins : !homeWins) ? t.home : t.away;
   };
   const resolve = (slot, mid) => {
