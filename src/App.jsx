@@ -228,6 +228,16 @@ const MATCH_CONTROL = {
   K5: { kickoffSpain: "2026-06-27T23:30:00+02:00", result: "" }, // RD del Congo - Uzbekistán
   J4: { kickoffSpain: "2026-06-28T02:00:00+02:00", result: "" }, // Argelia - Austria
   J5: { kickoffSpain: "2026-06-28T02:00:00+02:00", result: "" }, // Jordania - Argentina
+
+  // ── ELIMINATORIAS (opcional). Lo que pongas aquí MANDA sobre el JSON/sync.
+  //    El id es M + número de partido (M73..M104). El horario lo pone el cuadro
+  //    oficial, así que aquí solo hace falta "result":
+  //      "2-1"        -> decidido en los 90'/prórroga (gana el primero indicado, el LOCAL)
+  //      "1-1 (4-2)"  -> empate a 90' resuelto en penaltis/prórroga; el 2.º par dice quién pasó
+  //    El marcador (1.º par) es el que se PUNTÚA; el 2.º par solo decide quién avanza.
+  //    Descomenta y rellena los que necesites, por ejemplo:
+  // "M73": { result: "2-1" },
+  // "M75": { result: "1-1 (4-2)" },
 };
 
 const FINAL_RESULTS = {
@@ -248,11 +258,31 @@ function parseMatchResult(value) {
   }
   return null;
 }
+/* Resultado manual de una ELIMINATORIA escrito en MATCH_CONTROL.
+   Acepta "2-1" (decidido en los 90'/prórroga) o "1-1 (4-2)" cuando hay empate
+   y se decide en penaltis/prórroga: el segundo par dice quién pasó. Devuelve
+   {h,a,w?} con el mismo formato que el sync (h/a = resultado a 90' que se
+   puntúa; w = "home"|"away" = quién avanza, para que el cuadro progrese). */
+function parseKoControl(value) {
+  const nums = (String(value || "").match(/\d+/g) || []).map(Number);
+  if (nums.length < 2) return null;
+  const h = nums[0], a = nums[1];
+  let w;
+  if (nums.length >= 4 && nums[2] !== nums[3]) w = nums[2] > nums[3] ? "home" : "away";
+  else if (h !== a) w = h > a ? "home" : "away";
+  return w ? { h, a, w } : { h, a };
+}
 function buildCodeResults() {
   const groups = {};
   const scores = {};
+  const knockout = {};
   Object.entries(MATCH_CONTROL).forEach(([id, cfg]) => {
-    const parsed = parseMatchResult(cfg?.result);
+    if (/^M\d/.test(id)) {                          // eliminatoria (M73..M104)
+      const ko = parseKoControl(cfg?.result);
+      if (ko) knockout[id] = ko;
+      return;
+    }
+    const parsed = parseMatchResult(cfg?.result);   // fase de grupos
     if (parsed) {
       groups[id] = parsed.sign;
       if (parsed.score) scores[id] = parsed.score;
@@ -261,6 +291,7 @@ function buildCodeResults() {
   return {
     groups,
     scores,
+    knockout,
     champion: FINAL_RESULTS.champion || "",
     scorer: FINAL_RESULTS.scorer || "",
   };
@@ -271,6 +302,8 @@ function mergeOfficialResults(stored = {}) {
     ...(stored || {}),
     groups: { ...((stored || {}).groups || {}), ...code.groups },
     scores: { ...((stored || {}).scores || {}), ...code.scores },
+    // Los cruces puestos a mano en MATCH_CONTROL MANDAN sobre los del JSON/sync.
+    knockout: { ...((stored || {}).knockout || {}), ...code.knockout },
     champion: code.champion || stored?.champion || "",
     scorer: code.scorer || stored?.scorer || "",
   };
