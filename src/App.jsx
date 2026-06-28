@@ -166,7 +166,7 @@ const MATCH_CONTROL = {
   J1: { kickoffSpain: "2026-06-17T03:00:00+02:00", result: "3-1" }, // Austria - Jordania
   J0: { kickoffSpain: "2026-06-17T03:00:00+02:00", result: "3-0" }, // Argentina - Argelia
   // ——— Jornada del miércoles, 17 de junio ———
-  K0: { kickoffSpain: "2026-06-17T19:00:00+02:00", result: "1-1" }, // Portugal - RD del Congo
+  K0: { kickoffSpain: "2026-06-17T19:00:00+02:00", result: "0-0" }, // Portugal - RD del Congo
   L0: { kickoffSpain: "2026-06-17T22:00:00+02:00", result: "4-2" }, // Inglaterra - Croacia
   L1: { kickoffSpain: "2026-06-18T01:00:00+02:00", result: "1-0" }, // Ghana - Panamá
   K1: { kickoffSpain: "2026-06-18T04:00:00+02:00", result: "1-3" }, // Uzbekistán - Colombia
@@ -191,43 +191,43 @@ const MATCH_CONTROL = {
   H3: { kickoffSpain: "2026-06-22T00:00:00+02:00", result: "2-2" }, // Uruguay - Cabo Verde
   G3: { kickoffSpain: "2026-06-22T03:00:00+02:00", result: "1-3" }, // Nueva Zelanda - Egipto
   // ——— Jornada del lunes, 22 de junio ———
-  J2: { kickoffSpain: "2026-06-22T19:00:00+02:00", result: "" }, // Argentina - Austria
-  I2: { kickoffSpain: "2026-06-22T21:00:00+02:00", result: "" }, // Francia - Irak
-  I3: { kickoffSpain: "2026-06-23T00:00:00+02:00", result: "" }, // Noruega - Senegal
-  J3: { kickoffSpain: "2026-06-23T03:00:00+02:00", result: "" }, // Jordania - Argelia
+  J2: { kickoffSpain: "2026-06-22T19:00:00+02:00", result: "2-0" }, // Argentina - Austria
+  I2: { kickoffSpain: "2026-06-22T21:00:00+02:00", result: "3-0" }, // Francia - Irak
+  I3: { kickoffSpain: "2026-06-23T00:00:00+02:00", result: "3-2" }, // Noruega - Senegal
+  J3: { kickoffSpain: "2026-06-23T03:00:00+02:00", result: "1-2" }, // Jordania - Argelia
   // ——— Jornada del martes, 23 de junio ———
-  K2: { kickoffSpain: "2026-06-23T17:00:00+02:00", result: "" }, // Portugal - Uzbekistán
-  L2: { kickoffSpain: "2026-06-23T20:00:00+02:00", result: "" }, // Inglaterra - Ghana
-  L3: { kickoffSpain: "2026-06-23T23:00:00+02:00", result: "" }, // Panamá - Croacia
-  K3: { kickoffSpain: "2026-06-24T02:00:00+02:00", result: "" }, // Colombia - RD del Congo
+  K2: { kickoffSpain: "2026-06-23T17:00:00+02:00", result: "5-0" }, // Portugal - Uzbekistán
+  L2: { kickoffSpain: "2026-06-23T20:00:00+02:00", result: "0-0" }, // Inglaterra - Ghana
+  L3: { kickoffSpain: "2026-06-23T23:00:00+02:00", result: "0-1" }, // Panamá - Croacia
+  K3: { kickoffSpain: "2026-06-24T02:00:00+02:00", result: "1-0" }, // Colombia - RD del Congo
   // ——— Jornada del miércoles, 24 de junio ———
-  B4: { kickoffSpain: "2026-06-24T19:00:00+02:00", result: "" }, // Suiza - Canadá
-  B5: { kickoffSpain: "2026-06-24T19:00:00+02:00", result: "" }, // Bosnia y Herzeg. - Catar
-  C4: { kickoffSpain: "2026-06-24T22:00:00+02:00", result: "" }, // Escocia - Brasil
-  C5: { kickoffSpain: "2026-06-24T22:00:00+02:00", result: "" }, // Marruecos - Haití
-  A4: { kickoffSpain: "2026-06-25T01:00:00+02:00", result: "" }, // República Checa - México
-  A5: { kickoffSpain: "2026-06-25T01:00:00+02:00", result: "" }, // Sudáfrica - Corea del Sur
+  B4: { kickoffSpain: "2026-06-24T19:00:00+02:00", result: "2-1" }, // Suiza - Canadá
+  B5: { kickoffSpain: "2026-06-24T19:00:00+02:00", result: "3-1" }, // Bosnia y Herzeg. - Catar
+  C4: { kickoffSpain: "2026-06-24T22:00:00+02:00", result: "0-3" }, // Escocia - Brasil
+  C5: { kickoffSpain: "2026-06-24T22:00:00+02:00", result: "4-2" }, // Marruecos - Haití
+  A4: { kickoffSpain: "2026-06-25T01:00:00+02:00", result: "0-3" }, // República Checa - México
+  A5: { kickoffSpain: "2026-06-25T01:00:00+02:00", result: "1-0" }, // Sudáfrica - Corea del Sur
   // ——— Jornada del jueves, 25 de junio ———
-  E4: { kickoffSpain: "2026-06-25T20:00:00+02:00", result: "" }, // Curazao - Costa de Marfil
-  E5: { kickoffSpain: "2026-06-25T20:00:00+02:00", result: "" }, // Ecuador - Alemania
-  F4: { kickoffSpain: "2026-06-25T23:00:00+02:00", result: "" }, // Japón - Suecia
-  F5: { kickoffSpain: "2026-06-25T23:00:00+02:00", result: "" }, // Túnez - Países Bajos
-  D4: { kickoffSpain: "2026-06-26T02:00:00+02:00", result: "" }, // Turquía - Estados Unidos
-  D5: { kickoffSpain: "2026-06-26T02:00:00+02:00", result: "" }, // Paraguay - Australia
+  E4: { kickoffSpain: "2026-06-25T20:00:00+02:00", result: "0-2" }, // Curazao - Costa de Marfil
+  E5: { kickoffSpain: "2026-06-25T20:00:00+02:00", result: "2-1" }, // Ecuador - Alemania
+  F4: { kickoffSpain: "2026-06-25T23:00:00+02:00", result: "1-1" }, // Japón - Suecia
+  F5: { kickoffSpain: "2026-06-25T23:00:00+02:00", result: "1-3" }, // Túnez - Países Bajos
+  D4: { kickoffSpain: "2026-06-26T02:00:00+02:00", result: "3-2" }, // Turquía - Estados Unidos
+  D5: { kickoffSpain: "2026-06-26T02:00:00+02:00", result: "0-0" }, // Paraguay - Australia
   // ——— Jornada del viernes, 26 de junio ———
-  I4: { kickoffSpain: "2026-06-26T19:00:00+02:00", result: "" }, // Noruega - Francia
-  I5: { kickoffSpain: "2026-06-26T19:00:00+02:00", result: "" }, // Senegal - Irak
-  H4: { kickoffSpain: "2026-06-27T00:00:00+02:00", result: "" }, // Cabo Verde - Arabia Saudí
-  H5: { kickoffSpain: "2026-06-27T00:00:00+02:00", result: "" }, // Uruguay - España
-  G4: { kickoffSpain: "2026-06-27T03:00:00+02:00", result: "" }, // Egipto - Irán
-  G5: { kickoffSpain: "2026-06-27T03:00:00+02:00", result: "" }, // Nueva Zelanda - Bélgica
+  I4: { kickoffSpain: "2026-06-26T19:00:00+02:00", result: "1-4" }, // Noruega - Francia
+  I5: { kickoffSpain: "2026-06-26T19:00:00+02:00", result: "5-0" }, // Senegal - Irak
+  H4: { kickoffSpain: "2026-06-27T00:00:00+02:00", result: "0-0" }, // Cabo Verde - Arabia Saudí
+  H5: { kickoffSpain: "2026-06-27T00:00:00+02:00", result: "0-1" }, // Uruguay - España
+  G4: { kickoffSpain: "2026-06-27T03:00:00+02:00", result: "1-1" }, // Egipto - Irán
+  G5: { kickoffSpain: "2026-06-27T03:00:00+02:00", result: "1-5" }, // Nueva Zelanda - Bélgica
   // ——— Jornada del sábado, 27 de junio ———
-  L4: { kickoffSpain: "2026-06-27T21:00:00+02:00", result: "" }, // Panamá - Inglaterra
-  L5: { kickoffSpain: "2026-06-27T21:00:00+02:00", result: "" }, // Croacia - Ghana
-  K4: { kickoffSpain: "2026-06-27T23:30:00+02:00", result: "" }, // Colombia - Portugal
-  K5: { kickoffSpain: "2026-06-27T23:30:00+02:00", result: "" }, // RD del Congo - Uzbekistán
-  J4: { kickoffSpain: "2026-06-28T02:00:00+02:00", result: "" }, // Argelia - Austria
-  J5: { kickoffSpain: "2026-06-28T02:00:00+02:00", result: "" }, // Jordania - Argentina
+  L4: { kickoffSpain: "2026-06-27T21:00:00+02:00", result: "0-2" }, // Panamá - Inglaterra
+  L5: { kickoffSpain: "2026-06-27T21:00:00+02:00", result: "2-1" }, // Croacia - Ghana
+  K4: { kickoffSpain: "2026-06-27T23:30:00+02:00", result: "0-0" }, // Colombia - Portugal
+  K5: { kickoffSpain: "2026-06-27T23:30:00+02:00", result: "3-1" }, // RD del Congo - Uzbekistán
+  J4: { kickoffSpain: "2026-06-28T02:00:00+02:00", result: "3-3" }, // Argelia - Austria
+  J5: { kickoffSpain: "2026-06-28T02:00:00+02:00", result: "1-3" }, // Jordania - Argentina
 
   // ── ELIMINATORIAS (opcional). Lo que pongas aquí MANDA sobre el JSON/sync.
   //    El id es M + número de partido (M73..M104). El horario lo pone el cuadro
@@ -446,9 +446,20 @@ function rankThirds(standings) {
     .sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf || b.w - a.w || a.group.localeCompare(b.group));
 }
 
-/* Asigna cada tercero clasificado a su hueco del cuadro respetando los grupos
-   permitidos en cada partido (emparejamiento por backtracking). */
+/* Asignación OFICIAL de los mejores terceros a sus cruces (tabla FIFA).
+   La FIFA fija, según QUÉ grupos clasifican como terceros, a qué cruce va el
+   tercero de cada grupo. Clave = grupos clasificados en orden alfabético.
+   Combinación real del Mundial 2026 (terceros de B,D,E,F,I,J,K,L), tomada del
+   calendario oficial. Si la combinación no está en la tabla, se reparte por
+   los grupos permitidos en cada hueco (respaldo). */
+const THIRD_ALLOCATION = {
+  // 3.º de:  ->  cruce (hueco "third")
+  "BDEFIJKL": { M74: "D", M77: "F", M79: "E", M80: "K", M81: "B", M82: "I", M85: "J", M87: "L" },
+};
 function assignThirdsToSlots(qualifiedGroups) {
+  const key = [...qualifiedGroups].sort().join("");
+  if (THIRD_ALLOCATION[key]) return { ...THIRD_ALLOCATION[key] };
+  // Respaldo: empareja por grupos permitidos (puede no coincidir con la tabla FIFA).
   const slots = R32_BRACKET.filter((m) => m.away.type === "third")
     .map((m) => ({ id: m.id, allowed: m.away.groups.filter((g) => qualifiedGroups.includes(g)) }))
     .sort((a, b) => a.allowed.length - b.allowed.length);
@@ -574,14 +585,16 @@ function computeKnockoutTeams(results, standings, thirdAssign, gate = false) {
 }
 
 /* Estado de voto de un partido de eliminatoria. */
-function koVoteState(matchId, teams, now) {
+function koVoteState(matchId, teams, now, closeOverrideMs) {
   const t = teams?.[matchId];
   const ko = getKoKickoffMs(matchId);
   const known = !!(t && t.home && t.away);
-  const closeAt = ko != null ? ko - KO_CLOSE_MS : null;
-  const open = known && closeAt != null && now < closeAt;       // se puede votar
-  const revealed = closeAt != null && now >= closeAt;            // cerrado: se revela quién votó qué
-  return { known, open, revealed, ko, closeAt };
+  const defaultClose = ko != null ? ko - KO_CLOSE_MS : null;       // por defecto: 24 h antes
+  const overridden = typeof closeOverrideMs === "number" && !Number.isNaN(closeOverrideMs);
+  const closeAt = overridden ? closeOverrideMs : defaultClose;     // el admin puede fijar otra fecha
+  const open = known && closeAt != null && now < closeAt;          // se puede votar
+  const revealed = closeAt != null && now >= closeAt;              // cerrado: se revela quién votó qué
+  return { known, open, revealed, ko, closeAt, overridden };
 }
 
 /* Puntos por aciertos en eliminatorias (signo + bonus por marcador exacto). */
@@ -1059,6 +1072,24 @@ function Styles() {
 /* acierto exacto: dorado */
 .poll-voter.exact{background:#FCF3D6;border-color:#E8C95B;color:#8A6D00}
 .poll-voter.exact .vmark{color:#C79A00}
+/* Admin: control para reabrir / fijar fecha de cierre de un cruce */
+.ko-admin-row{display:grid;gap:8px}
+.ko-close-ctl{border:1.5px solid var(--line);background:var(--paper2);border-radius:12px;padding:10px 12px;display:grid;gap:8px}
+.ko-close-ctl .cc-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ko-close-ctl .cc-state{font-weight:800;font-size:12.5px;letter-spacing:.02em}
+.ko-close-ctl .cc-state.on{color:#1F7A43}
+.ko-close-ctl .cc-state.off{color:var(--ink2)}
+.ko-close-ctl .cc-tag{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--cobalt-d);background:rgba(40,86,166,.10);border-radius:7px;padding:2px 8px}
+.ko-close-ctl .cc-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.ko-close-ctl .cc-row span{font-size:13px;font-weight:700;color:var(--ink2)}
+.ko-close-ctl .cc-row input{border:1.5px solid var(--line);background:var(--paper);border-radius:9px;padding:6px 9px;font:inherit;font-size:13.5px;color:var(--ink)}
+.ko-close-ctl .cc-row input:focus{outline:none;border-color:var(--cobalt)}
+.ko-close-ctl .cc-actions{display:flex;gap:8px;flex-wrap:wrap}
+.ko-close-ctl .cc-btn{border:1.5px solid var(--cobalt);background:var(--cobalt);color:#fff;border-radius:9px;padding:6px 12px;font:inherit;font-size:13px;font-weight:800;cursor:pointer;transition:filter .12s}
+.ko-close-ctl .cc-btn:hover{filter:brightness(1.06)}
+.ko-close-ctl .cc-btn.ghost{background:transparent;color:var(--cobalt-d);border-color:var(--line)}
+.ko-close-ctl .cc-btn.ghost:hover{border-color:var(--cobalt);filter:none}
+.ko-close-ctl .cc-note{font-size:12px;color:var(--ink2);line-height:1.45}
 /* Móvil: tarjeta de voto de eliminatoria — equipos arriba, marcador grande debajo */
 @media(max-width:560px){
   .ko-duel-vote{grid-template-columns:1fr 1fr;grid-template-areas:"home away" "center center";row-gap:14px;column-gap:8px}
@@ -1653,7 +1684,7 @@ function AnswersView({ profiles, allPicks, results, config, now, loading, onRefr
           result={results?.groups?.[r.id]} score={results?.scores?.[r.id]} />
       </div>
     )
-    : <KoAnswerCard key={r.id} m={r.m} teams={koTeams} voters={voters} now={now} official={results?.knockout?.[r.id]} />;
+    : <KoAnswerCard key={r.id} m={r.m} teams={koTeams} voters={voters} now={now} official={results?.knockout?.[r.id]} closeOverrideMs={config?.koClose?.[r.id]} />;
 
   return (
     <div>
@@ -1781,12 +1812,12 @@ function KoStepV({ value, onDec, onInc, disabled }) {
 }
 // Tarjeta para votar (o, en admin, fijar) el marcador de un partido de eliminatoria.
 // Local a la izquierda · marcador con steppers en el centro · visitante a la derecha.
-function KoVoteCard({ m, teams, pick, onChange, now = null, disabled = false, adminTag = false }) {
+function KoVoteCard({ m, teams, pick, onChange, now = null, disabled = false, adminTag = false, closeOverrideMs = undefined }) {
   const t = teams[m.id];
   if (!t || !t.home || !t.away) return null;
   const h = pick?.h ?? 0, a = pick?.a ?? 0;
   const set = (nh, na) => onChange(m.id, { h: Math.max(0, Math.min(20, nh)), a: Math.max(0, Math.min(20, na)) });
-  const st = now != null ? koVoteState(m.id, teams, now) : null;
+  const st = now != null ? koVoteState(m.id, teams, now, closeOverrideMs) : null;
   return (
     <div className="card ko-vote">
       <div className="ko-vote-h">
@@ -1819,10 +1850,10 @@ function KoVoteCard({ m, teams, pick, onChange, now = null, disabled = false, ad
 // Tras el cierre: cada perfil aparece dentro de su barra con el resultado que puso.
 // Con resultado oficial: ✕ a los que fallan el signo, ✓ verde a los que lo aciertan,
 // y ✓✓ dorado (con su marcador) a los que clavan el resultado exacto.
-function KoAnswerCard({ m, teams, voters, now, official }) {
+function KoAnswerCard({ m, teams, voters, now, official, closeOverrideMs = undefined }) {
   const t = teams[m.id];
   if (!t || !t.home || !t.away) return null;
-  const st = koVoteState(m.id, teams, now);
+  const st = koVoteState(m.id, teams, now, closeOverrideMs);
   const sign = (p) => (p.h > p.a ? "1" : p.h < p.a ? "2" : "X");
   const preds = voters
     .map(({ profile, picks }) => ({ profile, p: picks?.knockout?.[m.id] }))
@@ -1912,9 +1943,9 @@ function PorraView({ picks, setPick, setChampion, setScorer, setKoPick, results,
   const teams = useMemo(() => computeKnockoutTeams(results, standings, thirdAssign, true), [results, standings, thirdAssign]);
 
   const votable = useMemo(() => KO_MATCHES
-    .map((m) => ({ m, st: koVoteState(m.id, teams, now) }))
+    .map((m) => ({ m, st: koVoteState(m.id, teams, now, config?.koClose?.[m.id]) }))
     .filter((x) => x.st.known && x.st.open)
-    .sort((x, y) => (x.st.ko ?? Infinity) - (y.st.ko ?? Infinity)), [teams, now]);
+    .sort((x, y) => (x.st.ko ?? Infinity) - (y.st.ko ?? Infinity)), [teams, now, config]);
 
   return (
     <div>
@@ -1935,7 +1966,7 @@ function PorraView({ picks, setPick, setChampion, setScorer, setKoPick, results,
           ) : (
             <div style={{ display: "grid", gap: 10, marginTop: 12 }}>
               {votable.map(({ m }) => (
-                <KoVoteCard key={m.id} m={m} teams={teams} pick={picks.knockout?.[m.id]} onChange={setKoPick} now={now} />
+                <KoVoteCard key={m.id} m={m} teams={teams} pick={picks.knockout?.[m.id]} onChange={setKoPick} now={now} closeOverrideMs={config?.koClose?.[m.id]} />
               ))}
             </div>
           )}
@@ -2229,8 +2260,51 @@ function PicksEditor({ value, onChange }) {
   );
 }
 
+/* Control de admin: reabre/cierra la votación de un cruce concreto y le fija
+   una fecha de cierre. Por defecto un cruce cierra 24 h antes del inicio; aquí
+   el organizador puede poner OTRA fecha (futura = se reabre) o quitar el ajuste
+   para volver al comportamiento normal. Se guarda en config.koClose[id] (ms). */
+function KoCloseControl({ m, config, setConfig, now }) {
+  const override = config?.koClose?.[m.id];
+  const hasOverride = typeof override === "number" && !Number.isNaN(override);
+  const ko = getKoKickoffMs(m.id);
+  const defClose = ko != null ? ko - KO_CLOSE_MS : null;
+  const effective = hasOverride ? override : defClose;
+  const open = effective != null && now < effective;
+  const pad = (n) => String(n).padStart(2, "0");
+  const toLocalInput = (ms) => {
+    if (ms == null) return "";
+    const d = new Date(ms);
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+  const fmt = (ms) => ms == null ? "—" : new Intl.DateTimeFormat("es-ES", { timeZone: "Europe/Madrid", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }).format(new Date(ms));
+  const setClose = (ms) => {
+    const next = { ...(config?.koClose || {}) };
+    if (ms == null) delete next[m.id]; else next[m.id] = ms;
+    setConfig({ ...config, koClose: next });
+  };
+  return (
+    <div className="ko-close-ctl">
+      <div className="cc-head">
+        <span className={"cc-state " + (open ? "on" : "off")}>{open ? "● Votación abierta" : "● Votación cerrada"}</span>
+        {hasOverride && <span className="cc-tag">cierre personalizado</span>}
+      </div>
+      <label className="cc-row">
+        <span>Cierre de la votación</span>
+        <input type="datetime-local" value={toLocalInput(effective)}
+          onChange={(e) => { const v = e.target.value; if (!v) return; const ms = new Date(v).getTime(); if (!Number.isNaN(ms)) setClose(ms); }} />
+      </label>
+      <div className="cc-actions">
+        <button type="button" className="cc-btn" onClick={() => setClose(Date.now() + 24 * 60 * 60 * 1000)}>Reabrir 24 h</button>
+        {hasOverride && <button type="button" className="cc-btn ghost" onClick={() => setClose(null)}>Quitar (volver a 24 h antes)</button>}
+      </div>
+      <div className="cc-note">Por defecto cierra 24 h antes ({fmt(defClose)}). La fecha usa la hora de tu dispositivo.</div>
+    </div>
+  );
+}
+
 /* ============================== ORGANIZADOR ============================= */
-function AdminView({ config, setConfig, results, saveResults, locked, setLocked, timeLocked, profiles, allPicks, savePicksFor, resetPassword, deleteProfile, onRefresh }) {
+function AdminView({ config, setConfig, results, saveResults, locked, setLocked, timeLocked, profiles, allPicks, savePicksFor, resetPassword, deleteProfile, onRefresh, now }) {
   const [sub, setSub] = useState("results"); // results | players | accounts | settings
   const [draft, setDraft] = useState(results || { groups: {}, champion: "", scorer: "" });
   const [savedR, setSavedR] = useState(false);
@@ -2286,14 +2360,17 @@ function AdminView({ config, setConfig, results, saveResults, locked, setLocked,
 
       {sub === "ko" && (
         <div style={{ marginTop: 12 }}>
-          <div className="banner flat" style={{ marginTop: 0 }}>🏟️ <b>Resultados de eliminatorias:</b> fija el marcador de cada cruce cuyos dos equipos ya se conozcan. El ganador avanza automáticamente a la siguiente ronda y se puntúan los pronósticos.</div>
+          <div className="banner flat" style={{ marginTop: 0 }}>🏟️ <b>Resultados de eliminatorias:</b> fija el marcador de cada cruce cuyos dos equipos ya se conozcan. El ganador avanza automáticamente a la siguiente ronda y se puntúan los pronósticos. Bajo cada cruce puedes <b>reabrir la votación</b> o ponerle una <b>fecha de cierre</b> concreta.</div>
           {(() => {
             const shown = KO_MATCHES.filter((m) => { const t = adminKoTeams[m.id]; return t && t.home && t.away; });
             if (shown.length === 0) return <div className="empty">Todavía no hay cruces definidos (faltan resultados de grupos).</div>;
             return (
-              <div style={{ display: "grid", gap: 10 }}>
+              <div style={{ display: "grid", gap: 14 }}>
                 {shown.map((m) => (
-                  <KoVoteCard key={m.id} m={m} teams={adminKoTeams} pick={results?.knockout?.[m.id]} onChange={setKoResult} adminTag />
+                  <div key={m.id} className="ko-admin-row">
+                    <KoVoteCard m={m} teams={adminKoTeams} pick={results?.knockout?.[m.id]} onChange={setKoResult} adminTag />
+                    <KoCloseControl m={m} config={config} setConfig={setConfig} now={now} />
+                  </div>
                 ))}
               </div>
             );
@@ -2670,7 +2747,7 @@ export default function App() {
           </div>
         </div>
         <div className="wrap">
-          <AdminView config={config} setConfig={setConfig} results={results} saveResults={saveResults} locked={locked} setLocked={setLocked} timeLocked={timeLocked} profiles={profiles} allPicks={allPicks} savePicksFor={savePicksFor} resetPassword={resetPassword} deleteProfile={deleteProfile} onRefresh={loadAll} />
+          <AdminView config={config} setConfig={setConfig} results={results} saveResults={saveResults} locked={locked} setLocked={setLocked} timeLocked={timeLocked} profiles={profiles} allPicks={allPicks} savePicksFor={savePicksFor} resetPassword={resetPassword} deleteProfile={deleteProfile} onRefresh={loadAll} now={now} />
         </div>
       </div>
     );
