@@ -1812,7 +1812,7 @@ function KoStepV({ value, onDec, onInc, disabled }) {
 }
 // Tarjeta para votar (o, en admin, fijar) el marcador de un partido de eliminatoria.
 // Local a la izquierda · marcador con steppers en el centro · visitante a la derecha.
-function KoVoteCard({ m, teams, pick, onChange, now = null, disabled = false, adminTag = false, closeOverrideMs = undefined }) {
+function KoVoteCard({ m, teams, pick, onChange, now = null, disabled = false, adminTag = false, closeOverrideMs = undefined, footLabel = null }) {
   const t = teams[m.id];
   if (!t || !t.home || !t.away) return null;
   const h = pick?.h ?? 0, a = pick?.a ?? 0;
@@ -1833,7 +1833,9 @@ function KoVoteCard({ m, teams, pick, onChange, now = null, disabled = false, ad
         </div>
         <div className="kv-team away"><span className="nm">{TEAMS[t.away].name}</span><Flag code={t.away} size={28} /></div>
       </div>
-      {adminTag ? (
+      {footLabel ? (
+        <div className="ko-vote-foot">{footLabel}: <b>{h} - {a}</b></div>
+      ) : adminTag ? (
         <div className="ko-vote-foot">Resultado oficial: <b>{h} - {a}</b></div>
       ) : st && st.closeAt != null && now < st.closeAt ? (
         <div className="ko-vote-foot">Tu pronóstico: <b>{h} - {a}</b> · se cierra en <b>{fmtCountdown(st.closeAt - now)}</b></div>
@@ -2225,11 +2227,13 @@ function Rules() {
 }
 
 /* ====================== EDITOR DE PRONÓSTICOS (admin) ==================== */
-function PicksEditor({ value, onChange }) {
+function PicksEditor({ value, onChange, koTeams = null }) {
   const [g, setG] = useState("A");
   const matches = GROUP_MATCHES.filter((m) => m.group === g);
   const isOther = value.scorer != null && value.scorer !== "" && !SCORERS.some(([n]) => n === value.scorer);
   const setP = (id, o) => onChange({ ...value, groups: { ...value.groups, [id]: value.groups?.[id] === o ? undefined : o } });
+  const setKoP = (id, sc) => onChange({ ...value, knockout: { ...(value.knockout || {}), [id]: sc } });
+  const koShown = koTeams ? KO_MATCHES.filter((m) => { const t = koTeams[m.id]; return t && t.home && t.away; }) : [];
   return (
     <div>
       <div className="gnav">{Object.keys(GROUPS).map((gl) => <button key={gl} className={`gbtn ${g === gl ? "on" : ""}`} onClick={() => setG(gl)}>{gl}</button>)}</div>
@@ -2244,6 +2248,17 @@ function PicksEditor({ value, onChange }) {
           </div>
         ))}
       </div>
+      {koShown.length > 0 && (
+        <div>
+          <div className="glabel" style={{ marginTop: 18 }}><span className="badge"><Trophy s={16} /></span><h3>Eliminatorias</h3></div>
+          <div className="note" style={{ margin: "0 0 8px" }}>Marcador que predijo en cada cruce. Puedes corregirlo aunque la votación esté cerrada.</div>
+          <div style={{ display: "grid", gap: 10 }}>
+            {koShown.map((m) => (
+              <KoVoteCard key={m.id} m={m} teams={koTeams} pick={value.knockout?.[m.id]} onChange={setKoP} footLabel="Su pronóstico" />
+            ))}
+          </div>
+        </div>
+      )}
       <div className="card" style={{ padding: 16, marginTop: 14 }}>
         <label className="label" style={{ marginTop: 0 }}>🏆 Campeón</label>
         <select value={value.champion || ""} onChange={(e) => onChange({ ...value, champion: e.target.value })}>
@@ -2464,7 +2479,7 @@ function AdminView({ config, setConfig, results, saveResults, locked, setLocked,
 
       {sub === "players" && (
         <div style={{ marginTop: 12 }}>
-          <div className="banner flat">🛟 <b>Modo urgencia:</b> edita la selección de cualquier participante (no afectado por el bloqueo horario).</div>
+          <div className="banner flat">🛟 <b>Modo urgencia:</b> corrige los pronósticos de cualquier participante —grupos, eliminatorias, campeón y goleador— aunque la votación esté cerrada (a ti no te afecta el bloqueo).</div>
           <label className="label">Participante</label>
           <select value={targetId} onChange={(e) => setTargetId(e.target.value)}>
             <option value="" disabled>Elige un jugador…</option>
@@ -2472,7 +2487,7 @@ function AdminView({ config, setConfig, results, saveResults, locked, setLocked,
           </select>
           {pDraft && (
             <div style={{ marginTop: 6 }}>
-              <PicksEditor value={pDraft} onChange={setPDraft} />
+              <PicksEditor value={pDraft} onChange={setPDraft} koTeams={adminKoTeams} />
               <button className="btn" style={{ marginTop: 16 }} onClick={async () => { await savePicksFor(targetId, pDraft); setSavedP(true); setTimeout(() => setSavedP(false), 2000); }}>
                 {savedP ? "✓ Guardado" : `Guardar selección de ${profiles.find((p) => p.id === targetId)?.name || ""}`}</button>
             </div>
