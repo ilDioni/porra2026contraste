@@ -605,8 +605,9 @@ function computeKoScore(picks, results) {
     const r = koRes[m.id];
     if (!r || typeof r.h !== "number" || typeof r.a !== "number") continue;
     scored++;
-    const p = picks?.knockout?.[m.id];
-    if (!p || typeof p.h !== "number" || typeof p.a !== "number") continue;
+    const raw = picks?.knockout?.[m.id];
+    // Sin pronóstico (o corrupto) cuenta como 0-0.
+    const p = (raw && typeof raw.h === "number" && typeof raw.a === "number") ? raw : { h: 0, a: 0 };
     const rule = SCORING.knockout[m.round];
     if (!rule) continue;
     const rsign = r.h > r.a ? "1" : r.h < r.a ? "2" : "X";
@@ -940,6 +941,13 @@ function Styles() {
 .fs-sep{width:1px;align-self:stretch;background:var(--line);margin:2px 1px}
 @keyframes fsIn{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
 @media (prefers-reduced-motion: reduce){.float-score{animation:none}}
+.save-fab{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;z-index:38;display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--cobalt);color:#fff;border:none;border-radius:999px;padding:15px 30px;font:inherit;font-size:16px;font-weight:800;letter-spacing:.01em;box-shadow:0 12px 32px rgba(40,86,166,.42);cursor:pointer;transition:filter .12s, transform .1s, background .2s;animation:fsIn .35s ease}
+.save-fab:hover{filter:brightness(1.07)}
+.save-fab:active{transform:translateX(-50%) scale(.96)}
+.save-fab:disabled{cursor:default;opacity:.9}
+.save-fab.ok{background:#1F7A43;box-shadow:0 12px 32px rgba(31,122,67,.42)}
+.save-fab.err{background:var(--clay-d);box-shadow:0 12px 32px rgba(160,80,60,.42)}
+@media (prefers-reduced-motion: reduce){.save-fab{animation:none}}
 
 .gnav{display:flex;flex-wrap:wrap;gap:7px;margin:16px 0 4px}
 .gbtn{width:42px;height:42px;border-radius:11px;border:1px solid var(--line);background:var(--card);font-weight:700;font-size:15px;color:var(--ink);position:relative}
@@ -1192,6 +1200,8 @@ select:focus,input.txt:focus{outline:none;border-color:var(--clay)}
 
   /* Puntuación flotante por encima de la barra inferior */
   .float-score{ right:12px; bottom:calc(72px + env(safe-area-inset-bottom)); }
+  .save-fab{ bottom:calc(74px + env(safe-area-inset-bottom)); width:calc(100% - 28px); padding:15px 18px; font-size:15.5px; box-shadow:0 8px 24px rgba(40,86,166,.45); }
+  .save-fab:active{ transform:translateX(-50%) scale(.98); }
 
   /* Toques más grandes: botones de pronóstico cómodos para el pulgar */
   /* Partido: equipo a la izquierda, botones en el centro, equipo a la derecha */
@@ -1857,9 +1867,17 @@ function KoAnswerCard({ m, teams, voters, now, official, closeOverrideMs = undef
   if (!t || !t.home || !t.away) return null;
   const st = koVoteState(m.id, teams, now, closeOverrideMs);
   const sign = (p) => (p.h > p.a ? "1" : p.h < p.a ? "2" : "X");
+  const revealed = st.revealed;
+  // Tras el cierre, quien no haya marcado nada cuenta como 0-0.
   const preds = voters
-    .map(({ profile, picks }) => ({ profile, p: picks?.knockout?.[m.id] }))
-    .filter((x) => x.p && typeof x.p.h === "number" && typeof x.p.a === "number")
+    .map(({ profile, picks }) => {
+      const raw = picks?.knockout?.[m.id];
+      const valid = raw && typeof raw.h === "number" && typeof raw.a === "number";
+      if (valid) return { profile, p: raw };
+      if (revealed) return { profile, p: { h: 0, a: 0 } };
+      return null;
+    })
+    .filter(Boolean)
     .map((x) => ({ ...x, s: sign(x.p) }));
   const c = { "1": 0, "X": 0, "2": 0 };
   const byOpt = { "1": [], "X": [], "2": [] };
@@ -1867,7 +1885,6 @@ function KoAnswerCard({ m, teams, voters, now, official, closeOverrideMs = undef
   const tot = preds.length;
   const max = Math.max(c["1"], c["X"], c["2"]);
   const rsign = official ? sign(official) : null;
-  const revealed = st.revealed;
   const isExact = (p) => official && p.h === official.h && p.a === official.a;
 
   return (
@@ -1937,8 +1954,16 @@ function KoAnswerCard({ m, teams, voters, now, official, closeOverrideMs = undef
      equipos (steppers +/-), del más próximo al más lejano; desaparece 24 h
      antes del inicio.
    · Fase de grupos: histórico de lo votado en grupos + apuestas especiales. */
-function PorraView({ picks, setPick, setChampion, setScorer, setKoPick, results, config, locked, now, timeLocked, profiles, allPicks }) {
+function PorraView({ picks, setPick, setChampion, setScorer, setKoPick, results, config, locked, now, timeLocked, profiles, allPicks, onSave }) {
   const [view, setView] = useState("ko"); // ko | groups
+  const [saveState, setSaveState] = useState("idle"); // idle | saving | ok | err
+  const doSave = async () => {
+    if (!onSave || saveState === "saving") return;
+    setSaveState("saving");
+    const ok = await onSave();
+    setSaveState(ok ? "ok" : "err");
+    setTimeout(() => setSaveState("idle"), ok ? 2600 : 4000);
+  };
   const standings = useMemo(() => computeGroupStandings(results, config?.standingsOverride), [results, config]);
   const thirds = useMemo(() => rankThirds(standings), [standings]);
   const thirdAssign = useMemo(() => assignThirdsToSlots(thirds.slice(0, 8).map((t) => t.group)), [thirds]);
@@ -1985,6 +2010,16 @@ function PorraView({ picks, setPick, setChampion, setScorer, setKoPick, results,
             {results?.scorer && <div className="note" style={{ marginTop: 4 }}>Bota de Oro oficial: <b>{results.scorer}</b></div>}
           </div>
         </div>
+      )}
+      {onSave && (
+        <button type="button"
+          className={`save-fab ${saveState === "ok" ? "ok" : saveState === "err" ? "err" : ""}`}
+          onClick={doSave} disabled={saveState === "saving"}>
+          {saveState === "saving" ? "Guardando…"
+            : saveState === "ok" ? "✓ ¡Pronósticos guardados!"
+            : saveState === "err" ? "✕ No se pudo guardar · reintenta"
+            : "💾 Guardar mis pronósticos"}
+        </button>
       )}
     </div>
   );
@@ -2706,6 +2741,14 @@ export default function App() {
   const setChampion = (c) => persistPicks({ ...picks, champion: picks.champion === c ? "" : c });
   const setScorer = (s) => persistPicks({ ...picks, scorer: s });
   const setKoPick = (id, val) => persistPicks({ ...picks, knockout: { ...(picks.knockout || {}), [id]: val } });
+  // Guardado manual (botón flotante en Porra): reintenta una vez y devuelve si fue OK.
+  const saveMyPicks = useCallback(async () => {
+    if (!me) return false;
+    let ok = await sset(KEY.picks(me.id), picks, true);
+    if (!ok) { await new Promise((r) => setTimeout(r, 700)); ok = await sset(KEY.picks(me.id), picks, true); }
+    if (ok) setAllPicks((cur) => ({ ...cur, [me.id]: picks }));
+    return ok;
+  }, [me, picks]);
 
   const setConfig = async (c) => { setConfigState(c); await sset(KEY.config, c, true); };
   const setLocked = (v) => setConfig({ ...config, locked: v });
@@ -2787,14 +2830,14 @@ export default function App() {
         </div>
       </div>
       <div className="wrap">
-        {tab === "specials" && <PorraView picks={picks} setPick={setPick} setChampion={setChampion} setScorer={setScorer} setKoPick={setKoPick} results={results} config={config} locked={locked} now={now} timeLocked={timeLocked} profiles={profiles} allPicks={allPicks} />}
+        {tab === "specials" && <PorraView picks={picks} setPick={setPick} setChampion={setChampion} setScorer={setScorer} setKoPick={setKoPick} results={results} config={config} locked={locked} now={now} timeLocked={timeLocked} profiles={profiles} allPicks={allPicks} onSave={saveMyPicks} />}
         {tab === "answers" && <AnswersView profiles={profiles} allPicks={allPicks} results={results} config={config} now={now} loading={busy} onRefresh={loadAll} />}
         {tab === "knockout" && <KnockoutView results={results} config={config} profiles={profiles} allPicks={allPicks} />}
         {tab === "leaderboard" && <Leaderboard profiles={profiles} allPicks={allPicks} results={results} meId={me.id} onRefresh={loadAll} loading={busy} config={config} now={now} timeLocked={timeLocked} />}
         {tab === "profile" && <ProfileEditor me={me} profiles={profiles} onSave={updateMyProfile} onChangePassword={changeMyPassword} />}
         {tab === "rules" && <Rules />}
       </div>
-      {(() => {
+      {tab !== "specials" && (() => {
         const score = computeScore(picks, results);
         const others = profiles.filter((p) => p.id !== me.id).map((p) => computeScore(allPicks[p.id], results).total);
         const pos = others.filter((t) => t > score.total).length + 1;
