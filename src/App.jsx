@@ -319,22 +319,32 @@ function fmtSpainKickoff(ts) {
     timeZone: "Europe/Madrid", weekday: "short", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit",
   }).format(new Date(ts));
 }
-function getCurrentMatchInfo(now, results) {
-  const rows = GROUP_MATCHES
-    .map((match) => ({ match, kickoffMs: getKickoffMs(match.id) }))
+// Calendario completo para el hero: partidos de grupos + eliminatorias (con los
+// equipos ya resueltos desde la clasificación) ordenados por hora de inicio.
+function buildMatchSchedule(results, standingsOverride) {
+  const groupRows = GROUP_MATCHES.map((m) => ({
+    match: { id: m.id, home: m.home, away: m.away }, ko: false,
+    kickoffMs: getKickoffMs(m.id), concluded: !!results?.groups?.[m.id],
+  }));
+  const standings = computeGroupStandings(results, standingsOverride);
+  const thirds = rankThirds(standings);
+  const thirdAssign = assignThirdsToSlots(thirds.slice(0, 8).map((t) => t.group));
+  const koTeams = computeKnockoutTeams(results, standings, thirdAssign, true);
+  const koRows = KO_MATCHES.map((m) => {
+    const t = koTeams[m.id];
+    return { match: { id: m.id, home: t?.home, away: t?.away }, ko: true, kickoffMs: getKoKickoffMs(m.id), concluded: !!results?.knockout?.[m.id] };
+  }).filter((r) => r.match.home && r.match.away); // solo cruces con los dos equipos conocidos
+  return [...groupRows, ...koRows]
     .filter((row) => row.kickoffMs != null)
     .sort((a, b) => a.kickoffMs - b.kickoffMs);
-  const hasResult = (id) => !!results?.groups?.[id];
-
-  const liveRows = rows.filter((row) => !hasResult(row.match.id) && now >= row.kickoffMs && now < row.kickoffMs + MATCH_DURATION_MS);
-  if (liveRows.length) {
-    return { rows: liveRows, kickoffMs: liveRows[0].kickoffMs, status: "live" };
-  }
-
-  const next = rows.find((row) => !hasResult(row.match.id) && row.kickoffMs > now);
+}
+// Elige el/los partido(s) en juego ahora o, si no hay, el/los próximo(s).
+function pickCurrentMatch(schedule, now) {
+  const liveRows = schedule.filter((row) => !row.concluded && now >= row.kickoffMs && now < row.kickoffMs + MATCH_DURATION_MS);
+  if (liveRows.length) return { rows: liveRows, kickoffMs: liveRows[0].kickoffMs, status: "live" };
+  const next = schedule.find((row) => !row.concluded && row.kickoffMs > now);
   if (!next) return null;
-
-  const nextRows = rows.filter((row) => !hasResult(row.match.id) && row.kickoffMs === next.kickoffMs);
+  const nextRows = schedule.filter((row) => !row.concluded && row.kickoffMs === next.kickoffMs);
   return { rows: nextRows, kickoffMs: next.kickoffMs, status: "upcoming" };
 }
 
@@ -1400,8 +1410,9 @@ function Onboarding({ profiles, onCreate, onLogin, onAdmin }) {
 }
 
 /* ============================== HERO + COUNTDOWN ========================= */
-function HeroCountdown({ now, timeLocked, results, profiles = [], allPicks = {} }) {
-  const matchInfo = getCurrentMatchInfo(now, results);
+function HeroCountdown({ now, timeLocked, results, profiles = [], allPicks = {}, config = null }) {
+  const schedule = useMemo(() => buildMatchSchedule(results, config?.standingsOverride), [results, config]);
+  const matchInfo = useMemo(() => pickCurrentMatch(schedule, now), [schedule, now]);
   const bg = IMAGES.HERO_BG_URL;
   const matches = matchInfo?.rows || [];
   const many = matches.length > 1;
@@ -1412,11 +1423,20 @@ function HeroCountdown({ now, timeLocked, results, profiles = [], allPicks = {} 
   const countdownText = matchInfo?.status === "live" ? "En juego" : (matchInfo ? fmtCountdown(matchInfo.kickoffMs - now) : "Sin horario");
 
   // Reparte los participantes según su pronóstico (1·X·2) para un partido.
-  const votersByPick = (matchId) => {
+  // En eliminatorias se deduce el signo del marcador que cada uno predijo.
+  const votersByPick = (matchId, isKo) => {
     const out = { "1": [], "X": [], "2": [] };
     profiles.forEach((p) => {
-      const v = allPicks?.[p.id]?.groups?.[matchId];
-      if (v && out[v]) out[v].push(p);
+      if (isKo) {
+        const sc = allPicks?.[p.id]?.knockout?.[matchId];
+        if (sc && typeof sc.h === "number" && typeof sc.a === "number") {
+          const s = sc.h > sc.a ? "1" : sc.h < sc.a ? "2" : "X";
+          out[s].push(p);
+        }
+      } else {
+        const v = allPicks?.[p.id]?.groups?.[matchId];
+        if (v && out[v]) out[v].push(p);
+      }
     });
     return out;
   };
@@ -1444,8 +1464,8 @@ function HeroCountdown({ now, timeLocked, results, profiles = [], allPicks = {} 
               <div style={{ flex: "1 1 0", minWidth: 0, maxWidth: "100%" }}>
                 <div style={{ fontSize: 12.5, color: "rgba(255,255,255,.7)", fontWeight: 700 }}>{statusLabel}</div>
                 <div className="next-match-list">
-                  {matches.map(({ match, kickoffMs }) => {
-                    const vb = votersByPick(match.id);
+                  {matches.map(({ match, kickoffMs, ko }) => {
+                    const vb = votersByPick(match.id, ko);
                     const anyVotes = vb["1"].length + vb["X"].length + vb["2"].length > 0;
                     return (
                     <div key={match.id} className="next-match-row">
@@ -1976,7 +1996,7 @@ function PorraView({ picks, setPick, setChampion, setScorer, setKoPick, results,
 
   return (
     <div>
-      <HeroCountdown now={now} timeLocked={timeLocked} results={results} profiles={profiles} allPicks={allPicks} />
+      <HeroCountdown now={now} timeLocked={timeLocked} results={results} profiles={profiles} allPicks={allPicks} config={config} />
       <div className="section-h"><div className="ttl"><span className="ic"><Trophy /></span><h2>Porra</h2></div>
         <p>Vota los cruces de eliminatorias y repasa lo que apostaste en la fase de grupos.</p></div>
 
@@ -2192,7 +2212,7 @@ function Leaderboard({ profiles, allPicks, results, meId, onRefresh, loading, co
   const canShare = (config?.shareViewers || []).includes(meId);
   return (
     <div>
-      <HeroCountdown now={now} timeLocked={timeLocked} results={results} profiles={profiles} allPicks={allPicks} />
+      <HeroCountdown now={now} timeLocked={timeLocked} results={results} profiles={profiles} allPicks={allPicks} config={config} />
       <div className="section-h" style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
         <div><div className="ttl"><span className="ic"><Rank /></span><h2>Clasificación</h2></div>
           <p>{profiles.length} participante{profiles.length === 1 ? "" : "s"} · puntos en vivo</p></div>
