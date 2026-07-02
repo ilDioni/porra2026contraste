@@ -236,7 +236,7 @@ const MATCH_CONTROL = {
   //      "1-1 (4-2)"  -> empate a 90' resuelto en penaltis/prórroga; el 2.º par dice quién pasó
   //    El marcador (1.º par) es el que se PUNTÚA; el 2.º par solo decide quién avanza.
   //    Descomenta y rellena los que necesites, por ejemplo:
-  // "M73": { result: "2-1" },
+  "M82": { result: "3-2" },
   // "M75": { result: "1-1 (4-2)" },
 };
 
