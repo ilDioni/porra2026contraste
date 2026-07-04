@@ -237,7 +237,7 @@ const MATCH_CONTROL = {
   //    El marcador (1.º par) es el que se PUNTÚA; el 2.º par solo decide quién avanza.
   //    Descomenta y rellena los que necesites, por ejemplo:
   "M82": { result: "3-2" },
-  "M86": { result: 3-2" },
+  "M86": { result: "3-2" },
 };
 
 const FINAL_RESULTS = {
