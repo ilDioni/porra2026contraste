@@ -238,6 +238,8 @@ const MATCH_CONTROL = {
   //    Descomenta y rellena los que necesites, por ejemplo:
   "M82": { result: "3-2" },
   "M86": { result: "3-2" },
+  "M99": { result: "1-2" },
+  "M100": { result: "3-1" },
 };
 
 const FINAL_RESULTS = {
