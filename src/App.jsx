@@ -240,6 +240,7 @@ const MATCH_CONTROL = {
   "M86": { result: "3-2" },
   "M99": { result: "1-2" },
   "M100": { result: "3-1" },
+  "M104": { result: "1-0" },
 };
 
 const FINAL_RESULTS = {
